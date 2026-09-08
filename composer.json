@@ -1,0 +1,22 @@
+{
+    "name": "backup/php",
+    "description": "Classes for creating backups",
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Backup\\Php\\": "src/"
+        },
+        "classmap": [
+            "src/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Yehor Strakhov",
+            "email": "yehor.strakhov@th-nuernberg.de"
+        }
+    ],
+    "require": {}
+}

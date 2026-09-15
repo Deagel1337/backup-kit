@@ -2,11 +2,13 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Archive\Service\ArchiveService;
-use Archive\Driver\BorgArchiveDriver;
 use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
-use DatabaseBackup\Service\DatabaseBackupService\DatabaseBackupService;
+use Archive\Model\ArchiveInfo;
+use Restore\Model\RestoreContext;
+use Restore\Step\BackupDatabaseStep;
+use Restore\Step\RestoreDatabaseStep;
+use Src\Services\RestoreService;
 
 
 try {
@@ -19,28 +21,23 @@ try {
         password: "devpass"
     );
 
-    // Datenbank-Dump wird erstellt
     $driver = new MariaDbBackupDriver($connection);
-    $service = DatabaseBackupService::getInstance($driver);
-    $dump = $service->createDump("backup.sql");
+    $backupDestination = $argv[1] ?? 'backup.sql';
+    $backupStep = new BackupDatabaseStep($driver);
+    $dump = $backupStep->execute($backupDestination);
 
-    echo $dump->path;
+    $restoreService = new RestoreService([
+        new RestoreDatabaseStep($driver),
+    ]);
 
-    // Archive wird erstellt
-    $borgRepository = getenv('BORG_REPOSITORY');
-    if ($borgRepository === false || trim($borgRepository) === '') {
-        throw new RuntimeException('Die Umgebungsvariable BORG_REPOSITORY ist nicht gesetzt.');
-    }
+    $restoreService->restore(new RestoreContext(
+        archive: new ArchiveInfo('', '', ''),
+        dump: $dump,
+        destination: '',
+    ));
 
-    $archiveDriver = new BorgArchiveDriver(
-        $borgRepository,
-        getenv('BORG_PASSPHRASE') ?: '',
-        getenv('BORG_SSH_KEY_PATH') ?: null,
-        ($port = getenv('BORG_SSH_PORT')) !== false ? (int) $port : null,
-    );
-    $archiveService = new ArchiveService($archiveDriver);
-    $archive = $archiveService->createArchive([$dump->path], 'backup-' . date('Ymd-His'));
-    echo $archive->path;
-} catch (Exception $e) {
-    echo $e->getMessage();
-} 
+    echo "Backup erstellt und Datenbank wiederhergestellt: {$dump->path}" . PHP_EOL;
+} catch (Throwable $e) {
+    fwrite(STDERR, $e->getMessage() . PHP_EOL);
+    exit(1);
+}

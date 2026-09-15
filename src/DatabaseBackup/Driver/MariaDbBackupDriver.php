@@ -5,8 +5,8 @@ namespace DatabaseBackup\Driver\MariaDbDriver;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
-use RuntimeException;
 use Src\Traits\CommandTrait;
+use RuntimeException;
 
 final class MariaDbBackupDriver implements DatabaseBackupDriver
 {

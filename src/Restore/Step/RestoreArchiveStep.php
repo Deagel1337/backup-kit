@@ -13,6 +13,11 @@ final class RestoreArchiveStep implements RestoreStep
     )
     {}
 
+    public function name(): string
+    {
+        return "Archiv wiederherstellen";
+    }
+
     public function execute(RestoreContext $context): void
     {
         $this->driver->extractArchive($context->archive, $context->destination);

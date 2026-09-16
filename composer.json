@@ -12,11 +12,15 @@
             "src/"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Yehor Strakhov",
             "email": "yehor.strakhov@th-nuernberg.de"
         }
-    ],
-    "require": {}
+    ]
 }

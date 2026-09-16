@@ -6,6 +6,7 @@ use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use Archive\Model\ArchiveInfo;
 use Restore\Model\RestoreContext;
+use Restore\Reporter\ConsoleProgressReporter;
 use Restore\Step\BackupDatabaseStep;
 use Restore\Step\RestoreDatabaseStep;
 use Src\Services\RestoreService;
@@ -26,17 +27,20 @@ try {
     $backupStep = new BackupDatabaseStep($driver);
     $dump = $backupStep->execute($backupDestination);
 
-    $restoreService = new RestoreService([
-        new RestoreDatabaseStep($driver),
-    ]);
+    $progress = new ConsoleProgressReporter();
+
+    $restoreService = new RestoreService(
+        steps: [
+            new RestoreDatabaseStep($driver),
+        ],
+        progress: $progress
+    );
 
     $restoreService->restore(new RestoreContext(
         archive: new ArchiveInfo('', '', ''),
         dump: $dump,
         destination: '',
     ));
-
-    echo "Backup erstellt und Datenbank wiederhergestellt: {$dump->path}" . PHP_EOL;
 } catch (Throwable $e) {
     fwrite(STDERR, $e->getMessage() . PHP_EOL);
     exit(1);

@@ -13,6 +13,11 @@ final class ValidateArchiveStep implements RestoreStep
     )
     { }
 
+    public function name(): string
+    {
+        return "Archiv valiederen";
+    }
+
     public function execute(RestoreContext $context): void
     {
         $this->archiveDriver->validateArchive($context->archive);

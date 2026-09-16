@@ -14,6 +14,11 @@ final class ValidateRestoreContextStep implements RestoreStep
         private readonly ArchiveDriver $archiveDriver
     )
     {}
+    
+    public function name(): string
+    {
+        return "Validiere den Context für die Wiederherstellung";
+    }
 
     public function execute(RestoreContext $context): void
     {

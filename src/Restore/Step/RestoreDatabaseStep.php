@@ -13,6 +13,11 @@ final class RestoreDatabaseStep implements RestoreStep
     )
     {}
 
+    public function name(): string
+    {
+        return "Datenbank wiederherstellen";
+    }
+
     public function execute(RestoreContext $context): void
     {
         $this->driver->restoreDump($context->dump);

@@ -14,6 +14,11 @@ final class BackupDatabaseStep implements BackupStep
     )
     { }
 
+    public function name(): string
+    {
+        return "Datenbank sichern;";
+    }
+
     public function execute(string $destination): DatabaseDump
     {
         $dump = $this->driver->createDump($destination);

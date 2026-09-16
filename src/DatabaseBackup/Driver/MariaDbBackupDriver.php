@@ -3,6 +3,11 @@
 namespace DatabaseBackup\Driver\MariaDbDriver;
 
 use DatabaseBackup\Driver\DatabaseBackupDriver;
+use DatabaseBackup\Exception\EmptyDumpException;
+use DatabaseBackup\Exception\InvalidDumpFormatException;
+use DatabaseBackup\Exception\InvalidDumpDriverException;
+use DatabaseBackup\Exception\DumpNotReadableException;
+use DatabaseBackup\Exception\DumpNotFoundException;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
 use Process\ProcessRunner\ProcessRunner;
@@ -70,23 +75,23 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
     public function validateDump(DatabaseDump $dump): void
     {
         if ($dump->driver !== $this->connection->driver) {
-            throw new RuntimeException('Der Dump gehört nicht zum MariaDB-Treiber.');
+            throw new InvalidDumpDriverException("Der Dump gehört nicht zum MariaDB-Treiber.");
         }
 
         if (strtolower($dump->format) !== 'sql') {
-            throw new RuntimeException('Der Dump muss im SQL-Format vorliegen.');
+            throw new InvalidDumpFormatException();
         }
 
         if (!$dump->exists()) {
-            throw new RuntimeException('Die Dump-Datei existiert nicht.');
+            throw new DumpNotFoundException();
         }
 
         if (!$dump->isReadable()) {
-            throw new RuntimeException('Die Dump-Datei ist nicht lesbar.');
+            throw new DumpNotReadableException();
         }
 
         if ($dump->size() === 0) {
-            throw new RuntimeException('Die Dump-Datei ist leer.');
+            throw new EmptyDumpException();
         }
     }
 

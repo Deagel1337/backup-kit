@@ -5,6 +5,11 @@ namespace DatabaseBackup\Driver\SqliteBackupDriver;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use DatabaseBackup\Exception\EmptyDumpException;
+use DatabaseBackup\Exception\InvalidDumpFormatException;
+use DatabaseBackup\Exception\InvalidDumpDriverException;
+use DatabaseBackup\Exception\DumpNotReadableException;
+use DatabaseBackup\Exception\DumpNotFoundException;
 use Process\ProcessRunner\ProcessRunner;
 use Process\Runner\ProcOpenProcessRunner;
 use RuntimeException;
@@ -54,23 +59,23 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
     public function validateDump(DatabaseDump $dump): void
     {
         if ($dump->driver !== $this->connection->driver) {
-            throw new RuntimeException('Der Dump gehört nicht zum SQLite-Treiber.');
+            throw new InvalidDumpDriverException();
         }
 
-        if (strtolower($dump->format) !== 'sqlite') {
-            throw new RuntimeException('Der Dump muss im SQLite-Format vorliegen.');
+        if (strtolower($dump->format) !== 'sql') {
+            throw new InvalidDumpFormatException();
         }
 
         if (!$dump->exists()) {
-            throw new RuntimeException('Die Dump-Datei existiert nicht.');
+            throw new DumpNotFoundException();
         }
 
         if (!$dump->isReadable()) {
-            throw new RuntimeException('Die Dump-Datei ist nicht lesbar.');
+            throw new DumpNotReadableException();
         }
 
         if ($dump->size() === 0) {
-            throw new RuntimeException('Die Dump-Datei ist leer.');
+            throw new EmptyDumpException();
         }
     }
 

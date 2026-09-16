@@ -5,6 +5,11 @@ namespace Src\DatabaseBackup\Driver\PostgresBackupDriver;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use DatabaseBackup\Exception\EmptyDumpException;
+use DatabaseBackup\Exception\InvalidDumpFormatException;
+use DatabaseBackup\Exception\InvalidDumpDriverException;
+use DatabaseBackup\Exception\DumpNotReadableException;
+use DatabaseBackup\Exception\DumpNotFoundException;
 use Process\ProcessRunner\ProcessRunner;
 use Process\Runner\ProcOpenProcessRunner;
 use RuntimeException;
@@ -43,7 +48,7 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
             $this->connection->database,
         ];
 
-        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password]);
+        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password], null, $path);
 
         if ($result->exitCode !== 0) {
             unlink($path);
@@ -58,23 +63,23 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
     public function validateDump(DatabaseDump $dump): void
     {
         if ($dump->driver !== $this->connection->driver) {
-            throw new RuntimeException('Der Dump gehört nicht zum Postgres-Treiber.');
+            throw new InvalidDumpDriverException("Der Dump gehört nicht zum Postgres-Treiber.");
         }
 
         if (strtolower($dump->format) !== 'sql') {
-            throw new RuntimeException('Der Dump muss im SQL-Format vorliegen.');
+            throw new InvalidDumpFormatException();
         }
 
         if (!$dump->exists()) {
-            throw new RuntimeException('Die Dump-Datei existiert nicht.');
+            throw new DumpNotFoundException();
         }
 
         if (!$dump->isReadable()) {
-            throw new RuntimeException('Die Dump-Datei ist nicht lesbar.');
+            throw new DumpNotReadableException();
         }
 
         if ($dump->size() === 0) {
-            throw new RuntimeException('Die Dump-Datei ist leer.');
+            throw new EmptyDumpException();
         }
     }
 
@@ -91,7 +96,7 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
         ];
 
         
-        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password]);
+        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password], null, null, $dump->path);
 
         if ($result->exitCode !== 0) {
             throw new RuntimeException(

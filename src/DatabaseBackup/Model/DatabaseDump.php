@@ -2,6 +2,7 @@
 
 namespace DatabaseBackup\Model\DatabaseDump;
 
+use DatabaseBackup\Exception\EmptyDumpException;
 use RuntimeException;
 
 // Ein Datenmodell, der Informationen über das Backup haben soll
@@ -20,9 +21,7 @@ final readonly class DatabaseDump
         $size = filesize($this->path);
 
         if($size == false) {
-            throw new RuntimeException(
-                "Die Größe des Dumps konnte nicht ermittelt werden: {$this->path}"
-            );
+            throw new EmptyDumpException();
         }
 
         return $size;

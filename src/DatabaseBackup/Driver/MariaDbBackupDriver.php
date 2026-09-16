@@ -97,8 +97,6 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
     public function restoreDump(DatabaseDump $dump): void
     {
-        $this->validateDump($dump);
-
         $command = [
             'mariadb',
             '--host=' . $this->connection->host,

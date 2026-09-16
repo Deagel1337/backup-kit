@@ -1,10 +1,12 @@
 <?php
 
-namespace Src\DatabaseBackup\Driver\SqliteBackupDriver;
+namespace DatabaseBackup\Driver\SqliteBackupDriver;
 
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Process\ProcessRunner\ProcessRunner;
+use Process\Runner\ProcOpenProcessRunner;
 use RuntimeException;
 use Src\Traits\CommandTrait;
 
@@ -14,7 +16,13 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
 
     public function __construct(
         private readonly DatabaseConnection $connection,
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
     ) { }
+
+    private function processRunner(): ProcessRunner
+    {
+        return $this->process;
+    }
 
     public function createDump(string|null $backupName = null): DatabaseDump
     {
@@ -33,30 +41,11 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
             '.backup ' . escapeshellarg($path),
         ];
 
-        $process = proc_open(
-            $command,
-            [
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-        );
+        $result = $this->process->run($command);
 
-        if (!is_resource($process)) {
+        if($result->exitCode !== 0) {
             unlink($path);
-            throw new RuntimeException('Der Prozess sqlite3 konnte nicht gestartet werden.');
-        }
-
-        fclose($pipes[1]);
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
-            unlink($path);
-            throw new RuntimeException(
-                'Der SQLite-Dump konnte nicht erstellt werden: ' . trim($errorOutput)
-            );
+            throw new RuntimeException('Der Prozess sqlite3 konnte nicht gesichert werden.');
         }
 
         return new DatabaseDump($path, $this->connection->driver, 'sqlite');

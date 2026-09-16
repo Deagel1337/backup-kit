@@ -5,6 +5,8 @@ namespace Src\DatabaseBackup\Driver\PostgresBackupDriver;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Process\ProcessRunner\ProcessRunner;
+use Process\Runner\ProcOpenProcessRunner;
 use RuntimeException;
 use Src\Traits\CommandTrait;
 
@@ -14,7 +16,13 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
     
     public function __construct(
         private readonly DatabaseConnection $connection,
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
     ) { }
+
+    private function processRunner(): ProcessRunner
+    {
+        return $this->process;
+    }
 
     public function createDump(string|null $backupName = null): DatabaseDump
     {
@@ -35,30 +43,12 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
             $this->connection->database,
         ];
 
-        $process = proc_open(
-            $command,
-            [
-                1 => ['file', $path, 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-            null,
-            ['PGPASSWORD' => $this->connection->password],
-        );
+        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password]);
 
-        if (!is_resource($process)) {
-            unlink($path);
-            throw new RuntimeException('Der Prozess pg_dump konnte nicht gestartet werden.');
-        }
-
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             unlink($path);
             throw new RuntimeException(
-                'Der Postgres-Dump konnte nicht erstellt werden: ' . trim($errorOutput)
+                'Das Postgres-Dump konnte nicht erstellt werden: ' . trim($result->errorOutput)
             );
         }
 
@@ -100,30 +90,12 @@ final class PostgresBackupDriver implements DatabaseBackupDriver
             $this->connection->database,
         ];
 
-        $process = proc_open(
-            $command,
-            [
-                0 => ['file', $dump->path, 'r'],
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-            null,
-            ['PGPASSWORD' => $this->connection->password],
-        );
+        
+        $result = $this->process->run($command, ['PGPASSWORD' => $this->connection->password]);
 
-        if (!is_resource($process)) {
-            throw new RuntimeException('Der Prozess psql konnte nicht gestartet werden.');
-        }
-
-        fclose($pipes[1]);
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Der Postgres-Dump konnte nicht wiederhergestellt werden: ' . trim($errorOutput)
+                'Das Postgres-Dump konnte nicht wiederhergestellt werden: ' . trim($result->errorOutput)
             );
         }
     }

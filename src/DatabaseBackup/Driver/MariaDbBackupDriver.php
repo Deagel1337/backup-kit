@@ -5,6 +5,8 @@ namespace DatabaseBackup\Driver\MariaDbDriver;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Process\ProcessRunner\ProcessRunner;
+use Process\Runner\ProcOpenProcessRunner;
 use Src\Traits\CommandTrait;
 use RuntimeException;
 
@@ -14,7 +16,13 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
     
     public function __construct(
         private readonly DatabaseConnection $connection,
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner()    
     ) { }
+
+    private function processRunner(): ProcessRunner
+    {
+        return $this->process;
+    }
 
     public function createDump(?string $backupName = null): DatabaseDump
     {
@@ -23,7 +31,9 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
             : sys_get_temp_dir() . DIRECTORY_SEPARATOR . basename($backupName);
 
         if ($path === false) {
-            throw new RuntimeException('Es konnte keine temporäre Dump-Datei erstellt werden.');
+            throw new RuntimeException(
+                'Es konnte keine temporäre Dump-Datei erstellt werden.'
+            );
         }
 
         $command = [
@@ -34,34 +44,27 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
             $this->connection->database,
         ];
 
-        $process = proc_open(
+        $result = $this->process->run(
             $command,
-            [
-                1 => ['file', $path, 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-            null,
             ['MYSQL_PWD' => $this->connection->password],
+            null,
+            $path
         );
 
-        if (!is_resource($process)) {
-            unlink($path);
-            throw new RuntimeException('Der Prozess mariadb-dump konnte nicht gestartet werden.');
-        }
+        if ($result->exitCode !== 0) {
+            @unlink($path);
 
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
-            unlink($path);
             throw new RuntimeException(
-                'Der MariaDB-Dump konnte nicht erstellt werden: ' . trim($errorOutput)
+                'Das MariaDB-Dump konnte nicht erstellt werden: '
+                . trim($result->errorOutput)
             );
         }
 
-        return new DatabaseDump($path, $this->connection->driver, 'sql');
+        return new DatabaseDump(
+            $path,
+            $this->connection->driver,
+            'sql'
+        );
     }
 
     public function validateDump(DatabaseDump $dump): void
@@ -99,30 +102,11 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
             $this->connection->database,
         ];
 
-        $process = proc_open(
-            $command,
-            [
-                0 => ['file', $dump->path, 'r'],
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-            null,
-            ['MYSQL_PWD' => $this->connection->password],
-        );
+        $result = $this->process->run($command, ['MYSQL_PWD' => $this->connection->password], null, null, $dump->path);
 
-        if (!is_resource($process)) {
-            throw new RuntimeException('Der Prozess mariadb konnte nicht gestartet werden.');
-        }
-
-        fclose($pipes[1]);
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Der MariaDB-Dump konnte nicht wiederhergestellt werden: ' . trim($errorOutput)
+                'Das MariaDB-Dump konnte nicht wiederhergestellt werden: ' . trim($result->errorOutput)
             );
         }
     }

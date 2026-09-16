@@ -2,17 +2,18 @@
 
 namespace Src\Services;
 
-use Restore\Model\RestoreContext;
+use Restore\Context\BackupContext;
 use Restore\Interfaces\ProgressReporter;
-final class RestoreService
+
+final class BackupService 
 {
     public function __construct(
         private readonly array $steps,
         private readonly ProgressReporter $progress,
-    ) 
+    )
     {}
 
-    public function restore(RestoreContext $context): void
+    public function backup(BackupContext $context): void
     {
         $total = count($this->steps);
 

@@ -5,6 +5,7 @@ namespace Tests\Step;
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
 use PHPUnit\Framework\TestCase;
+use Restore\Context\BackupContext;
 use Restore\Step\BackupDatabaseStep;
 use RuntimeException;
 
@@ -14,7 +15,7 @@ final class BackupDatabaseStepTest extends TestCase
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
-        $dump = new DatabaseDump('/tmp/path','','sql');
+        $dump = new DatabaseDump('/tmp/backup', '', 'sql');
 
         $driver
             ->expects($this->once())
@@ -22,11 +23,30 @@ final class BackupDatabaseStepTest extends TestCase
             ->with('/tmp/backup')
             ->willReturn($dump);
 
+        $driver
+            ->expects($this->once())
+            ->method('validateDump')
+            ->with($dump);
+
+        $context = new BackupContext('/tmp/backup');
+
         $step = new BackupDatabaseStep($driver);
 
-        $result = $step->execute('/tmp/backup');
+        $step->execute($context);
 
-        $this->assertSame($dump, $result);
+        $this->assertSame($dump, $context->dump);
+    }
+
+    public function testHasExpectedName(): void
+    {
+        $driver = $this->createMock(DatabaseBackupDriver::class);
+
+        $step = new BackupDatabaseStep($driver);
+
+        $this->assertSame(
+            'Datenbank sichern',
+            $step->name()
+        );
     }
 
     public function testCreateDumpExceptionIsPropagated(): void
@@ -40,11 +60,13 @@ final class BackupDatabaseStepTest extends TestCase
                 new RuntimeException('Backup failed')
             );
 
+        $context = new BackupContext('/tmp/backup');
+
         $step = new BackupDatabaseStep($driver);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Backup failed');
 
-        $step->execute('/tmp/backup');
+        $step->execute($context);
     }
 }

@@ -2,28 +2,20 @@
 
 namespace Src\Traits;
 
+use Process\ProcessRunner\ProcessRunner;
+
 trait CommandTrait
 {
+    abstract protected function processRunner(): ProcessRunner;
+
+
     public function isCommandAvailable(string $command): bool
     {
-        $process = proc_open(
-            [$command, '--version'],
-            [
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-        );
+        $result = $this->processRunner()->run([
+            $command,
+            '--version',
+        ]);
 
-        if (!is_resource($process)) {
-            return false;
-        }
-
-        stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-        stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-
-        return proc_close($process) === 0;
+        return $result->exitCode === 0;
     }
 }

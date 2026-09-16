@@ -4,6 +4,7 @@ namespace Restore\Step;
 
 use DatabaseBackup\Driver\DatabaseBackupDriver;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Restore\Context\BackupContext;
 use Restore\Interfaces\BackupStep;
 
 final class BackupDatabaseStep implements BackupStep
@@ -16,14 +17,13 @@ final class BackupDatabaseStep implements BackupStep
 
     public function name(): string
     {
-        return "Datenbank sichern;";
+        return "Datenbank sichern";
     }
 
-    public function execute(string $destination): DatabaseDump
+    public function execute(BackupContext $context): void
     {
-        $dump = $this->driver->createDump($destination);
+        $dump = $this->driver->createDump($context->destination);
         $this->driver->validateDump($dump);
-
-        return $dump;
+        $context->dump = $dump; 
     }
 }

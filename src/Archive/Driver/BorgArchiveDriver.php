@@ -4,15 +4,21 @@ namespace Archive\Driver;
 
 use Archive\Driver\ArchiveDriver;
 use Archive\Model\ArchiveInfo;
+use Process\ProcessRunner\ProcessRunner;
+use Process\Runner\ProcOpenProcessRunner;
+use Src\Traits\CommandTrait;
 use RuntimeException;
 
 final class BorgArchiveDriver implements ArchiveDriver
 {
+    use CommandTrait;
+
     public function __construct(
         private readonly string $repository,
         private readonly string $passphrase = '',
         private readonly ?string $sshKeyPath = null,
         private readonly ?int $sshPort = null,
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
     ) {
         if (trim($this->repository) === '') {
             throw new RuntimeException('Es wurde kein Borg-Repository angegeben.');
@@ -21,6 +27,12 @@ final class BorgArchiveDriver implements ArchiveDriver
         if ($this->sshKeyPath !== null && !is_readable($this->sshKeyPath)) {
             throw new RuntimeException('Der SSH-Key ist unter "' . $this->sshKeyPath . '" nicht lesbar.');
         }
+    }
+
+    // Damit das Trait auch den gleichen ProcessRunner nutzen kann oder auch einen anderen Runner
+    private function processRunner(): ProcessRunner
+    {
+        return $this->process;
     }
 
     /**
@@ -51,25 +63,12 @@ final class BorgArchiveDriver implements ArchiveDriver
 
         $command = array_merge(['borg', 'create'], $this->rshOption(), ['--stats', $target], $paths);
 
-        $process = proc_open(
-            $command,
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            null,
-            ['BORG_PASSPHRASE' => $this->passphrase],
-        );
-
-        if (!is_resource($process)) {
-            throw new RuntimeException('Der Prozess borg konnte nicht gestartet werden.');
-        }
-
-        fclose($pipes[1]);
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
-            throw new RuntimeException('Das Borg-Archiv konnte nicht erstellt werden: ' . trim($errorOutput));
+        $result = $this->process->run($command);
+        
+        if ($result->exitCode !== 0) {
+            throw new RuntimeException(
+                'Das Borg-Archiv konnte nicht erstellt werden: ' . trim($result->errorOutput)
+            );
         }
 
         return new ArchiveInfo($target, 'borg', 'borg');
@@ -88,25 +87,12 @@ final class BorgArchiveDriver implements ArchiveDriver
 
         $command = array_merge(['borg', 'extract'], $this->rshOption(), [$archive->path]);
 
-        $process = proc_open(
-            $command,
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            $destination,
-            ['BORG_PASSPHRASE' => $this->passphrase],
-        );
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase], $destination);
 
-        if (!is_resource($process)) {
-            throw new RuntimeException('Der Prozess borg konnte nicht gestartet werden.');
-        }
-
-        fclose($pipes[1]);
-        $errorOutput = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0) {
-            throw new RuntimeException('Das Borg-Archiv konnte nicht entpackt werden: ' . trim($errorOutput));
+        if ($result->exitCode !== 0) {
+            throw new RuntimeException(
+                'Das Borg-Archiv konnte nicht entpackt werden: ' . trim($result->errorOutput)
+            );
         }
     }
 
@@ -115,21 +101,5 @@ final class BorgArchiveDriver implements ArchiveDriver
         if (!$this->isCommandAvailable('borg')) {
             throw new RuntimeException('Das Programm borg ist nicht verfügbar.');
         }
-    }
-
-    private function isCommandAvailable(string $command): bool
-    {
-        $process = proc_open([$command, '--version'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-
-        if (!is_resource($process)) {
-            return false;
-        }
-
-        stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-        stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-
-        return proc_close($process) === 0;
     }
 }

@@ -15,10 +15,23 @@ final class ValidateArchiveStepTest extends TestCase
     public function testValidatesContextArchive(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
-        $archive = new ArchiveInfo('/tmp/archive.tar.gz', 'tar', 'tar.gz');
-        $context = new RestoreContext($archive, new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'), '/tmp/restore');
 
-        $driver->expects($this->once())->method('validateArchive')->with($archive);
+        $archive = new ArchiveInfo(
+            '/tmp/archive.tar.gz',
+            'tar',
+            'tar.gz'
+        );
+
+        $context = new RestoreContext(
+            $archive,
+            new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'),
+            '/tmp/restore'
+        );
+
+        $driver
+            ->expects($this->once())
+            ->method('validateArchive')
+            ->with($archive);
 
         (new ValidateArchiveStep($driver))->execute($context);
     }
@@ -26,15 +39,36 @@ final class ValidateArchiveStepTest extends TestCase
     public function testValidationExceptionIsPropagated(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
-        $driver->method('validateArchive')->willThrowException(new RuntimeException('invalid archive'));
-        $context = new RestoreContext(new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'), new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'), '/tmp/restore');
 
+        $driver
+            ->expects($this->once())
+            ->method('validateArchive')
+            ->with($this->isInstanceOf(ArchiveInfo::class))
+            ->willThrowException(
+                new RuntimeException('invalid archive')
+            );
+
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'),
+            '/tmp/restore'
+        );
+
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('invalid archive');
+
         (new ValidateArchiveStep($driver))->execute($context);
     }
 
     public function testHasExpectedName(): void
     {
-        $this->assertSame('Archiv valiederen', (new ValidateArchiveStep($this->createMock(ArchiveDriver::class)))->name());
+        $step = new ValidateArchiveStep(
+            $this->createMock(ArchiveDriver::class)
+        );
+
+        $this->assertSame(
+            'Archiv valiederen',
+            $step->name()
+        );
     }
 }

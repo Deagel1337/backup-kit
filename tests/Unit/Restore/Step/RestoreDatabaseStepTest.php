@@ -15,10 +15,23 @@ final class RestoreDatabaseStepTest extends TestCase
     public function testRestoresContextDump(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
-        $dump = new DatabaseDump('/tmp/dump.sql', 'postgres', 'sql');
-        $context = new RestoreContext(new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'), $dump, '/tmp/restore');
 
-        $driver->expects($this->once())->method('restoreDump')->with($dump);
+        $dump = new DatabaseDump(
+            '/tmp/dump.sql',
+            'postgres',
+            'sql'
+        );
+
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            $dump,
+            '/tmp/restore'
+        );
+
+        $driver
+            ->expects($this->once())
+            ->method('restoreDump')
+            ->with($dump);
 
         (new RestoreDatabaseStep($driver))->execute($context);
     }
@@ -26,15 +39,36 @@ final class RestoreDatabaseStepTest extends TestCase
     public function testRestoreExceptionIsPropagated(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
-        $driver->method('restoreDump')->willThrowException(new RuntimeException('restore failed'));
-        $context = new RestoreContext(new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'), new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'), '/tmp/restore');
 
+        $driver
+            ->expects($this->once())
+            ->method('restoreDump')
+            ->with($this->isInstanceOf(DatabaseDump::class))
+            ->willThrowException(
+                new RuntimeException('restore failed')
+            );
+
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump', 'sqlite', 'sqlite'),
+            '/tmp/restore'
+        );
+
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('restore failed');
+
         (new RestoreDatabaseStep($driver))->execute($context);
     }
 
     public function testHasExpectedName(): void
     {
-        $this->assertSame('Datenbank wiederherstellen', (new RestoreDatabaseStep($this->createMock(DatabaseBackupDriver::class)))->name());
+        $step = new RestoreDatabaseStep(
+            $this->createMock(DatabaseBackupDriver::class)
+        );
+
+        $this->assertSame(
+            'Datenbank wiederherstellen',
+            $step->name()
+        );
     }
 }

@@ -59,10 +59,10 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
     public function validateDump(DatabaseDump $dump): void
     {
         if ($dump->driver !== $this->connection->driver) {
-            throw new InvalidDumpDriverException();
+            throw new InvalidDumpDriverException("Der Dump gehört nicht zum SQLite-Treiber.");
         }
 
-        if (strtolower($dump->format) !== 'sql') {
+        if (strtolower($dump->format) !== 'sqlite') {
             throw new InvalidDumpFormatException();
         }
 

@@ -6,12 +6,9 @@ use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
 use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
 use Archive\Model\ArchiveInfo;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
-use Restore\Context\BackupContext;
 use Restore\Model\RestoreContext;
 use Restore\Reporter\ConsoleProgressReporter;
-use Restore\Step\BackupDatabaseStep;
 use Restore\Step\RestoreDatabaseStep;
-use Src\Services\BackupService;
 use Src\Services\RestoreService;
 
 try {

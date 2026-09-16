@@ -8,29 +8,11 @@ use RuntimeException;
 
 final class DatabaseBackupService
 {
-    private static ?self $instance = null;
-
     private bool $backupInProgress = false;
 
     private function __construct(
         private readonly DatabaseBackupDriver $driver
     ) { }
-
-    public static function getInstance(DatabaseBackupDriver $driver): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self($driver);
-        }
-
-        return self::$instance;
-    }
-
-    private function __clone() { }
-
-    public function __wakeup(): void
-    {
-        throw new RuntimeException('Singleton darf nicht deserialisiert werden.');
-    }
 
     public function createDump(?string $backupName = null): DatabaseDump
     {

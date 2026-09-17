@@ -22,5 +22,8 @@
             "name": "Yehor Strakhov",
             "email": "yehor.strakhov@th-nuernberg.de"
         }
-    ]
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.7"
+    }
 }

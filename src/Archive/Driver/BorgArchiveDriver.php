@@ -7,11 +7,13 @@ use Archive\Model\ArchiveInfo;
 use Process\ProcessRunner\ProcessRunner;
 use Process\Runner\ProcOpenProcessRunner;
 use Src\Traits\CommandTrait;
+use Src\Traits\PathTrait;
 use RuntimeException;
 
 final class BorgArchiveDriver implements ArchiveDriver
 {
     use CommandTrait;
+    use PathTrait;
 
     public function __construct(
         private readonly string $repository,
@@ -57,13 +59,51 @@ final class BorgArchiveDriver implements ArchiveDriver
         return ['--rsh', $sshCommand];
     }
 
+    public function listRepositoryBackups(): void
+    {
+        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository]);
+
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
+
+        if($result->successful()) {
+            echo $result->output;
+        }
+
+        if($result->exitCode !== 0) {
+            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim ($result->errorOutput));
+        }
+    }
+
+    public function listArchiveContent(string $backupName): void 
+    {
+        $command = array_merge(['borg list'], $this->rshOption(), [$this->repository, $backupName]);
+
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
+
+        if($result->successful()) {
+            echo $result->output;
+        }
+
+        if($result->exitCode !== 0) {
+            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
+        }
+    }
+
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
+        foreach ($paths as $path) {
+            if (!$this->doesPathExist($path)) {
+                throw new RuntimeException(
+                    "Invalider Pfad entdeckt: {$path}"
+                );
+            }
+        }
+
         $target = $this->repository . '::' . $archiveName;
 
         $command = array_merge(['borg', 'create'], $this->rshOption(), ['--stats', $target], $paths);
 
-        $result = $this->process->run($command);
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
         
         if ($result->exitCode !== 0) {
             throw new RuntimeException(

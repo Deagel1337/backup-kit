@@ -10,11 +10,9 @@ use Restore\Model\RestoreContext;
 use Restore\Reporter\ConsoleProgressReporter;
 use Restore\Step\RestoreDatabaseStep;
 use Src\Services\RestoreService;
-use Restore\Context\BackupContext;
-use Src\Services\BackupService;
-use Restore\Step\BackupDatabaseStep;
 
-try {
+try
+{
     $connection = new DatabaseConnection(
         driver: 'mariadb',
         host: 'localhost',
@@ -28,22 +26,6 @@ try {
 
     $driver = new MariaDbBackupDriver($connection);
 
-    // $backupDestination = $argv[1] ?? 'backup.sql';
-
-    // $backupContext = new BackupContext(
-    //     destination: $backupDestination
-    // );
-
-    // $backupService = new BackupService(
-    //     steps: [
-    //         new BackupDatabaseStep($driver)
-    //     ], 
-    //     progress: $progress
-    // );
-
-    // $backupService->backup($backupContext);
-
-    // 2. Anschließend den Dump wiederherstellen
     $restorePath = $argv[1] ?? 'backup.sql';
     $restoreDump = new DatabaseDump($restorePath, $connection->driver, "sql");
 
@@ -62,9 +44,6 @@ try {
             destination: '',
         )
     );
-
-} catch (Throwable $e) {
-    echo "";
-    fwrite(STDERR, $e->getMessage() . PHP_EOL);
-    exit(1);
+} catch(\Throwable $e) {
+    throw $e;
 }

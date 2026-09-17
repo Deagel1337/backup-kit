@@ -66,6 +66,16 @@ final class TarArchiveDriver implements ArchiveDriver
         }
     }
 
+    public function listContent(): void
+    {
+
+    }
+
+    public function listRemoteContent(): void
+    {
+        
+    }
+
     public function validateRequirements(): void
     {
         if (!$this->isCommandAvailable('tar')) {

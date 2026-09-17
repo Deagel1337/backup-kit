@@ -20,4 +20,14 @@ final class ArchiveService
     {
         $this->driver->extractArchive($archive, $destination);
     }
+
+    public function listArchiveContent(ArchiveInfo $archive): void 
+    {
+        $this->driver->listContent();
+    }
+
+    public function listRemoveArchiveContent(ArchiveInfo $archive): void
+    {
+        $this->driver->listRemoteContent();
+    }
 }

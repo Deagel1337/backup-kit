@@ -89,6 +89,16 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
+    public function listContent(): void
+    {
+
+    }
+
+    public function listRemoteContent(): void
+    {
+        
+    }
+
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
         foreach ($paths as $path) {

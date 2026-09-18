@@ -24,7 +24,8 @@ final class ConsoleProgressReporter implements ProgressReporter
 
     public function stepFailed(int $number, int $total, string $name, Throwable $e): void
     {
-        echo "[{$number}/{$total}] Schritt {$name} Fehlgeschlagen:\n" . $e;
+        echo "[{$number}/{$total}] Schritt {$name} Fehlgeschlagen:\n";
+        echo $e->getMessage();
     }
 
     public function finished(): void

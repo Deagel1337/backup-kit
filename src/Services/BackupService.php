@@ -3,10 +3,11 @@
 namespace Backup\Php\Services;
 
 use Backup\Php\Context\BackupContext;
+use Backup\Php\Services\Interface\BackupServiceInterface;
 use Backup\Php\Step\Runner\StepRunner;
 use Backup\Php\Step\Interface\BackupStep;
 
-final class BackupService 
+final class BackupService implements BackupServiceInterface
 {
     /**
      * Summary of restore

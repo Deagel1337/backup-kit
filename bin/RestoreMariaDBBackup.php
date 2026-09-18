@@ -1,16 +1,16 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Context\RestoreContext;
+use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
+use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Backup\Php\Reporter\ConsoleProgressReporter;
+use Backup\Php\Services\RestoreService;
+use Backup\Php\Step\Restore\RestoreDatabaseStep;
+use Backup\Php\Step\Runner\StepRunner;
 
-use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
-use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
-use Archive\Model\ArchiveInfo;
-use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
-use Restore\Model\RestoreContext;
-use Restore\Reporter\ConsoleProgressReporter;
-use Restore\Runner\StepRunner;
-use Restore\Step\RestoreDatabaseStep;
-use Src\Services\RestoreService;
+require_once __DIR__ . '/../vendor/autoload.php';
 
 try
 {

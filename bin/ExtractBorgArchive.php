@@ -1,13 +1,13 @@
 <?php
 
+use Backup\Php\Archive\Driver\BorgArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Services\ArchiveService;
+use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Archive\Driver\BorgArchiveDriver;
-use Archive\Model\ArchiveInfo;
-use Archive\Service\ArchiveService;
-
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
 try {

@@ -15,7 +15,7 @@ final class ValidateBackupContextStep implements BackupStep
     
     public function name(): string
     {
-        return "Validiere den Context für das Erstellen eines Dumps einer Datenbank";
+        return "Validiere den Context für das Erstellen eines Dumps einer Datenbank\n";
     }
 
     public function execute(BackupContext $context): void

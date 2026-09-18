@@ -7,6 +7,7 @@ use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
 use Restore\Reporter\ConsoleProgressReporter;
 use Restore\Context\BackupContext;
 use Restore\Step\BackupDatabaseStep;
+use Restore\Runner\StepRunner;
 use Src\Services\BackupService;
 
 try
@@ -21,11 +22,9 @@ try
     );
 
     $progress = new ConsoleProgressReporter();
-
+    $runner = new StepRunner($progress);
     $driver = new MariaDbBackupDriver($connection);
-
     $backupDestination = $argv[1] ?? 'backup.sql';
-
     $backupContext = new BackupContext(
         destination: $backupDestination
     );
@@ -34,7 +33,7 @@ try
         steps: [
             new BackupDatabaseStep($driver)
         ], 
-        progress: $progress
+        runner: $runner,
     );
 
     $backupService->backup($backupContext);

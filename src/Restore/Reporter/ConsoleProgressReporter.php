@@ -3,6 +3,7 @@
 namespace Restore\Reporter;
 
 use Restore\Interfaces\ProgressReporter;
+use Throwable;
 
 final class ConsoleProgressReporter implements ProgressReporter
 {
@@ -19,6 +20,11 @@ final class ConsoleProgressReporter implements ProgressReporter
     public function stepFinished(int $number, int $total, string $name): void
     {
         echo "OK\n";
+    }
+
+    public function stepFailed(int $number, int $total, string $name, Throwable $e): void
+    {
+        echo "[{$number}/{$total}] Schritt {$name} Fehlgeschlagen:\n" . $e;
     }
 
     public function finished(): void

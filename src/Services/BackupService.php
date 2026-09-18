@@ -3,41 +3,27 @@
 namespace Src\Services;
 
 use Restore\Context\BackupContext;
-use Restore\Interfaces\ProgressReporter;
+use Restore\Interfaces\BackupStep;
+use Restore\Runner\StepRunner;
 
 final class BackupService 
 {
+    /**
+     * Summary of restore
+     * @param array<BackupStep> $steps
+     */
     public function __construct(
         private readonly array $steps,
-        private readonly ProgressReporter $progress,
+        private readonly StepRunner $runner,
     )
     {}
 
     public function backup(BackupContext $context): void
     {
-        $total = count($this->steps);
-
-        $this->progress->started($total);
-
-        foreach($this->steps as $index => $step) {
-            $number = $index + 1;
-            $name = $step->name();
-
-            $this->progress->stepStarted(
-                $number,
-                $total,
-                $name
-            );
-
-            $step->execute($context);
-
-            $this->progress->stepFinished(
-                $number,
-                $total,
-                $name
-            );
-        }
-
-        $this->progress->finished();
+        $this->runner->run(
+            $this->steps,
+            $context,
+            static fn (BackupStep $step, BackupContext $context) => $step->execute(($context),)
+        );
     }
 }

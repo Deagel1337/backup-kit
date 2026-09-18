@@ -7,6 +7,7 @@ use Restore\Context\BackupContext;
 use Restore\Interfaces\BackupStep;
 use Restore\Interfaces\ProgressReporter;
 use Src\Services\BackupService;
+use Restore\Runner\StepRunner;
 use RuntimeException;
 
 final class BackupServiceTest extends TestCase
@@ -14,7 +15,7 @@ final class BackupServiceTest extends TestCase
     public function testRunsAllStepsInOrder(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
-
+        $runner = new StepRunner($progress);
         $step1 = $this->createMock(BackupStep::class);
         $step2 = $this->createMock(BackupStep::class);
 
@@ -85,7 +86,7 @@ final class BackupServiceTest extends TestCase
 
         $service = new BackupService(
             [$step1, $step2],
-            $progress
+            $runner
         );
 
         $service->backup($context);
@@ -106,7 +107,7 @@ final class BackupServiceTest extends TestCase
     public function testStartsProgressWithCorrectNumberOfSteps(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
-
+        $runner = new StepRunner($progress);
         $step1 = $this->createMock(BackupStep::class);
         $step2 = $this->createMock(BackupStep::class);
         $step3 = $this->createMock(BackupStep::class);
@@ -136,7 +137,7 @@ final class BackupServiceTest extends TestCase
 
         $service = new BackupService(
             [$step1, $step2, $step3],
-            $progress
+            $runner
         );
 
         $service->backup(
@@ -147,6 +148,7 @@ final class BackupServiceTest extends TestCase
     public function testReportsStepNumberTotalAndName(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
+        $runner = new StepRunner($progress);
         $step = $this->createMock(BackupStep::class);
 
         $context = new BackupContext('/tmp/backup');
@@ -190,7 +192,7 @@ final class BackupServiceTest extends TestCase
 
         $service = new BackupService(
             [$step],
-            $progress
+            $runner,
         );
 
         $service->backup($context);
@@ -199,7 +201,7 @@ final class BackupServiceTest extends TestCase
     public function testStopsWhenStepFails(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
-
+        $runner = new StepRunner($progress);
         $step1 = $this->createMock(BackupStep::class);
         $step2 = $this->createMock(BackupStep::class);
 
@@ -248,7 +250,7 @@ final class BackupServiceTest extends TestCase
 
         $service = new BackupService(
             [$step1, $step2],
-            $progress
+            $runner,
         );
 
         $this->expectException(RuntimeException::class);
@@ -262,6 +264,7 @@ final class BackupServiceTest extends TestCase
     public function testCanRunWithoutSteps(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
+        $runner = new StepRunner($progress);
 
         $progress
             ->expects($this->once())
@@ -282,7 +285,7 @@ final class BackupServiceTest extends TestCase
 
         $service = new BackupService(
             [],
-            $progress
+            $runner
         );
 
         $service->backup(

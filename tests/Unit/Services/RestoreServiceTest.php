@@ -8,17 +8,31 @@ use PHPUnit\Framework\TestCase;
 use Restore\Interfaces\ProgressReporter;
 use Restore\Interfaces\RestoreStep;
 use Restore\Model\RestoreContext;
+use Restore\Runner\StepRunner;
 use Src\Services\RestoreService;
 use RuntimeException;
 
 final class RestoreServiceTest extends TestCase
 {
-    public function testRunsAllStepsInOrder(): void
+    private function createRestoreService(array $steps): array
     {
         $progress = $this->createMock(ProgressReporter::class);
+        $runner = new StepRunner($progress);
 
+        return [
+            'progress' => $progress,
+            'service' => new RestoreService($steps, $runner),
+        ];
+    }
+
+    public function testRunsAllStepsInOrder(): void
+    {
         $step1 = $this->createMock(RestoreStep::class);
         $step2 = $this->createMock(RestoreStep::class);
+        
+        $setup = $this->createRestoreService([$step1, $step2]);
+        $progress = $setup['progress'];
+        $service = $setup['service'];
 
         $context = new RestoreContext(
             new ArchiveInfo(
@@ -97,10 +111,6 @@ final class RestoreServiceTest extends TestCase
             ->expects($this->once())
             ->method('finished');
 
-        $service = new RestoreService(
-            [$step1, $step2],
-            $progress
-        );
 
         $service->restore($context);
 
@@ -119,11 +129,13 @@ final class RestoreServiceTest extends TestCase
 
     public function testStartsProgressWithCorrectNumberOfSteps(): void
     {
-        $progress = $this->createMock(ProgressReporter::class);
-
         $step1 = $this->createMock(RestoreStep::class);
         $step2 = $this->createMock(RestoreStep::class);
         $step3 = $this->createMock(RestoreStep::class);
+        
+        $setup = $this->createRestoreService([$step1, $step2, $step3]);
+        $progress = $setup['progress'];
+        $service = $setup['service'];
 
         $step1
             ->method('name')
@@ -164,11 +176,6 @@ final class RestoreServiceTest extends TestCase
             ->expects($this->once())
             ->method('finished');
 
-        $service = new RestoreService(
-            [$step1, $step2, $step3],
-            $progress
-        );
-
         $service->restore(
             new RestoreContext(
                 new ArchiveInfo(
@@ -188,8 +195,12 @@ final class RestoreServiceTest extends TestCase
 
     public function testReportsStepNumberTotalAndName(): void
     {
-        $progress = $this->createMock(ProgressReporter::class);
         $step = $this->createMock(RestoreStep::class);
+
+        
+        $setup = $this->createRestoreService([$step]);
+        $progress = $setup['progress'];
+        $service = $setup['service'];
 
         $context = new RestoreContext(
             new ArchiveInfo(
@@ -242,20 +253,18 @@ final class RestoreServiceTest extends TestCase
             ->expects($this->once())
             ->method('finished');
 
-        $service = new RestoreService(
-            [$step],
-            $progress
-        );
-
         $service->restore($context);
     }
 
     public function testStopsWhenStepFails(): void
     {
-        $progress = $this->createMock(ProgressReporter::class);
-
         $step1 = $this->createMock(RestoreStep::class);
         $step2 = $this->createMock(RestoreStep::class);
+
+        
+        $setup = $this->createRestoreService([$step1, $step2]);
+        $progress = $setup['progress'];
+        $service = $setup['service'];
 
         $step1
             ->expects($this->once())
@@ -301,11 +310,6 @@ final class RestoreServiceTest extends TestCase
             ->expects($this->never())
             ->method('finished');
 
-        $service = new RestoreService(
-            [$step1, $step2],
-            $progress
-        );
-
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Restore failed');
 
@@ -328,8 +332,10 @@ final class RestoreServiceTest extends TestCase
 
     public function testCanRunWithoutSteps(): void
     {
-        $progress = $this->createMock(ProgressReporter::class);
 
+        $setup = $this->createRestoreService([]);
+        $progress = $setup['progress'];
+        $service = $setup['service'];
         $progress
             ->expects($this->once())
             ->method('started')
@@ -346,11 +352,6 @@ final class RestoreServiceTest extends TestCase
         $progress
             ->expects($this->once())
             ->method('finished');
-
-        $service = new RestoreService(
-            [],
-            $progress
-        );
 
         $service->restore(
             new RestoreContext(

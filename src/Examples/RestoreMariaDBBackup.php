@@ -8,6 +8,7 @@ use Archive\Model\ArchiveInfo;
 use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
 use Restore\Model\RestoreContext;
 use Restore\Reporter\ConsoleProgressReporter;
+use Restore\Runner\StepRunner;
 use Restore\Step\RestoreDatabaseStep;
 use Src\Services\RestoreService;
 
@@ -23,7 +24,7 @@ try
     );
 
     $progress = new ConsoleProgressReporter();
-
+    $runner = new StepRunner($progress);
     $driver = new MariaDbBackupDriver($connection);
 
     $restorePath = $argv[1] ?? 'backup.sql';
@@ -33,7 +34,7 @@ try
         steps: [
             new RestoreDatabaseStep($driver),
         ],
-        progress: $progress
+        runner: $runner,
     );
     
 

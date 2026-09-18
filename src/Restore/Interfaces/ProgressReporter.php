@@ -2,6 +2,8 @@
 
 namespace Restore\Interfaces;
 
+use Throwable;
+
 interface ProgressReporter
 {
     public function started(int $total): void;
@@ -15,6 +17,13 @@ interface ProgressReporter
         int $number,
         int $total,
         string $name
+    ): void;
+
+    public function stepFailed(
+        int $number,
+        int $total,
+        string $name,
+        Throwable $e,
     ): void;
 
     public function finished(): void;

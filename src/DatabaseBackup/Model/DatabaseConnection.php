@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseBackup\Model\DatabaseConnection;
+namespace Backup\Php\DatabaseBackup\Model;
 
 final class DatabaseConnection
 {

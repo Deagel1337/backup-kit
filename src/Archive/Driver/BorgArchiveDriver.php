@@ -1,13 +1,13 @@
 <?php
 
-namespace Archive\Driver;
+namespace Backup\Php\Archive\Driver;
 
-use Archive\Driver\ArchiveDriver;
-use Archive\Model\ArchiveInfo;
-use Process\ProcessRunner\ProcessRunner;
-use Process\Runner\ProcOpenProcessRunner;
-use Src\Traits\CommandTrait;
-use Src\Traits\PathTrait;
+use Backup\Php\Archive\Interfaces\ArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Runner\ProcOpenProcessRunner;
+use Backup\Php\Traits\CommandTrait;
+use Backup\Php\Traits\PathTrait;
 use RuntimeException;
 
 final class BorgArchiveDriver implements ArchiveDriver
@@ -32,7 +32,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     // Damit das Trait auch den gleichen ProcessRunner nutzen kann oder auch einen anderen Runner
-    private function processRunner(): ProcessRunner
+    protected function processRunner(): ProcessRunner
     {
         return $this->process;
     }

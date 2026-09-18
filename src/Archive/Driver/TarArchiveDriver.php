@@ -1,12 +1,12 @@
 <?php
 
-namespace Archive\Driver\TarArchiveDriver;
+namespace Backup\Php\Archive\Driver;
 
-use Archive\Driver\ArchiveDriver;
-use Archive\Model\ArchiveInfo;
-use Process\ProcessRunner\ProcessRunner;
-use Process\Runner\ProcOpenProcessRunner;
-use Src\Traits\CommandTrait;
+use Backup\Php\Archive\Interfaces\ArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Runner\ProcOpenProcessRunner;
+use Backup\Php\Traits\CommandTrait;
 use RuntimeException;
 
 final class TarArchiveDriver implements ArchiveDriver
@@ -18,7 +18,7 @@ final class TarArchiveDriver implements ArchiveDriver
     )
     {}
 
-    private function processRunner(): ProcessRunner
+    protected function processRunner(): ProcessRunner
     {
         return $this->process;
     }

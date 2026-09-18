@@ -1,8 +1,8 @@
 <?php
 
-namespace Process\ProcessRunner;
+namespace Backup\Php\Process\Interface;
 
-use Process\Model\ProcessResult;
+use Backup\Php\Process\Model\ProcessResult;
 
 interface ProcessRunner
 {

@@ -1,19 +1,20 @@
 <?php
 
-namespace Tests\DatabaseBackup\Driver;
+namespace Tests\Unit\DatabaseBackup;
 
-use DatabaseBackup\Driver\MariaDbDriver\MariaDbBackupDriver;
-use DatabaseBackup\Exception\DumpNotFoundException;
-use DatabaseBackup\Exception\DumpNotReadableException;
-use DatabaseBackup\Exception\EmptyDumpException;
-use DatabaseBackup\Exception\InvalidDumpDriverException;
-use DatabaseBackup\Exception\InvalidDumpFormatException;
-use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
-use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
+use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
+use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
+use Backup\Php\Exception\DumpDriverException\InvalidDumpDriverException;
+use Backup\Php\Exception\DumpDriverException\InvalidDumpFormatException;
+use Backup\Php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Model\ProcessResult;
 use PHPUnit\Framework\TestCase;
-use Process\Model\ProcessResult;
-use Process\ProcessRunner\ProcessRunner;
 use RuntimeException;
+
+
 
 final class MariaDbBackupDriverTest extends TestCase
 {
@@ -226,7 +227,9 @@ final class MariaDbBackupDriverTest extends TestCase
             $this->driver($process)->createDump();
         } finally {
             $this->assertNotNull($outputFile);
-            $this->assertFileDoesNotExist($outputFile);
+            if($outputFile !== null) {
+                $this->assertFileDoesNotExist($outputFile);
+            }
         }
     }
 

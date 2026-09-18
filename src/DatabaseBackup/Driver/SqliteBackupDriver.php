@@ -1,19 +1,22 @@
 <?php
 
-namespace DatabaseBackup\Driver\SqliteBackupDriver;
+namespace Backup\Php\DatabaseBackup\Driver;
 
-use DatabaseBackup\Driver\DatabaseBackupDriver;
-use DatabaseBackup\Model\DatabaseConnection\DatabaseConnection;
-use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
-use DatabaseBackup\Exception\EmptyDumpException;
-use DatabaseBackup\Exception\InvalidDumpFormatException;
-use DatabaseBackup\Exception\InvalidDumpDriverException;
-use DatabaseBackup\Exception\DumpNotReadableException;
-use DatabaseBackup\Exception\DumpNotFoundException;
-use Process\ProcessRunner\ProcessRunner;
-use Process\Runner\ProcOpenProcessRunner;
+use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
+use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
+use Backup\Php\Exception\DumpDriverException\DumpNotReadableException;
+use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
+use Backup\Php\Exception\DumpDriverException\InvalidDumpDriverException;
+use Backup\Php\Exception\DumpDriverException\InvalidDumpFormatException;
+use Backup\Php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Runner\ProcOpenProcessRunner;
+use Backup\Php\Traits\CommandTrait;
 use RuntimeException;
-use Src\Traits\CommandTrait;
+
+
+
 
 final class SqliteBackupDriver implements DatabaseBackupDriver 
 {
@@ -24,7 +27,7 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
         private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
     ) { }
 
-    private function processRunner(): ProcessRunner
+    protected function processRunner(): ProcessRunner
     {
         return $this->process;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace DatabaseBackup\Exception;
+namespace Backup\Php\Exception\DumpDriverException;
 
 use RuntimeException;
 

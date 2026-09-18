@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\Services;
+namespace Tests\Unit\Services;
 
-use Archive\Model\ArchiveInfo;
-use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Context\RestoreContext;
+use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Backup\Php\Reporter\Interface\ProgressReporter;
+use Backup\Php\Services\RestoreService;
+use Backup\Php\Step\Interface\RestoreStep;
+use Backup\Php\Step\Runner\StepRunner;
 use PHPUnit\Framework\TestCase;
-use Restore\Interfaces\ProgressReporter;
-use Restore\Interfaces\RestoreStep;
-use Restore\Model\RestoreContext;
-use Restore\Runner\StepRunner;
-use Src\Services\RestoreService;
 use RuntimeException;
 
 final class RestoreServiceTest extends TestCase

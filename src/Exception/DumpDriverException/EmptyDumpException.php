@@ -1,8 +1,9 @@
 <?php
 
-namespace DatabaseBackup\Exception;
+namespace Backup\Php\Exception\DumpDriverException;
 
-use DatabaseBackup\Exception\InvalidDumpException;
+use Backup\Php\Exception\DumpDriverException\InvalidDumpException;
+
 
 
 final class EmptyDumpException extends InvalidDumpException

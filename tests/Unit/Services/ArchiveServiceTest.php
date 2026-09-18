@@ -1,12 +1,13 @@
 <?php
 
-namespace Tests\Services;
+namespace Tests\Unit\Services;
 
-use Archive\Driver\ArchiveDriver;
-use Archive\Model\ArchiveInfo;
-use Archive\Service\ArchiveService;
+use Backup\Php\Archive\Interfaces\ArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Services\ArchiveService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+
 
 final class ArchiveServiceTest extends TestCase
 {

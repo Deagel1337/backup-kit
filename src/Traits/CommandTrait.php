@@ -1,8 +1,8 @@
 <?php
 
-namespace Src\Traits;
+namespace Backup\Php\Traits;
 
-use Process\ProcessRunner\ProcessRunner;
+use Backup\php\Process\Interface\ProcessRunner;
 
 trait CommandTrait
 {

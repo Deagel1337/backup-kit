@@ -1,11 +1,13 @@
 <?php
 
-namespace Tests\Archive\Driver;
+namespace Tests\Unit\Archive;
 
-use Archive\Driver\BorgArchiveDriver;
-use Archive\Model\ArchiveInfo;
+use Backup\Php\Archive\Driver\BorgArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+
+
 
 final class BorgArchiveDriverTest extends TestCase
 {

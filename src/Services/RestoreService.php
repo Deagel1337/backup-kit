@@ -1,11 +1,10 @@
 <?php
 
-namespace Src\Services;
+namespace Backup\Php\Services;
 
-use Restore\Model\RestoreContext;
-use Restore\Interfaces\ProgressReporter;
-use Restore\Interfaces\RestoreStep;
-use Restore\Runner\StepRunner;
+use Backup\Php\Context\RestoreContext;
+use Backup\Php\Step\Runner\StepRunner;
+use Backup\Php\Step\Interface\RestoreStep;
 
 final class RestoreService
 {

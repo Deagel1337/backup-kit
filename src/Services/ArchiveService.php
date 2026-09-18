@@ -1,9 +1,9 @@
 <?php
 
-namespace Archive\Service;
+namespace Backup\Php\Services;
 
-use Archive\Driver\ArchiveDriver;
-use Archive\Model\ArchiveInfo;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Archive\Interfaces\ArchiveDriver;
 
 final class ArchiveService
 {

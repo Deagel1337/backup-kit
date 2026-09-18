@@ -1,10 +1,8 @@
 <?php
 
-namespace DatabaseBackup\Model\DatabaseDump;
+namespace Backup\Php\DatabaseBackup\Model;
 
-use DatabaseBackup\Exception\EmptyDumpException;
-use RuntimeException;
-
+use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
 // Ein Datenmodell, der Informationen über das Backup haben soll
 final readonly class DatabaseDump
 {

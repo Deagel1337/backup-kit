@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Traits;
+namespace Backup\Php\Traits;
 
 trait HumanReadableTrait
 {

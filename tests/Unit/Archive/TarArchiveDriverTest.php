@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Archive\Driver;
+namespace Tests\Unit\Archive;
 
-use Archive\Driver\TarArchiveDriver\TarArchiveDriver;
-use Archive\Model\ArchiveInfo;
+use Backup\Php\Archive\Driver\TarArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

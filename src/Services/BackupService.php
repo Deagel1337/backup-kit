@@ -1,10 +1,10 @@
 <?php
 
-namespace Src\Services;
+namespace Backup\Php\Services;
 
-use Restore\Context\BackupContext;
-use Restore\Interfaces\BackupStep;
-use Restore\Runner\StepRunner;
+use Backup\Php\Context\BackupContext;
+use Backup\Php\Step\Runner\StepRunner;
+use Backup\Php\Step\Interface\BackupStep;
 
 final class BackupService 
 {

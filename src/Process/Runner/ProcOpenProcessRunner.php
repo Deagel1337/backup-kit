@@ -1,9 +1,10 @@
 <?php
 
-namespace Process\Runner;
+namespace Backup\Php\Process\Runner;
 
-use Process\ProcessRunner\ProcessRunner;
-use Process\Model\ProcessResult;
+
+use Backup\Php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Model\ProcessResult;
 use RuntimeException;
 
 final class ProcOpenProcessRunner implements ProcessRunner

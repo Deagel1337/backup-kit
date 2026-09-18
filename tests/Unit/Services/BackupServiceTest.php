@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Services;
+namespace Tests\Unit\Services;
 
+use Backup\Php\Context\BackupContext;
+use Backup\Php\Reporter\Interface\ProgressReporter;
+use Backup\Php\Services\BackupService;
+use Backup\Php\Step\Interface\BackupStep;
+use Backup\Php\Step\Runner\StepRunner;
 use PHPUnit\Framework\TestCase;
-use Restore\Context\BackupContext;
-use Restore\Interfaces\BackupStep;
-use Restore\Interfaces\ProgressReporter;
-use Src\Services\BackupService;
-use Restore\Runner\StepRunner;
 use RuntimeException;
 
 final class BackupServiceTest extends TestCase

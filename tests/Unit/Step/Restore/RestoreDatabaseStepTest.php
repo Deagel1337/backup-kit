@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Restore\Step;
+namespace Tests\Unit\Step\Restore;
 
 use Backup\Php\Archive\Model\ArchiveInfo;
 use Backup\Php\Context\RestoreContext;

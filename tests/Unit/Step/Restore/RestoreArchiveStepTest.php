@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Step;
+namespace Tests\Unit\Step\Restore;
 
 use Backup\Php\Archive\Interfaces\ArchiveDriver;
 use Backup\Php\Archive\Model\ArchiveInfo;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Step;
+namespace Tests\Unit\Step\Backup;
 
 use Backup\Php\Context\BackupContext;
 use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;

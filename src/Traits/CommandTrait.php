@@ -2,7 +2,7 @@
 
 namespace Backup\Php\Traits;
 
-use Backup\php\Process\Interface\ProcessRunner;
+use Backup\Php\Process\Interface\ProcessRunner;
 
 trait CommandTrait
 {

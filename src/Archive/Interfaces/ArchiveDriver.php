@@ -12,9 +12,7 @@ interface ArchiveDriver
 
     public function extractArchive(ArchiveInfo $archive, string $destination): void;
 
-    public function listContent(): void;
-
-    public function listRemoteContent(): void;
+    public function listContent(ArchiveInfo $archive): void;
 
     public function validateRequirements(): void;
 }

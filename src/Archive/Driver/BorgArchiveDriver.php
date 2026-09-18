@@ -76,7 +76,7 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     public function listArchiveContent(string $backupName): void 
     {
-        $command = array_merge(['borg list'], $this->rshOption(), [$this->repository, $backupName]);
+        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository, $backupName]);
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
@@ -89,14 +89,19 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function listContent(): void
+    public function listContent(ArchiveInfo $archive): void
     {
+        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository, $archive->path]);
 
-    }
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-    public function listRemoteContent(): void
-    {
-        
+        if($result->successful()) {
+            echo $result->output;
+        }
+
+        if($result->exitCode !== 0) {
+            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
+        }
     }
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo

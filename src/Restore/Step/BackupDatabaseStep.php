@@ -3,7 +3,6 @@
 namespace Restore\Step;
 
 use DatabaseBackup\Driver\DatabaseBackupDriver;
-use DatabaseBackup\Model\DatabaseDump\DatabaseDump;
 use Restore\Context\BackupContext;
 use Restore\Interfaces\BackupStep;
 

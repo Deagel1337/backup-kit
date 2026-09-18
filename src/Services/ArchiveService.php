@@ -23,11 +23,6 @@ final class ArchiveService
 
     public function listArchiveContent(ArchiveInfo $archive): void 
     {
-        $this->driver->listContent();
-    }
-
-    public function listRemoveArchiveContent(ArchiveInfo $archive): void
-    {
-        $this->driver->listRemoteContent();
+        $this->driver->listContent($archive);
     }
 }

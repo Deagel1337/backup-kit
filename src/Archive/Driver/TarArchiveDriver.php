@@ -66,14 +66,19 @@ final class TarArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function listContent(): void
+    public function listContent(ArchiveInfo $archive): void
     {
+        $this->validateArchive($archive);
 
-    }
+        $command = ['tar', '-ztvf', $archive->path];
 
-    public function listRemoteContent(): void
-    {
-        
+        $result = $this->process->run($command);
+
+        if($result->exitCode !== 0) {
+            throw new RuntimeException(
+                'Das Tar-Archiv konnte nicht gezeigt werden.'
+            );
+        }
     }
 
     public function validateRequirements(): void

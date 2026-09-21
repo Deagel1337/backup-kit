@@ -82,7 +82,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
 
         $this->assertSame(
             $dump,
-            $context->dump
+            $context->rollbackDump
         );
     }
 

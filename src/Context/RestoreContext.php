@@ -11,6 +11,7 @@ final class RestoreContext
         public ArchiveInfo $archive,
         public DatabaseDump $dump,
         public string $destination,
+        public ?DatabaseDump $rollbackDump = null,
     )
     {}
 }

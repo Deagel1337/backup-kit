@@ -2,12 +2,9 @@
 
 use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\Reporter\ConsoleProgressReporter;
-use Backup\Php\Services\BackupService;
 use Backup\Php\Step\Backup\BackupDatabaseStep;
 use Backup\Php\Step\Backup\CheckDiskSpaceStep;
 use Backup\Php\Step\Backup\ShowBackupContextStep;
-use Backup\Php\Step\Runner\StepRunner;
 use Backup\Php\Application\BackupMariaDbApplication;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -23,19 +20,12 @@ $connection = new DatabaseConnection(
 
 $driver = new MariaDbBackupDriver($connection);
 
-$progress = new ConsoleProgressReporter();
+$steps = [
+    new CheckDiskSpaceStep(),
+    new BackupDatabaseStep($driver),
+    new ShowBackupContextStep(),
+];
 
-$runner = new StepRunner($progress);
-
-$service = new BackupService(
-    steps: [
-        new CheckDiskSpaceStep(),
-        new BackupDatabaseStep($driver),
-        new ShowBackupContextStep(),
-    ],
-    runner: $runner,
-);
-
-$application = new BackupMariaDbApplication($service);
+$application = BackupMariaDbApplication::create(steps: $steps);
 
 $application->run($argv[1] ?? 'backup.sql');

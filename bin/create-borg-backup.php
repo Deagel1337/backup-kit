@@ -1,6 +1,6 @@
 <?php
 
-use Backup\Php\Application\Backup\CreateBorgBackupApplication;
+use Backup\Php\Application\Archive\CreateBorgBackupApplication;
 use Backup\Php\Archive\Driver\BorgArchiveDriver;
 use Dotenv\Dotenv;
 

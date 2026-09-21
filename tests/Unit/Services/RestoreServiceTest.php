@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use Backup\Php\Archive\Model\ArchiveInfo;
 use Backup\Php\Context\RestoreContext;
+use Backup\Php\Step\Restore\Rollback\RestoreRollbackHandler;
 use Backup\Php\DatabaseBackup\Model\DatabaseDump;
 use Backup\Php\Reporter\Interface\ProgressReporter;
 use Backup\Php\Services\RestoreService;
@@ -18,10 +19,14 @@ final class RestoreServiceTest extends TestCase
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
+        $rollback = $this->createMock(RestoreRollbackhandler::class);
 
         return [
             'progress' => $progress,
-            'service' => new RestoreService($steps, $runner),
+            'service' => new RestoreService(
+                steps: $steps, 
+                runner: $runner,
+                rollback: $rollback),
         ];
     }
 

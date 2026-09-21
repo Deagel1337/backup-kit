@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Application\Backup;
+namespace Backup\Php\Application\Archive;
 
 use Backup\Php\Archive\Interfaces\ArchiveDriver;
 use Backup\Php\Archive\Model\ArchiveInfo;

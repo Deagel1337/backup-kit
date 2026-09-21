@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\DatabaseBackup;
+namespace Tests\Unit\DatabaseBackup\Driver;
 
 use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
@@ -13,8 +13,6 @@ use Backup\Php\Process\Interface\ProcessRunner;
 use Backup\Php\Process\Model\ProcessResult;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-
-
 
 final class MariaDbBackupDriverTest extends TestCase
 {

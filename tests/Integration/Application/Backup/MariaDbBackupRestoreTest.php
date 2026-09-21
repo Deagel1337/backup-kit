@@ -58,7 +58,7 @@ final class MariaDbBackupRestoreTest extends TestCase
 
         $this->database->importFixture(
             $this->sourceConnection->database,
-            __DIR__ . '/../../Fixtures/database/source.sql'
+            __DIR__ . '/../../../Fixtures/database/source.sql'
         );
     }
 
@@ -185,7 +185,7 @@ final class MariaDbBackupRestoreTest extends TestCase
          */
         $this->database->importFixture(
             $this->targetConnection->database,
-            __DIR__ . '/../../Fixtures/database/source.sql'
+            __DIR__ . '/../../../Fixtures/database/source.sql'
         );
 
         $originalUsers = $this->database->fetchTableData(

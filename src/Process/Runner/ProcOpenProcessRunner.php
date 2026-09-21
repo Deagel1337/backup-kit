@@ -15,7 +15,8 @@ final class ProcOpenProcessRunner implements ProcessRunner
         ?string $workingDirectory = null,
         ?string $outputFile = null,
         ?string $inputFile = null
-    ): ProcessResult {
+    ): ProcessResult 
+    {
         $stdout = $outputFile !== null
             ? ['file', $outputFile, 'w']
             : ['pipe', 'w'];

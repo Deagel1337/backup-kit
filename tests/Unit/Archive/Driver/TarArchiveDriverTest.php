@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Archive;
+namespace Tests\Unit\Archive\Driver;
 
 use Backup\Php\Archive\Driver\TarArchiveDriver;
 use Backup\Php\Archive\Model\ArchiveInfo;

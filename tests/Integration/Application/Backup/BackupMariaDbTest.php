@@ -39,7 +39,7 @@ final class BackupMariaDbTest extends TestCase
 
         $this->database->importFixture(
             $this->sourceConnection->database,
-            __DIR__ . '/../../Fixtures/database/source.sql'
+            __DIR__ . '/../../../Fixtures/database/source.sql'
         );
     }
 

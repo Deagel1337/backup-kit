@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Archive;
+namespace Tests\Unit\Archive\Driver;
 
 use Backup\Php\Archive\Driver\BorgArchiveDriver;
 use Backup\Php\Archive\Model\ArchiveInfo;

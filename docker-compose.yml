@@ -1,0 +1,12 @@
+services:
+  mariadb-test:
+    image: mariadb:11 
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_test_data:/var/lib/mysql
+
+volumes:
+  mariadb_test_data:

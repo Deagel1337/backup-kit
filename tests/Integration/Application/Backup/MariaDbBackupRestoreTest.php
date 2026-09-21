@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Integration\Application;
+namespace Tests\Integration\Application\Backup;
 
 use Backup\Php\Application\BackupMariaDbApplication;
 use Backup\Php\Application\Restore\RestoreMariaDbApplication;

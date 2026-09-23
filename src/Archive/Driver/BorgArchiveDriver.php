@@ -89,9 +89,13 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function listContent(ArchiveInfo $archive): void
+    public function listContent(ArchiveInfo $archive): string
     {
-        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository, $archive->path]);
+        $command = array_merge(['borg', 'list', '--format','{archive}{NL}'], $this->rshOption(), [$this->repository, $archive->path]);
+
+        if ($archive->path !== '') {
+            $command[] = $archive->path;
+        }
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
@@ -102,6 +106,8 @@ final class BorgArchiveDriver implements ArchiveDriver
         if($result->exitCode !== 0) {
             throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
         }
+
+        return $result->output;
     }
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
@@ -136,17 +142,41 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function extractArchive(ArchiveInfo $archive, string $destination): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+    ): void {
         $this->validateArchive($archive);
 
-        $command = array_merge(['borg', 'extract'], $this->rshOption(), [$archive->path]);
+        if (!is_dir($destination)) {
+            if (!mkdir($destination, 0775, true)
+                && !is_dir($destination)
+            ) {
+                throw new RuntimeException(
+                    'Restore-Ziel konnte nicht erstellt werden: '
+                    . $destination
+                );
+            }
+        }
 
-        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase], $destination);
+        $command = [
+            'borg',
+            'extract',
+            ...$this->rshOption(),
+            $archive->path,
+        ];
+
+        $result = $this->process->run(
+            $command,
+            [
+                'BORG_PASSPHRASE' => $this->passphrase,
+            ],
+        );
 
         if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das Borg-Archiv konnte nicht entpackt werden: ' . trim($result->errorOutput)
+                'Borg Restore fehlgeschlagen: '
+                . trim($result->errorOutput)
             );
         }
     }
@@ -155,6 +185,16 @@ final class BorgArchiveDriver implements ArchiveDriver
     {
         if (!$this->isCommandAvailable('borg')) {
             throw new RuntimeException('Das Programm borg ist nicht verfügbar.');
+        }
+
+        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository]);
+
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
+
+        if($result->exitCode !== 0) {
+            throw new RuntimeException(
+                'Das Borg-Repository konnte nicht erreicht werden: ' . trim($result->errorOutput)
+            );
         }
     }
 }

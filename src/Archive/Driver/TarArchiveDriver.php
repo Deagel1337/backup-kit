@@ -66,7 +66,7 @@ final class TarArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function listContent(ArchiveInfo $archive): void
+    public function listContent(ArchiveInfo $archive): string
     {
         $this->validateArchive($archive);
 
@@ -79,6 +79,8 @@ final class TarArchiveDriver implements ArchiveDriver
                 'Das Tar-Archiv konnte nicht gezeigt werden.'
             );
         }
+
+        return $result->output;
     }
 
     public function validateRequirements(): void

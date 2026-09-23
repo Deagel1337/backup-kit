@@ -1,0 +1,57 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Backup\Php\Application\Archive\ArchiveApplication;
+use Backup\Php\Archive\Driver\BorgArchiveDriver;
+use Backup\Php\Archive\Model\ArchiveInfo;
+use Backup\Php\Console\Application;
+use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
+use Backup\Php\Services\ArchiveService;
+use Dotenv\Dotenv;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../src');
+$dotenv->load();
+
+$repository = $_ENV['BORG_REPOSITORY'] ?? '';
+
+$driver = new BorgArchiveDriver(
+    repository: $repository,
+    passphrase: $_ENV['BORG_PASSPHRASE'] ?? '',
+    sshPort: (int) ($_ENV['BORG_SSH_PORT'] ?? 22),
+);
+
+$archiveApplication = new ArchiveApplication(
+    new ArchiveService($driver),
+);
+
+$repositoryInfo = new ArchiveInfo(
+    path: $repository,
+    driver: 'borg',
+    format: 'borg',
+);
+
+$connection = new DatabaseConnection(
+    driver: 'mariadb',
+    host: 'localhost',
+    port: 6033,
+    database: 'dev-db',
+    username: 'devuser',
+    password: 'devpass'
+);
+
+$databaseDriver = new MariaDbBackupDriver(
+    $connection
+);
+
+$application = new Application(
+    archive: $archiveApplication,
+    repository: $repositoryInfo,
+    driver: $databaseDriver,
+);
+
+$application->run();

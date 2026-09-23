@@ -30,17 +30,27 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
         return $this->process;
     }
 
-    public function createDump(?string $backupName = null): DatabaseDump
+    public function createDump(?string $destination = null): DatabaseDump
     {
-        $path = $backupName === null
-            ? tempnam(sys_get_temp_dir(), 'mariadb_dump_')
-            : sys_get_temp_dir() . DIRECTORY_SEPARATOR . basename($backupName);
+       if ($destination === null) {
+            $destination = "/tmp/";
+        }
 
-        if ($path === false) {
+        $directory = dirname($destination);
+
+        if (!is_dir($directory)) {
             throw new RuntimeException(
-                'Es konnte keine temporäre Dump-Datei erstellt werden.'
+                "Das Backup-Verzeichnis existiert nicht: {$directory}"
             );
         }
+
+        if (!is_writable($directory)) {
+            throw new RuntimeException(
+                "Das Backup-Verzeichnis ist nicht beschreibbar: {$directory}"
+            );
+        }
+
+        $path = $destination;
 
         $command = [
             'mariadb-dump',

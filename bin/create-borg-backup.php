@@ -1,7 +1,8 @@
 <?php
 
-use Backup\Php\Application\Archive\CreateBorgBackupApplication;
+use Backup\Php\Application\Archive\ArchiveApplication;
 use Backup\Php\Archive\Driver\BorgArchiveDriver;
+use Backup\Php\Services\ArchiveService;
 use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -23,8 +24,8 @@ $paths = [
     './src/TestFiles/test3.txt',
 ];
 
-$app = new CreateBorgBackupApplication($driver);
+$app = new ArchiveApplication(new ArchiveService($driver));
 
 $createdArchive = $app->run($paths, $archiveName);
 
-$app->listBorgArchiveContent($createdArchive);
+$app->list($createdArchive);

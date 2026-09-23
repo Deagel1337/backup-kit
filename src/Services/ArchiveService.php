@@ -18,11 +18,15 @@ final class ArchiveService
 
     public function extractArchive(ArchiveInfo $archive, string $destination): void
     {
+        $this->driver->validateArchive($archive);
+
         $this->driver->extractArchive($archive, $destination);
     }
 
-    public function listArchiveContent(ArchiveInfo $archive): void 
+    public function listArchiveContent(ArchiveInfo $archive): string 
     {
-        $this->driver->listContent($archive);
+        $this->driver->validateArchive($archive);
+
+        return $this->driver->listContent($archive);
     }
 }

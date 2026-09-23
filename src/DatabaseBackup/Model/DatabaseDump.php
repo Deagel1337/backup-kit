@@ -2,7 +2,10 @@
 
 namespace Backup\Php\DatabaseBackup\Model;
 
+use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
+use Backup\Php\Exception\DumpDriverException\DumpNotReadableException;
 use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
+
 // Ein Datenmodell, der Informationen über das Backup haben soll
 final readonly class DatabaseDump
 {
@@ -35,5 +38,20 @@ final readonly class DatabaseDump
     public function isReadable(): bool
     {
         return is_readable($this->path);
+    }
+
+    public function validate(): void
+    {
+        if (!$this->exists()) {
+            throw new DumpNotFoundException("Dump doesn't exist");
+        }
+
+        if (!$this->isReadable()) {
+            throw new DumpNotReadableException();
+        }
+
+        if ($this->size() <= 0) {
+            throw new EmptyDumpException();
+        }
     }
 }

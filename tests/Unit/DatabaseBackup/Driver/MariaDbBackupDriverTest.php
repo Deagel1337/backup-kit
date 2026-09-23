@@ -170,7 +170,7 @@ final class MariaDbBackupDriverTest extends TestCase
         $dump = $this->driver($process)->createDump($backupName);
 
         $this->assertSame(
-            sys_get_temp_dir() . DIRECTORY_SEPARATOR . $backupName,
+            $backupName,
             $dump->path
         );
 
@@ -195,6 +195,11 @@ final class MariaDbBackupDriverTest extends TestCase
 
         $outputFile = null;
 
+        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+        mkdir($directory, 0777, true);
+
+        $destination = $directory . '/backup.sql';
+
         $process
             ->expects($this->once())
             ->method('run')
@@ -208,6 +213,10 @@ final class MariaDbBackupDriverTest extends TestCase
                 ) use (&$outputFile): ProcessResult {
                     $outputFile = $outputFileArgument;
 
+                    // Simuliere, dass mariadb-dump eine Datei erzeugt hat,
+                    // bevor der Prozess fehlschlägt.
+                    file_put_contents($outputFileArgument, 'partial dump');
+
                     return new ProcessResult(
                         1,
                         '',
@@ -217,16 +226,22 @@ final class MariaDbBackupDriverTest extends TestCase
             );
 
         $this->expectException(RuntimeException::class);
+
         $this->expectExceptionMessage(
             'Das MariaDB-Dump konnte nicht erstellt werden: Access denied'
         );
 
         try {
-            $this->driver($process)->createDump();
+            $this->driver($process)->createDump($destination);
         } finally {
             $this->assertNotNull($outputFile);
-            if($outputFile !== null) {
+
+            if ($outputFile !== null) {
                 $this->assertFileDoesNotExist($outputFile);
+            }
+
+            if (is_dir($directory)) {
+                rmdir($directory);
             }
         }
     }
@@ -234,6 +249,11 @@ final class MariaDbBackupDriverTest extends TestCase
     public function testCreateDumpUsesMariaDbDumpCommand(): void
     {
         $process = $this->createMock(ProcessRunner::class);
+
+        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+        mkdir($directory, 0777, true);
+
+        $destination = $directory . '/backup.sql';
 
         $process
             ->expects($this->once())
@@ -248,7 +268,7 @@ final class MariaDbBackupDriverTest extends TestCase
                 ],
                 ['MYSQL_PWD' => 'password'],
                 null,
-                $this->isType('string'),
+                $destination,
                 null
             )
             ->willReturn(
@@ -259,26 +279,37 @@ final class MariaDbBackupDriverTest extends TestCase
                 )
             );
 
-        $dump = $this->driver($process)->createDump();
+        try {
+            $dump = $this->driver($process)->createDump($destination);
 
-        $this->assertInstanceOf(
-            DatabaseDump::class,
-            $dump
-        );
+            $this->assertInstanceOf(
+                DatabaseDump::class,
+                $dump
+            );
 
-        $this->assertSame(
-            'mariadb',
-            $dump->driver
-        );
+            $this->assertSame(
+                'mariadb',
+                $dump->driver
+            );
 
-        $this->assertSame(
-            'sql',
-            $dump->format
-        );
+            $this->assertSame(
+                'sql',
+                $dump->format
+            );
 
-        $this->assertFileExists($dump->path);
+            $this->assertSame(
+                $destination,
+                $dump->path
+            );
+        } finally {
+            if (file_exists($destination)) {
+                unlink($destination);
+            }
 
-        unlink($dump->path);
+            if (is_dir($directory)) {
+                rmdir($directory);
+            }
+        }
     }
 
     public function testCreateDumpThrowsWhenMariaDbDumpFails(): void
@@ -301,7 +332,20 @@ final class MariaDbBackupDriverTest extends TestCase
             'Das MariaDB-Dump konnte nicht erstellt werden: Access denied'
         );
 
-        $this->driver($process)->createDump();
+        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+
+        mkdir($directory, 0777, true);
+
+        $destination = $directory . '/backup.sql';
+
+        try {
+            // Test
+            $this->driver($process)->createDump($destination);
+        } finally {
+            rmdir($directory);
+        }
+
+        $this->driver($process)->createDump($destination);
     }
 
     /*

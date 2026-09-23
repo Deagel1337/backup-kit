@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Backup\Php\Console;
 
-
 use Backup\Php\Application\Archive\ArchiveApplication;
 use Backup\Php\Archive\Model\ArchiveInfo;
 use Symfony\Component\Console\Command\Command;

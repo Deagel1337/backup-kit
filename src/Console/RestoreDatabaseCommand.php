@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(
     name: 'db:restore, --dump',
     description: 'This command allows you to restore a mariadb database',
-    uasges: ['--dump path/to/dump.sql ']
+    usages: ['--dump path/to/dump.sql ']
 )]
 final class RestoreDatabaseCommand
 {
@@ -59,7 +59,7 @@ final class RestoreDatabaseCommand
             $output->writeln("Database Restore completed");
         } catch(InvalidDumpException $e) {
 
-
+            $output->write($e->getMessage());
 
             return Command::FAILURE;
         }

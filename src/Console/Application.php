@@ -31,5 +31,9 @@ final class Application extends SymfonyApplication
         $this->addCommand(
             new DumpDatabaseCommand($driver)
         );
+
+        $this->addCommand(
+            new RestoreDatabaseCommand($driver)
+        );
     }
 }

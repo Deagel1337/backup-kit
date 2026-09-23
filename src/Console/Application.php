@@ -41,5 +41,9 @@ final class Application extends SymfonyApplication
         $this->addCommand(
             new BackupBorgCommand($archive)
         );
+
+        $this->addCommand(
+            new BorgListCommand($archive)
+        );
     }
 }

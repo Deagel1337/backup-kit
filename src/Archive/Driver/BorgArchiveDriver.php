@@ -115,7 +115,7 @@ final class BorgArchiveDriver implements ArchiveDriver
         foreach ($paths as $path) {
             if (!$this->doesPathExist($path)) {
                 throw new RuntimeException(
-                    "Invalider Pfad entdeckt: {$path}"
+                    sprintf("<error>Invalider Pfad entdeckt: %s</error>", $path)
                 );
             }
         }

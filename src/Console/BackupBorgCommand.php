@@ -48,8 +48,8 @@ final class BackupBorgCommand
                 )
             );
         } catch(Throwable $e) {
-            $output->writeln("Failed to archive files: ");
-            $output->writeln($e->getMessage());
+            $output->writeln("<error>Failed to archive files: </error>");
+            $output->writeln("<error>" . $e->getMessage() . "</error>");
             return Command::FAILURE;
         }
 

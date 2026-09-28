@@ -6,7 +6,6 @@ use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver; 
 
-
 final class RestoreDatabaseStep implements RestoreStep
 {
     public function __construct(

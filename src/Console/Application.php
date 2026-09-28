@@ -16,18 +16,19 @@ use Symfony\Component\Console\Application as SymfonyApplication;
 final class Application extends SymfonyApplication
 {
     public function __construct(
-        ArchiveApplication $archive,
+        ArchiveApplication $borgArchive,
+        ArchiveApplication $dockerArchive,
         DatabaseBackupDriver $driver,
         ArchiveInfo $repository
     )
     {
         parent::__construct(
-            name: 'restore, backup and restore',
+            name: 'restore, backup and archive',
             version: '1.0.0',
         );
 
         $this->addCommand(
-            new BorgRestoreCommand($archive, $repository)
+            new BorgRestoreCommand($borgArchive, $repository)
         );
 
         $this->addCommand(
@@ -39,11 +40,15 @@ final class Application extends SymfonyApplication
         );
 
         $this->addCommand(
-            new BackupBorgCommand($archive)
+            new BackupBorgCommand($borgArchive)
         );
 
         $this->addCommand(
-            new BorgListCommand($archive)
+            new BorgListCommand($borgArchive)
+        );
+
+        $this->addCommand(
+            new ArchiveDockerVolumeCommand($dockerArchive)
         );
     }
 }

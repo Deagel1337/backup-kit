@@ -5,8 +5,10 @@ declare(strict_types=1);
 
 use Backup\Php\Application\Archive\ArchiveApplication;
 use Backup\Php\Archive\Driver\BorgArchiveDriver;
+use Backup\Php\Archive\Driver\DockerArchiveDriver;
 use Backup\Php\Archive\Model\ArchiveInfo;
 use Backup\Php\Console\Application;
+use Backup\Php\Context\DockerContainerContext;
 use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
 use Backup\Php\Services\ArchiveService;
@@ -19,20 +21,33 @@ $dotenv->load();
 
 $repository = $_ENV['BORG_REPOSITORY'] ?? '';
 
-$driver = new BorgArchiveDriver(
+$borgDriver = new BorgArchiveDriver(
     repository: $repository,
     passphrase: $_ENV['BORG_PASSPHRASE'] ?? '',
     sshPort: (int) ($_ENV['BORG_SSH_PORT'] ?? 22),
 );
 
-$archiveApplication = new ArchiveApplication(
-    new ArchiveService($driver),
-);
-
-$repositoryInfo = new ArchiveInfo(
+$archiveInfo = new ArchiveInfo(
     path: $repository,
     driver: 'borg',
     format: 'borg',
+);
+
+$context = new DockerContainerContext(
+    "wp_e_beratungsinstitut_de_data", 
+    "wp_e_beratungsinstitut_de_data", 
+    "/var/www/html/wp-content", 
+    "."
+);
+
+$dockerDriver = new DockerArchiveDriver($context);
+
+$archiveApplication = new ArchiveApplication(
+    new ArchiveService($borgDriver),
+);
+
+$dockerArchiveApplication = new ArchiveApplication(
+        new ArchiveService($dockerDriver),
 );
 
 $connection = new DatabaseConnection(
@@ -48,10 +63,27 @@ $databaseDriver = new MariaDbBackupDriver(
     $connection
 );
 
+if($archiveInfo === null || $borgDriver == null || $dockerDriver == null) {
+        throw new RuntimeException(
+            sprintf("Bitte einen gültigen Driver eingeben")
+        );
+}
+
 $application = new Application(
-    archive: $archiveApplication,
-    repository: $repositoryInfo,
+    borgArchive: $archiveApplication,
+    dockerArchive: $dockerArchiveApplication,
+    repository: $archiveInfo,
     driver: $databaseDriver,
 );
+try {
+    $application->run();
+} catch (Throwable $exception) {
+    fwrite(STDERR, sprintf(
+        "%s: %s\n%s\n",
+        $exception::class,
+        $exception->getMessage(),
+        $exception->getTraceAsString(),
+    ));
 
-$application->run();
+    exit(1);
+}

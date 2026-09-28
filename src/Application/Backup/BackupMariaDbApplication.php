@@ -1,6 +1,6 @@
 <?php
 
-namespace Deagel1337\Backup\Kit\Application;
+namespace Deagel1337\Backup\Kit\Application\Backup;
 
 use Deagel1337\Backup\Kit\Context\BackupContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;

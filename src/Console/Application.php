@@ -7,6 +7,7 @@ namespace Deagel1337\Backup\Kit\Console;
 use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Console\BackupBorgCommand;
+use Deagel1337\Backup\Kit\Console\BorgListCommand;
 use Deagel1337\Backup\Kit\Console\BorgRestoreCommand;
 use Deagel1337\Backup\Kit\Console\DumpDatabaseCommand;
 use Deagel1337\Backup\Kit\Console\RestoreDatabaseCommand;

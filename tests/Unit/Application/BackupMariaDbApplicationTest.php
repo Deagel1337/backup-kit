@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application;
 
-use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\Context\BackupContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;

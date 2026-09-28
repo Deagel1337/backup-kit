@@ -11,6 +11,10 @@ final class ArchiveApplication
         private readonly ArchiveService $service
     ) {}
 
+    /**
+     * @param array<string> $paths
+     * @param string $name
+     */
     public function run(array $paths, string $name): ArchiveInfo
     {
         return $this->service->createArchive($paths, $name);

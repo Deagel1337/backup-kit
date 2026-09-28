@@ -11,7 +11,7 @@ use Backup\Php\Step\Runner\StepRunner;
 use Backup\Php\Reporter\ConsoleProgressReporter;
 use Backup\Php\DatabaseBackup\Model\DatabaseDump;
 use Backup\Php\Archive\Model\ArchiveInfo;
-
+use Backup\Php\Step\Interface\RestoreStep;
 final class RestoreMariaDbApplication
 {
     public function __construct(
@@ -28,6 +28,12 @@ final class RestoreMariaDbApplication
         $this->service->restore($context);
     }
 
+    /**
+     * Restores the database
+     * @param DatabaseBackupDriver $driver
+     * @param array<RestoreStep> $steps
+     * @return RestoreMariaDbApplication
+     */
     public static function create(DatabaseBackupDriver $driver, array $steps): self
     {
         $reporter = new ConsoleProgressReporter();

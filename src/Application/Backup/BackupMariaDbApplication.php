@@ -4,6 +4,7 @@ namespace Backup\Php\Application;
 
 use Backup\Php\Context\BackupContext;
 use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Backup\Php\Step\Interface\BackupStep;
 use Backup\Php\Reporter\ConsoleProgressReporter;
 use Backup\Php\Services\Interface\BackupServiceInterface;
 use Backup\Php\Step\Runner\StepRunner;
@@ -34,6 +35,11 @@ final class BackupMariaDbApplication
         return $context->dump;
     }
 
+    /**
+     * Creates a database dump
+     * @param array<BackupStep> $steps
+     * @return BackupMariaDbApplication
+     */
     public static function create(array $steps): self
     {
         $reporter = new ConsoleProgressReporter();

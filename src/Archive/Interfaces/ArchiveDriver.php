@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Archive\Interfaces;
+namespace Deagel1337\Backup\Kit\Archive\Interfaces;
 
-use Backup\Php\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 
 interface ArchiveDriver
 {

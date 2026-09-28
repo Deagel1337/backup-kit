@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Backup\Php\Console;
+namespace Deagel1337\Backup\Kit\Console;
 
-use Backup\Php\Application\Archive\ArchiveApplication;
-use Backup\Php\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;

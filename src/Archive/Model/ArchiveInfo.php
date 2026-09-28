@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Archive\Model;
+namespace Deagel1337\Backup\Kit\Archive\Model;
 
 final readonly class ArchiveInfo
 {

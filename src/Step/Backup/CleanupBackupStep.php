@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Step\Backup;
+namespace Deagel1337\Backup\Kit\Step\Backup;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
 use RuntimeException;
 
 final class CleanupBackupStep implements BackupStep

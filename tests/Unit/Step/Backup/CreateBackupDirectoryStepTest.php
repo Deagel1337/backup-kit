@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Step\Backup;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\Step\Backup\CreateBackupDirectoryStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\Step\Backup\CreateBackupDirectoryStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

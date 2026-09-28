@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Application\Archive;
+namespace Deagel1337\Backup\Kit\Application\Archive;
 
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Services\ArchiveService;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Services\ArchiveService;
 
 final class ArchiveApplication
 {

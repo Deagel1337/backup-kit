@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Process\Interface;
+namespace Deagel1337\Backup\Kit\Process\Interface;
 
-use Backup\Php\Process\Model\ProcessResult;
+use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 
 interface ProcessRunner
 {

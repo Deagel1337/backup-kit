@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Traits;
 
-use Backup\Php\Traits\PathTrait;
+use Deagel1337\Backup\Kit\Traits\PathTrait;
 use PHPUnit\Framework\TestCase;
 
 final class PathTraitTest extends TestCase

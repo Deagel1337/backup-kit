@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Reporter\Interface;
+namespace Deagel1337\Backup\Kit\Reporter\Interface;
 
 interface ProcessReporter
 {

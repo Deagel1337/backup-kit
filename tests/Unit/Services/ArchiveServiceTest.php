@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Services;
 
-use Backup\Php\Archive\Interfaces\ArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Services\ArchiveService;
+use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Services\ArchiveService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

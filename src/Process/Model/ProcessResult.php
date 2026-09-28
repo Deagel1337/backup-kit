@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Process\Model;
+namespace Deagel1337\Backup\Kit\Process\Model;
 
 final readonly class ProcessResult
 {

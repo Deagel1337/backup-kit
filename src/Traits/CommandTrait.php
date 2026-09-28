@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Traits;
+namespace Deagel1337\Backup\Kit\Traits;
 
-use Backup\Php\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 
 trait CommandTrait
 {

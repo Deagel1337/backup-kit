@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Step\Backup;
 
-use Backup\Php\Archive\Interfaces\ArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Context\BackupContext;
-use Backup\Php\Step\Backup\BackupApplicationFilesStep;
+use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\Step\Backup\BackupApplicationFilesStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

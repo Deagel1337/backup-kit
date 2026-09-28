@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Backup\Php\Console;
+namespace Deagel1337\Backup\Kit\Console;
 
-use Backup\Php\Application\Archive\ArchiveApplication;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Console\BackupBorgCommand;
-use Backup\Php\Console\BorgRestoreCommand;
-use Backup\Php\Console\DumpDatabaseCommand;
-use Backup\Php\Console\RestoreDatabaseCommand;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Console\BackupBorgCommand;
+use Deagel1337\Backup\Kit\Console\BorgRestoreCommand;
+use Deagel1337\Backup\Kit\Console\DumpDatabaseCommand;
+use Deagel1337\Backup\Kit\Console\RestoreDatabaseCommand;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Symfony\Component\Console\Application as SymfonyApplication;
 
 final class Application extends SymfonyApplication

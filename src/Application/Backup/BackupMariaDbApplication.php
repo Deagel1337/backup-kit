@@ -1,14 +1,14 @@
 <?php
 
-namespace Backup\Php\Application;
+namespace Deagel1337\Backup\Kit\Application;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Step\Interface\BackupStep;
-use Backup\Php\Reporter\ConsoleProgressReporter;
-use Backup\Php\Services\Interface\BackupServiceInterface;
-use Backup\Php\Step\Runner\StepRunner;
-use Backup\Php\Services\BackupService;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Reporter\ConsoleProgressReporter;
+use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;
+use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
+use Deagel1337\Backup\Kit\Services\BackupService;
 use RuntimeException;
 
 final class BackupMariaDbApplication

@@ -7,7 +7,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Backup\\Php\\": "src/"
+            "Deagel1337\\Backup\\Kit\\": "src/"
         },
         "classmap": [
             "src/"
@@ -22,6 +22,10 @@
         {
             "name": "Yehor Strakhov",
             "email": "yehor.strakhov@th-nuernberg.de"
+        },
+        {
+            "name": "Yehor Strakhov",
+            "email": "yehor.strakhov@outlook.de"
         }
     ],
     "require": {

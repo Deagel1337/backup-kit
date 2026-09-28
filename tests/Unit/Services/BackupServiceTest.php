@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\Services;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\Reporter\Interface\ProgressReporter;
-use Backup\Php\Services\BackupService;
-use Backup\Php\Step\Interface\BackupStep;
-use Backup\Php\Step\Runner\StepRunner;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
+use Deagel1337\Backup\Kit\Services\BackupService;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

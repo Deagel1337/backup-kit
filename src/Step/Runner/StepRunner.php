@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Step\Runner;
+namespace Deagel1337\Backup\Kit\Step\Runner;
 
-use Backup\Php\Step\Interface\ProgressStep;
-use Backup\Php\Reporter\Interface\ProgressReporter;
+use Deagel1337\Backup\Kit\Step\Interface\ProgressStep;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Throwable;
 
 final class StepRunner

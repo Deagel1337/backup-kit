@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Backup\Php\Console;
+namespace Deagel1337\Backup\Kit\Console;
 
-use Backup\Php\Application\Restore\RestoreMariaDbApplication;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Exception\DumpDriverException\InvalidDumpException;
-use Backup\Php\Step\Restore\RestoreDatabaseStep;
+use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpException;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Attribute\Argument;

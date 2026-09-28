@@ -1,12 +1,12 @@
 <?php
 
-namespace Backup\Php\Archive\Driver;
+namespace Deagel1337\Backup\Kit\Archive\Driver;
 
-use Backup\Php\Archive\Interfaces\ArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Process\Interface\ProcessRunner;
-use Backup\Php\Process\Runner\ProcOpenProcessRunner;
-use Backup\Php\Traits\CommandTrait;
+use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
+use Deagel1337\Backup\Kit\Traits\CommandTrait;
 use RuntimeException;
 
 final class TarArchiveDriver implements ArchiveDriver

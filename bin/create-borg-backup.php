@@ -1,8 +1,8 @@
 <?php
 
-use Backup\Php\Application\Archive\ArchiveApplication;
-use Backup\Php\Archive\Driver\BorgArchiveDriver;
-use Backup\Php\Services\ArchiveService;
+use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
+use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
+use Deagel1337\Backup\Kit\Services\ArchiveService;
 use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';

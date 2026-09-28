@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Step\Interface;
+namespace Deagel1337\Backup\Kit\Step\Interface;
 
 interface ProgressStep 
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Process\Runner;
 
-use Backup\Php\Process\Runner\DryRunProcessRunner;
-use Backup\Php\Reporter\Interface\ProcessReporter;
+use Deagel1337\Backup\Kit\Process\Runner\DryRunProcessRunner;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
 use PHPUnit\Framework\TestCase;
 
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace Backup\Php\Process\Runner;
+namespace Deagel1337\Backup\Kit\Process\Runner;
 
 
-use Backup\Php\Process\Interface\ProcessRunner;
-use Backup\Php\Process\Model\ProcessResult;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 use RuntimeException;
 
 final class ProcOpenProcessRunner implements ProcessRunner

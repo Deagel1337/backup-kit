@@ -1,10 +1,10 @@
 <?php
 
-namespace Backup\Php\DatabaseBackup\Model;
+namespace Deagel1337\Backup\Kit\DatabaseBackup\Model;
 
-use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
-use Backup\Php\Exception\DumpDriverException\DumpNotReadableException;
-use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotFoundException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotReadableException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\EmptyDumpException;
 
 // Ein Datenmodell, der Informationen über das Backup haben soll
 final readonly class DatabaseDump

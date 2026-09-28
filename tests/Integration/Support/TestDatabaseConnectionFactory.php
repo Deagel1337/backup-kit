@@ -2,7 +2,7 @@
 
 namespace Tests\Integration\Support;
 
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 
 final class TestDatabaseConnectionFactory
 {

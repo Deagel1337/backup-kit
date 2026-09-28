@@ -1,10 +1,10 @@
 <?php
 
-namespace Backup\Php\Step\Backup;
+namespace Deagel1337\Backup\Kit\Step\Backup;
 
-use Backup\Php\Archive\Interfaces\ArchiveDriver;
-use Backup\Php\Step\Interface\BackupStep;
-use Backup\Php\Context\BackupContext;
+use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
 use RuntimeException;
 
 final class BackupApplicationFilesStep implements BackupStep

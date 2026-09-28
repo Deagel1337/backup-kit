@@ -1,12 +1,12 @@
 <?php
 
-namespace Backup\Php\Console;
+namespace Deagel1337\Backup\Kit\Console;
 
-use Backup\Php\Application\BackupMariaDbApplication;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\Step\Backup\BackupDatabaseStep;
-use Backup\Php\Step\Backup\CheckDiskSpaceStep;
-use Backup\Php\Step\Backup\ValidateBackupContextStep;
+use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
+use Deagel1337\Backup\Kit\Step\Backup\CheckDiskSpaceStep;
+use Deagel1337\Backup\Kit\Step\Backup\ValidateBackupContextStep;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

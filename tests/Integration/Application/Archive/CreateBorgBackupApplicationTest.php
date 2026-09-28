@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Application\Archive;
 
-use Backup\Php\Application\Archive\CreateBorgBackupApplication;
-use Backup\Php\Archive\Driver\BorgArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Process\Runner\ProcOpenProcessRunner;
+use Deagel1337\Backup\Kit\Application\Archive\CreateBorgBackupApplication;
+use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use PHPUnit\Framework\TestCase;
 
 final class CreateBorgBackupApplicationTest extends TestCase

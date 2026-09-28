@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Step\Interface;
+namespace Deagel1337\Backup\Kit\Step\Interface;
 
-use Backup\Php\Context\RestoreContext;
-use Backup\Php\Step\Interface\ProgressStep;
+use Deagel1337\Backup\Kit\Context\RestoreContext;
+use Deagel1337\Backup\Kit\Step\Interface\ProgressStep;
 
 interface RestoreStep extends ProgressStep
 {

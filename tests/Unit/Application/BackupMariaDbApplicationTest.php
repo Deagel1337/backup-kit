@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application;
 
-use Backup\Php\Application\BackupMariaDbApplication;
-use Backup\Php\Context\BackupContext;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Services\Interface\BackupServiceInterface;
+use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

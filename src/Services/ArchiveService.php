@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Services;
+namespace Deagel1337\Backup\Kit\Services;
 
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
 
 final class ArchiveService
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Process\Runner;
 
-use Backup\Php\Process\Runner\DryRunProcessRunner;
-use Backup\Php\Reporter\ConsoleProcessReporter;
+use Deagel1337\Backup\Kit\Process\Runner\DryRunProcessRunner;
+use Deagel1337\Backup\Kit\Reporter\ConsoleProcessReporter;
 use PHPUnit\Framework\TestCase;
 
 final class DryRunProcessRunnerTest extends TestCase

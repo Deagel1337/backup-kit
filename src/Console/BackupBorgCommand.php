@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Backup\Php\Console;
+namespace Deagel1337\Backup\Kit\Console;
 
-use Backup\Php\Application\Archive\ArchiveApplication;
+use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

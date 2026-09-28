@@ -1,18 +1,18 @@
 <?php
 
-namespace Backup\Php\DatabaseBackup\Driver;
+namespace Deagel1337\Backup\Kit\DatabaseBackup\Driver;
 
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
-use Backup\Php\Exception\DumpDriverException\DumpNotReadableException;
-use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
-use Backup\Php\Exception\DumpDriverException\InvalidDumpDriverException;
-use Backup\Php\Exception\DumpDriverException\InvalidDumpFormatException;
-use Backup\Php\Process\Interface\ProcessRunner;
-use Backup\Php\Process\Runner\ProcOpenProcessRunner;
-use Backup\Php\Traits\CommandTrait;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotFoundException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotReadableException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\EmptyDumpException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpDriverException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpFormatException;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
+use Deagel1337\Backup\Kit\Traits\CommandTrait;
 use RuntimeException;
 
 

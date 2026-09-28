@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Archive\Driver;
 
-use Backup\Php\Archive\Driver\TarArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Archive\Driver\TarArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

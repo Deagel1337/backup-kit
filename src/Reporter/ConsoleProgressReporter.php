@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Reporter;
+namespace Deagel1337\Backup\Kit\Reporter;
 
-use Backup\Php\Reporter\Interface\ProgressReporter;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Throwable;
 
 final class ConsoleProgressReporter implements ProgressReporter

@@ -2,10 +2,10 @@
 
 namespace Tests\Integration\Application\Backup;
 
-use Backup\Php\Application\BackupMariaDbApplication;
-use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\Step\Backup\BackupDatabaseStep;
+use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use Tests\Integration\Support\MariaDbTestDatabase;
 

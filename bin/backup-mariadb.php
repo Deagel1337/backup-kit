@@ -1,11 +1,11 @@
 <?php
 
-use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\Step\Backup\BackupDatabaseStep;
-use Backup\Php\Step\Backup\CheckDiskSpaceStep;
-use Backup\Php\Step\Backup\ShowBackupContextStep;
-use Backup\Php\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
+use Deagel1337\Backup\Kit\Step\Backup\CheckDiskSpaceStep;
+use Deagel1337\Backup\Kit\Step\Backup\ShowBackupContextStep;
+use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

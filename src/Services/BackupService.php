@@ -1,11 +1,11 @@
 <?php
 
-namespace Backup\Php\Services;
+namespace Deagel1337\Backup\Kit\Services;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\Services\Interface\BackupServiceInterface;
-use Backup\Php\Step\Runner\StepRunner;
-use Backup\Php\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;
+use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
 
 final class BackupService implements BackupServiceInterface
 {

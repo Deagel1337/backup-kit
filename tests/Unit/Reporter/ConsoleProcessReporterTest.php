@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Process;
 
-use Backup\Php\Reporter\ConsoleProcessReporter;
+use Deagel1337\Backup\Kit\Reporter\ConsoleProcessReporter;
 use PHPUnit\Framework\TestCase;
 
 final class ConsoleProcessReporterTest extends TestCase

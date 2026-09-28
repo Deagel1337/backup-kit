@@ -2,15 +2,15 @@
 
 namespace Tests\Unit\DatabaseBackup\Driver;
 
-use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Exception\DumpDriverException\DumpNotFoundException;
-use Backup\Php\Exception\DumpDriverException\EmptyDumpException;
-use Backup\Php\Exception\DumpDriverException\InvalidDumpDriverException;
-use Backup\Php\Exception\DumpDriverException\InvalidDumpFormatException;
-use Backup\Php\Process\Interface\ProcessRunner;
-use Backup\Php\Process\Model\ProcessResult;
+use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotFoundException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\EmptyDumpException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpDriverException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpFormatException;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

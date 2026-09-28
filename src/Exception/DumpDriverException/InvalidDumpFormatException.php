@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Exception\DumpDriverException;
+namespace Deagel1337\Backup\Kit\Exception\DumpDriverException;
 
-use Backup\Php\Exception\DumpDriverException\InvalidDumpException;
+use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpException;
 
 final class InvalidDumpFormatException extends InvalidDumpException
 {

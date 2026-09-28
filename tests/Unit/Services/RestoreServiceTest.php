@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\Services;
 
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Context\RestoreContext;
-use Backup\Php\Step\Restore\Rollback\RestoreRollbackHandler;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Reporter\Interface\ProgressReporter;
-use Backup\Php\Services\RestoreService;
-use Backup\Php\Step\Interface\RestoreStep;
-use Backup\Php\Step\Runner\StepRunner;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Context\RestoreContext;
+use Deagel1337\Backup\Kit\Step\Restore\Rollback\RestoreRollbackHandler;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
+use Deagel1337\Backup\Kit\Services\RestoreService;
+use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

@@ -2,13 +2,13 @@
 
 namespace Tests\Integration\Application\Backup;
 
-use Backup\Php\Application\BackupMariaDbApplication;
-use Backup\Php\Application\Restore\RestoreMariaDbApplication;
-use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\Step\Backup\BackupDatabaseStep;
-use Backup\Php\Step\Restore\CreateDatabaseBackupStep;
-use Backup\Php\Step\Restore\RestoreDatabaseStep;
+use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
+use Deagel1337\Backup\Kit\Step\Restore\CreateDatabaseBackupStep;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Tests\Integration\Support\MariaDbTestDatabase;
@@ -263,7 +263,7 @@ THIS IS INVALID SQL;
 SQL
         );
 
-        $brokenDump = new \Backup\Php\DatabaseBackup\Model\DatabaseDump(
+        $brokenDump = new \Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump(
             path: $brokenDumpPath,
             driver: 'mariadb',
             format: 'sql',

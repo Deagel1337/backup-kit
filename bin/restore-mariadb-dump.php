@@ -1,10 +1,10 @@
 <?php
 
-use Backup\Php\Application\Restore\RestoreMariaDbApplication;
-use Backup\Php\DatabaseBackup\Driver\MariaDbBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseConnection;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Step\Restore\RestoreDatabaseStep;
+use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

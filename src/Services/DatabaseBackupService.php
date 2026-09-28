@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Services;
+namespace Deagel1337\Backup\Kit\Services;
 
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use RuntimeException;
 
 final class DatabaseBackupService

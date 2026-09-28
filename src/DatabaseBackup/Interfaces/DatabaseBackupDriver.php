@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\DatabaseBackup\Interfaces;
+namespace Deagel1337\Backup\Kit\DatabaseBackup\Interfaces;
 
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 
 interface DatabaseBackupDriver 
 {

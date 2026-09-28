@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Reporter;
+namespace Deagel1337\Backup\Kit\Reporter;
 
-use Backup\Php\Reporter\Interface\ProcessReporter;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
 
 final class ConsoleProcessReporter implements ProcessReporter
 {

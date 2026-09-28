@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Step\Backup;
 
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Context\BackupContext;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Step\Backup\ShowBackupContextStep;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Backup\ShowBackupContextStep;
 use PHPUnit\Framework\TestCase;
 
 final class ShowBackupContextStepTest extends TestCase

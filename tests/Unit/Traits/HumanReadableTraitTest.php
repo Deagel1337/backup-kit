@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Traits;
 
-use Backup\Php\Traits\HumanReadableTrait;
+use Deagel1337\Backup\Kit\Traits\HumanReadableTrait;
 use PHPUnit\Framework\TestCase;
 
 final class HumanReadableTraitTest extends TestCase

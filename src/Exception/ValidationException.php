@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Exception;
+namespace Deagel1337\Backup\Kit\Exception;
 
 use RuntimeException;
 

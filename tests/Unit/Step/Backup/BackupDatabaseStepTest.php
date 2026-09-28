@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Step\Backup;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Step\Backup\BackupDatabaseStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Traits;
 
-use Backup\Php\Process\Interface\ProcessRunner;
-use Backup\Php\Process\Model\ProcessResult;
-use Backup\Php\Traits\CommandTrait;
+use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
+use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
+use Deagel1337\Backup\Kit\Traits\CommandTrait;
 use PHPUnit\Framework\TestCase;
 
 final class CommandTraitTest extends TestCase

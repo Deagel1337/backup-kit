@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Services\Interface;
+namespace Deagel1337\Backup\Kit\Services\Interface;
 
-use Backup\Php\Context\RestoreContext;
+use Deagel1337\Backup\Kit\Context\RestoreContext;
 
 interface RestoreServiceInterface
 {

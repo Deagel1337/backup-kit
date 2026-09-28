@@ -1,9 +1,9 @@
 <?php
 
-namespace Backup\Php\Context;
+namespace Deagel1337\Backup\Kit\Context;
 
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 
 final class BackupContext
 {

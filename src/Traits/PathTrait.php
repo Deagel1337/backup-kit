@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Traits;
+namespace Deagel1337\Backup\Kit\Traits;
 
 trait PathTrait
 {

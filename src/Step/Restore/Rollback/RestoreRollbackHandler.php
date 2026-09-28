@@ -1,8 +1,8 @@
 <?php
 
-namespace Backup\Php\Step\Restore\Rollback;
+namespace Deagel1337\Backup\Kit\Step\Restore\Rollback;
 
-use Backup\Php\Context\RestoreContext;
+use Deagel1337\Backup\Kit\Context\RestoreContext;
 
 interface RestoreRollbackHandler
 {

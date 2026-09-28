@@ -1,17 +1,17 @@
 <?php
 
-namespace Backup\Php\Application\Restore;
+namespace Deagel1337\Backup\Kit\Application\Restore;
 
-use Backup\Php\Context\RestoreContext;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\Services\Interface\RestoreServiceInterface;
-use Backup\Php\Services\RestoreService;
-use Backup\Php\Step\Restore\Rollback\MariaDbRestoreRollbackHandler;
-use Backup\Php\Step\Runner\StepRunner;
-use Backup\Php\Reporter\ConsoleProgressReporter;
-use Backup\Php\DatabaseBackup\Model\DatabaseDump;
-use Backup\Php\Archive\Model\ArchiveInfo;
-use Backup\Php\Step\Interface\RestoreStep;
+use Deagel1337\Backup\Kit\Context\RestoreContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\Services\Interface\RestoreServiceInterface;
+use Deagel1337\Backup\Kit\Services\RestoreService;
+use Deagel1337\Backup\Kit\Step\Restore\Rollback\MariaDbRestoreRollbackHandler;
+use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
+use Deagel1337\Backup\Kit\Reporter\ConsoleProgressReporter;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
 final class RestoreMariaDbApplication
 {
     public function __construct(

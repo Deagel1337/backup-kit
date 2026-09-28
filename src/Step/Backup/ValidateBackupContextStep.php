@@ -1,10 +1,10 @@
 <?php
 
-namespace Backup\Php\Step\Backup;
+namespace Deagel1337\Backup\Kit\Step\Backup;
 
-use Backup\Php\Context\BackupContext;
-use Backup\Php\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Backup\Php\Step\Interface\BackupStep;
+use Deagel1337\Backup\Kit\Context\BackupContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
 
 final class ValidateBackupContextStep implements BackupStep
 {

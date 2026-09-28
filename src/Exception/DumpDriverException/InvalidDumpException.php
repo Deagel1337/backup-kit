@@ -1,6 +1,6 @@
 <?php
 
-namespace Backup\Php\Exception\DumpDriverException;
+namespace Deagel1337\Backup\Kit\Exception\DumpDriverException;
 
 use RuntimeException;
 

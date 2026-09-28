@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Process\Runner;
 
-use Backup\Php\Process\Runner\ProcOpenProcessRunner;
+use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

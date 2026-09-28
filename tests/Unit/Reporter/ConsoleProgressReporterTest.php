@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Reporter;
 
-use Backup\Php\Reporter\ConsoleProgressReporter;
+use Deagel1337\Backup\Kit\Reporter\ConsoleProgressReporter;
 use Exception;
 use PHPUnit\Framework\TestCase;
 

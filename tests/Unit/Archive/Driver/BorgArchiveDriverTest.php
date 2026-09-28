@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Archive\Driver;
 
-use Backup\Php\Archive\Driver\BorgArchiveDriver;
-use Backup\Php\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

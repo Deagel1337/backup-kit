@@ -3,11 +3,14 @@
 namespace Deagel1337\Backup\Kit\Archive\Driver;
 
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
 use Deagel1337\Backup\Kit\Traits\PathTrait;
+use Override;
 use RuntimeException;
 
 final class BorgArchiveDriver implements ArchiveDriver
@@ -74,40 +77,129 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function listArchiveContent(string $backupName): void 
+    public function listArchiveContent(string $backupName): iterable 
     {
-        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository, $backupName]);
+        $borgBackup = sprintf(
+            '%s::%s',
+            $this->repository,
+            $backupName
+        );
+
+        $command = [
+            'borg',
+            'list',
+            $this->rshOption(),
+            $borgBackup
+        ];
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-        if($result->successful()) {
-            echo $result->output;
+        if(!$result->successful()) {
+            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
         }
 
-        if($result->exitCode !== 0) {
-            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
+        foreach($this->parseArchiveEntries($result->output) as $entry) {
+            yield $entry;
         }
     }
 
-    public function listContent(ArchiveInfo $archive): string
+    private function parseArchiveEntries(string $output): iterable
     {
-        $command = array_merge(['borg', 'list', '--format','{archive}{NL}'], $this->rshOption(), [$this->repository, $archive->path]);
+        foreach(explode("\n", trim($output)) as $line) {
+            if($line === '') {
+                continue;
+            }
 
-        if ($archive->path !== '') {
-            $command[] = $archive->path;
+            $data = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
+
+            yield new ArchiveEntry(
+                path: $data['path'],
+                size: (int) $data['size'],
+                type: $data['type']
+            );
+        }
+    }
+
+    /**
+     * Gibt die Einträge eines Archives zurück
+     * @param ArchiveInfo $archive
+     * @throws RuntimeException
+     * @return iterable<ArchiveEntry>
+     */
+    public function listArchive(ArchiveInfo $archive): iterable
+    {
+        $command = [];
+
+        if(strcmp($this->repository, $archive->path) != 0) {
+            $command = array_merge(
+                ['borg', 'list'], 
+                $this->rshOption(), 
+                [sprintf("%s::%s",$this->repository, $archive->path)]
+            );
+        } else {
+            $command = array_merge(
+                ['borg', 'list'],
+                $this->rshOption(),
+                [sprintf("%s", $this->repository)]
+            );
         }
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-        if($result->successful()) {
-            echo $result->output;
-        }
-
-        if($result->exitCode !== 0) {
+        if(!$result->successful()) {
             throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
         }
 
-        return $result->output;
+
+        foreach(explode("\n", trim($result->output)) as $line) {
+            if ($line === '') {
+                continue;
+            }
+
+            [$path, $size, $type] = explode("\t", $line, 3);
+
+            yield new ArchiveEntry(
+                path: $path,
+                size: (int) $size,
+                type: ArchiveEntryType::from($type)
+            );
+        }
+    }
+
+    #[Override]
+    public function listArchives(): iterable
+    {
+        $command = array_merge(
+            ['borg', 'list'],
+            $this->rshOption(),
+            [$this->repository],
+        );
+
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
+
+        if(!$result->successful()) {
+            throw new RuntimeException(
+                sprintf("<error>Auflistung fehlgeschlagen: %s</error>", $this->repository)
+            );
+        }
+
+        foreach(explode("\n", trim($result->output)) as $line) {
+            if($line === '') {
+                continue;
+            }
+
+            $parts = preg_split('/\s{2,}/', trim($line));
+
+            if($parts == false || !isset($parts[0])) {
+                continue;
+            }
+
+            yield new ArchiveInfo(
+                path: $this->repository . '::' . $parts[0],
+                driver: 'borg',
+                format: 'borg'
+            );
+        }
     }
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
@@ -142,16 +234,12 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function extractArchive(
-        ArchiveInfo $archive,
-        string $destination,
-    ): void {
+    public function extractArchive(ArchiveInfo $archive, string $destination = '.'): void 
+    {
         $this->validateArchive($archive);
 
         if (!is_dir($destination)) {
-            if (!mkdir($destination, 0775, true)
-                && !is_dir($destination)
-            ) {
+            if (!mkdir($destination, 0775, true) && !is_dir($destination)) {
                 throw new RuntimeException(
                     'Restore-Ziel konnte nicht erstellt werden: '
                     . $destination
@@ -159,18 +247,21 @@ final class BorgArchiveDriver implements ArchiveDriver
             }
         }
 
-        $command = [
-            'borg',
-            'extract',
-            ...$this->rshOption(),
-            $archive->path,
-        ];
+        $command = array_merge(
+            [
+                'borg',
+                'extract',
+                $archive->path,
+            ],
+            $this->rshOption()
+        );
 
         $result = $this->process->run(
             $command,
             [
                 'BORG_PASSPHRASE' => $this->passphrase,
             ],
+            $destination
         );
 
         if ($result->exitCode !== 0) {

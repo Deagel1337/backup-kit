@@ -18,6 +18,8 @@ final class CreateBackupDirectoryStepTest extends TestCase
                 rmdir($directory);
             }
         }
+
+        parent::tearDown();
     }
 
     public function testReturnsCorrectName(): void

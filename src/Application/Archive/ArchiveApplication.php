@@ -47,6 +47,10 @@ final class ArchiveApplication
      */
     public function extract(ArchiveInfo $archiveInfo, string $destination): void
     {
+        if(strcmp($destination, '') === 0) {
+            $destination = '.';
+        }
+
         $this->service->extractArchive($archiveInfo, $destination);
     }
 }

@@ -41,6 +41,8 @@ final class MariaDbBackupDriverTest extends TestCase
         if (is_file($this->dumpPath)) {
             unlink($this->dumpPath);
         }
+
+        parent::tearDown();
     }
 
     /*

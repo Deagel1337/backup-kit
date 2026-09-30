@@ -41,7 +41,6 @@ final class RestoreMariaDbApplication
         $runner = new StepRunner($reporter);
 
         $rollbackHandler = new MariaDbRestoreRollbackHandler($driver);
-        
 
         $service = new RestoreService(
             steps: $steps,

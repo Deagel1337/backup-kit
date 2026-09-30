@@ -20,7 +20,6 @@ final class BorgRestoreCommand extends Command
 
         public function __construct(
             private readonly ArchiveApplication $archive,
-            private readonly ArchiveInfo $repository
         ) {
             parent::__construct();
         }
@@ -29,7 +28,7 @@ final class BorgRestoreCommand extends Command
         {
             $this->addArgument(
                 'destination',
-                InputArgument::REQUIRED,
+                InputArgument::OPTIONAL,
                 'Directory where the backup should be restored.'  
             );
         }
@@ -42,57 +41,31 @@ final class BorgRestoreCommand extends Command
 
             $destination = (string) $input->getArgument('destination');
 
-            $content = $this->archive->list(
-                $this->repository
-            );
+            $archives = [];
 
-            $backups = $this->parseBackups($content);
-
-            if ($backups === []) {
-                $io->error('Keine Backups gefunden.');
-
-                return Command::FAILURE;
+            foreach($this->archive->listAllBorgArchives() as $archive) {
+                $archives[$archive->path] = $archive;
             }
 
             $selected = $io->choice(
                 'Backup auswählen',
-                $backups,
+                array_keys($archives),
             );
 
-            $archive = new ArchiveInfo(
-                path: $this->repository->path . '::' . $selected,
-                driver: 'borg',
-                format: 'borg',
-            );
-
-            $io->info([
-                'Backup: ' . $selected,
-                'Destination: ' . $destination,
-            ]);
+            $archive = $archives[$selected];
 
             $this->archive->extract(
                 archiveInfo: $archive,
                 destination: $destination,
             );
 
+            $io->info([
+                'Backup: ' . $archive->path,
+                'Destination: ' . $destination,
+            ]);
+
             $io->success('Restore erfolgreich');
 
             return Command::SUCCESS;
-        }
-
-        /**
-         * @return array<string>
-         */
-        private function parseBackups(string $output): array
-        {
-            return array_values(
-                array_filter(
-                    array_map(
-                        static fn (string $line): string => trim($line),
-                        explode("\n", $output),
-                    ),
-                    static fn (string $line): bool => $line !== '',
-                ),
-            );
         }
 }

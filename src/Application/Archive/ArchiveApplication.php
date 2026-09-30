@@ -20,9 +20,14 @@ final class ArchiveApplication
         return $this->service->createArchive($paths, $name);
     }
 
-    public function list(ArchiveInfo $archive): string
+    public function list(ArchiveInfo $archive): iterable
     {
         return $this->service->listArchiveContent($archive);
+    }
+
+    public function listAllBorgArchives(): iterable
+    {
+        return $this->service->listArchives();
     }
 
     public function extract(ArchiveInfo $archiveInfo, string $destination): void

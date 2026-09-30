@@ -7,6 +7,8 @@ use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
+use Override;
+use PHPStan\BetterReflection\Reflection\Adapter\Exception\NotImplemented;
 use RuntimeException;
 
 final class TarArchiveDriver implements ArchiveDriver
@@ -81,6 +83,18 @@ final class TarArchiveDriver implements ArchiveDriver
         }
 
         return $result->output;
+    }
+
+    #[Override]
+    public function listArchives(): iterable
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
+    public function listArchive(ArchiveInfo $archive): iterable
+    {
+        throw new \Exception('Not implemented');
     }
 
     public function validateRequirements(): void

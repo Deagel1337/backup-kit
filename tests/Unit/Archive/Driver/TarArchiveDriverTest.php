@@ -20,6 +20,8 @@ final class TarArchiveDriverTest extends TestCase
     protected function tearDown(): void
     {
         unlink($this->archivePath);
+
+        parent::tearDown();
     }
 
     public function testAcceptsExistingTarArchive(): void

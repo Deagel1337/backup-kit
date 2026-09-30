@@ -19,6 +19,8 @@ final class CleanupBackupStepTest extends TestCase
                 unlink($file);
             }
         }
+
+        parent::tearDown();
     }
 
     public function testReturnsCorrectName(): void

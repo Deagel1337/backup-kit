@@ -76,6 +76,8 @@ final class ArchiveApplicationTest extends TestCase
         $this->removeDirectory($this->repository);
         $this->removeDirectory($this->sourceDirectory);
         $this->deleteTestFiles();
+
+        parent::tearDown();
     }
 
     private function removeDirectory(string $directory): void

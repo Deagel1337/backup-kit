@@ -48,6 +48,8 @@ final class BackupMariaDbTest extends TestCase
         $this->database->dropDatabase(
             $this->sourceConnection->database
         );
+
+        parent::tearDown();
     }
 
     public function testCreatesMariaDbBackup(): void

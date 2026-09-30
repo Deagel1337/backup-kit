@@ -20,6 +20,8 @@ final class BackupApplicationFilesStepTest extends TestCase
                 unlink($file);
             }
         }
+
+        parent::tearDown();
     }
 
     public function testReturnsCorrectName(): void

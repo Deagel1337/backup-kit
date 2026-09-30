@@ -21,6 +21,8 @@ final class CreateDatabaseBackupStepTest extends TestCase
                 unlink($file);
             }
         }
+
+        parent::tearDown();
     }
 
     public function testReturnsCorrectName(): void

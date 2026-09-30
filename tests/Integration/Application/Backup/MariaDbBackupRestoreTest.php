@@ -2,16 +2,16 @@
 
 namespace Tests\Integration\Application\Backup;
 
-use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
 use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Restore\CreateDatabaseBackupStep;
 use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
+use Tests\Integration\Support\MariaDbTestDatabase;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Tests\Integration\Support\MariaDbTestDatabase;
 
 final class MariaDbBackupRestoreTest extends TestCase
 {
@@ -71,6 +71,8 @@ final class MariaDbBackupRestoreTest extends TestCase
         $this->database->dropDatabase(
             $this->targetConnection->database
         );
+
+        parent::tearDown();
     }
 
     public function testBackupAndRestore(): void

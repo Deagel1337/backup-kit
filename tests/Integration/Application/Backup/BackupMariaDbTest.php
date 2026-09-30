@@ -2,7 +2,7 @@
 
 namespace Tests\Integration\Application\Backup;
 
-use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
@@ -52,12 +52,6 @@ final class BackupMariaDbTest extends TestCase
 
     public function testCreatesMariaDbBackup(): void
     {
-        /*
-         * ---------------------------------------------------------
-         * Arrange
-         * ---------------------------------------------------------
-         */
-
         $driver = new MariaDbBackupDriver(
             connection: $this->sourceConnection,
         );
@@ -72,19 +66,7 @@ final class BackupMariaDbTest extends TestCase
             . DIRECTORY_SEPARATOR
             . 'mariadb-application-test.sql';
 
-        /*
-         * ---------------------------------------------------------
-         * Act
-         * ---------------------------------------------------------
-         */
-
         $dump = $application->run($backupPath);
-
-        /*
-         * ---------------------------------------------------------
-         * Assert
-         * ---------------------------------------------------------
-         */
 
         self::assertSame(
             $backupPath,
@@ -110,9 +92,6 @@ final class BackupMariaDbTest extends TestCase
             filesize($dump->path)
         );
 
-        /*
-         * Der Dump muss tatsächlich SQL enthalten.
-         */
         $content = file_get_contents($dump->path);
 
         self::assertNotFalse($content);
@@ -131,12 +110,6 @@ final class BackupMariaDbTest extends TestCase
             'orders',
             $content
         );
-
-        /*
-         * ---------------------------------------------------------
-         * Cleanup
-         * ---------------------------------------------------------
-         */
 
         if (is_file($dump->path)) {
             unlink($dump->path);

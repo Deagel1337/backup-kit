@@ -43,7 +43,7 @@ final class BorgRestoreCommand extends Command
 
             $archives = [];
 
-            foreach($this->archive->listAllBorgArchives() as $archive) {
+            foreach($this->archive->listAllArchives() as $archive) {
                 $archives[$archive->path] = $archive;
             }
 

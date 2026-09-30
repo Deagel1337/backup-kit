@@ -17,6 +17,6 @@ final class CheckBackupExistsStep implements RestoreStep
 
     public function execute(RestoreContext $context): void
     {
-        $this->archive->listContent($context->archive);
+        $this->archive->listArchive($context->archive);
     }
 }

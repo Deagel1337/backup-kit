@@ -47,7 +47,7 @@ final class CheckBackupExistsStepTest extends TestCase
 
         $archiveDriver
             ->expects($this->once())
-            ->method('listContent')
+            ->method('listArchive')
             ->with($archive);
 
         $step = new CheckBackupExistsStep($archiveDriver);

@@ -4,7 +4,7 @@ namespace Deagel1337\Backup\Kit\Application\Archive;
 
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
-
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 final class ArchiveApplication
 {
     public function __construct(
@@ -20,16 +20,31 @@ final class ArchiveApplication
         return $this->service->createArchive($paths, $name);
     }
 
+    /**
+     * Lists the content of an archive
+     * @param ArchiveInfo $archive
+     * @return iterable<ArchiveEntry>
+     */
     public function list(ArchiveInfo $archive): iterable
     {
         return $this->service->listArchiveContent($archive);
     }
 
-    public function listAllBorgArchives(): iterable
+    /**
+     * Lists all archives in a directory or a different structure. It really depends on the driver implementation
+     * @return iterable
+     */
+    public function listAllArchives(): iterable
     {
         return $this->service->listArchives();
     }
 
+    /**
+     * Extract an archive
+     * @param ArchiveInfo $archiveInfo
+     * @param string $destination
+     * @return void
+     */
     public function extract(ArchiveInfo $archiveInfo, string $destination): void
     {
         $this->service->extractArchive($archiveInfo, $destination);

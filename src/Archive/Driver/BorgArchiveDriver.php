@@ -34,7 +34,11 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
-    // Damit das Trait auch den gleichen ProcessRunner nutzen kann oder auch einen anderen Runner
+    /**
+     * Needs to be implemented for the CommandTrait
+     * @return ProcessRunner
+     */
+    #[Override]
     protected function processRunner(): ProcessRunner
     {
         return $this->process;
@@ -62,84 +66,37 @@ final class BorgArchiveDriver implements ArchiveDriver
         return ['--rsh', $sshCommand];
     }
 
-    public function listRepositoryBackups(): void
-    {
-        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository]);
-
-        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
-
-        if($result->successful()) {
-            echo $result->output;
-        }
-
-        if($result->exitCode !== 0) {
-            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim ($result->errorOutput));
-        }
-    }
-
-    public function listArchiveContent(string $backupName): iterable 
-    {
-        $borgBackup = sprintf(
-            '%s::%s',
-            $this->repository,
-            $backupName
-        );
-
-        $command = [
-            'borg',
-            'list',
-            $this->rshOption(),
-            $borgBackup
-        ];
-
-        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
-
-        if(!$result->successful()) {
-            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
-        }
-
-        foreach($this->parseArchiveEntries($result->output) as $entry) {
-            yield $entry;
-        }
-    }
-
-    private function parseArchiveEntries(string $output): iterable
-    {
-        foreach(explode("\n", trim($output)) as $line) {
-            if($line === '') {
-                continue;
-            }
-
-            $data = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
-
-            yield new ArchiveEntry(
-                path: $data['path'],
-                size: (int) $data['size'],
-                type: $data['type']
-            );
-        }
-    }
-
     /**
      * Gibt die Einträge eines Archives zurück
      * @param ArchiveInfo $archive
      * @throws RuntimeException
      * @return iterable<ArchiveEntry>
      */
+    #[Override]
     public function listArchive(ArchiveInfo $archive): iterable
     {
         $command = [];
+        $format = '{path}{TAB}{size}{TAB}{type}{NL}';
 
-        if(strcmp($this->repository, $archive->path) != 0) {
+        if(str_contains($archive->path, $this->repository)) {
+            $command = array_merge(
+                ['borg', 'list'],
+                $this->rshOption(),
+                ['--format', $format],
+                [$archive->path]
+            );
+        } else if(strcmp($this->repository, $archive->path) != 0) {
             $command = array_merge(
                 ['borg', 'list'], 
-                $this->rshOption(), 
+                $this->rshOption(),
+                ['--format', $format],
                 [sprintf("%s::%s",$this->repository, $archive->path)]
             );
         } else {
             $command = array_merge(
                 ['borg', 'list'],
                 $this->rshOption(),
+                ['--format', $format],
                 [sprintf("%s", $this->repository)]
             );
         }
@@ -158,14 +115,29 @@ final class BorgArchiveDriver implements ArchiveDriver
 
             [$path, $size, $type] = explode("\t", $line, 3);
 
+            $type = $this->parseType($type);
+
             yield new ArchiveEntry(
                 path: $path,
                 size: (int) $size,
-                type: ArchiveEntryType::from($type)
+                type: $type
             );
         }
     }
 
+    private function parseType(string $mode): ArchiveEntryType {
+        return match ($mode) {
+            '-' => ArchiveEntryType::File,
+            'd' => ArchiveEntryType::Directory,
+            'l' => ArchiveEntryType::Symlink,
+        };
+    }
+
+    /**
+     * Gives an borg archive entry
+     * @throws RuntimeException
+     * @return iterable<ArchiveInfo>
+     */
     #[Override]
     public function listArchives(): iterable
     {
@@ -202,6 +174,13 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
+    /**
+     * @param array<string> $paths
+     * @param string $archiveName 
+     * @throws RuntimeException
+     * @return ArchiveInfo
+     */
+    #[Override]
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
         foreach ($paths as $path) {
@@ -227,6 +206,12 @@ final class BorgArchiveDriver implements ArchiveDriver
         return new ArchiveInfo($target, 'borg', 'borg');
     }
 
+    /**
+     * @param ArchiveInfo $archive
+     * @throws RuntimeException
+     * @return void
+     */
+    #[Override]
     public function validateArchive(ArchiveInfo $archive): void
     {
         if ($archive->driver !== 'borg') {
@@ -234,6 +219,13 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
+    /**
+     * @param ArchiveInfo $archive
+     * @param string $destination
+     * @throws RuntimeException
+     * @return void
+     */
+    #[Override]
     public function extractArchive(ArchiveInfo $archive, string $destination = '.'): void 
     {
         $this->validateArchive($archive);
@@ -272,6 +264,11 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
+    /**
+     * @throws RuntimeException
+     * @return void
+     */
+    #[Override]
     public function validateRequirements(): void
     {
         if (!$this->isCommandAvailable('borg')) {

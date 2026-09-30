@@ -17,6 +17,8 @@ final class ArchiveApplicationTest extends TestCase
     private string $sourceDirectory;
     private ProcOpenProcessRunner $processRunner;
 
+    private array $testFilesPaths = [];
+
     protected function setUp(): void
     {
         $this->repository = sys_get_temp_dir() . '/borg-test-repository-' . bin2hex(random_bytes(8));
@@ -46,26 +48,34 @@ final class ArchiveApplicationTest extends TestCase
 
     private function createTestFiles(): void
     {
-        file_put_contents(
-            $this->sourceDirectory . '/test1.txt',
-            'Test file 1',
-        );
+        $filePaths = [];
+        
+        for($i = 0; $i < 3; $i++) {
+            $filePaths[$i] = sprintf("%s/test%s.txt", $this->sourceDirectory, $i);
 
-        file_put_contents(
-            $this->sourceDirectory . '/test2.txt',
-            'Test file 2',
-        );
+            file_put_contents(
+                $filePaths[$i],
+                sprintf('Test file %s', $i)
+            );
+        }
 
-        file_put_contents(
-            $this->sourceDirectory . '/test3.txt',
-            'Test file 3',
-        );
+        $this->testFilesPaths = $filePaths;
+    }
+
+    private function deleteTestFiles(): void
+    {
+        if(count($this->testFilesPaths) > 0) {
+            foreach($this->testFilesPaths as $file) {
+                unlink($file);
+            }
+        }
     }
 
     protected function tearDown(): void
     {
         $this->removeDirectory($this->repository);
         $this->removeDirectory($this->sourceDirectory);
+        $this->deleteTestFiles();
     }
 
     private function removeDirectory(string $directory): void
@@ -107,11 +117,7 @@ final class ArchiveApplicationTest extends TestCase
         $application = new ArchiveApplication($service);
 
         $archive = $application->run(
-            paths: [
-                $this->sourceDirectory . '/test1.txt',
-                $this->sourceDirectory . '/test2.txt',
-                $this->sourceDirectory . '/test3.txt',
-            ],
+            paths: $this->testFilesPaths,
             name: 'test-borg-backup'
         );
 
@@ -136,15 +142,9 @@ final class ArchiveApplicationTest extends TestCase
 
         $application = new ArchiveApplication($service);
 
-        $paths = [
-            $this->sourceDirectory . '/test1.txt',
-            $this->sourceDirectory . '/test2.txt',
-            $this->sourceDirectory . '/test3.txt',
-        ];
-
         $archive = $application->run(
             name: 'test-borg-backup', 
-            paths: $paths 
+            paths: $this->testFilesPaths 
         );
 
         $this->assertInstanceOf(ArchiveInfo::class, $archive);
@@ -152,7 +152,7 @@ final class ArchiveApplicationTest extends TestCase
         $archiveContent = $application->list($archive);
 
         foreach($archiveContent as $index => $entry) {
-            $expectedPath = ltrim($paths[$index], '/');
+            $expectedPath = ltrim($this->testFilesPaths[$index], '/');
             $this->assertEquals($expectedPath, $entry->path);
         }
     }
@@ -170,20 +170,16 @@ final class ArchiveApplicationTest extends TestCase
 
         $application = new ArchiveApplication($service);
 
-        $paths = [
-            $this->sourceDirectory . '/test1.txt',
-        ];
-
         $createdArchives = [];
 
         $createdArchives[] = $application->run(
             name: 'test-backup-1',
-            paths: $paths
+            paths: $this->testFilesPaths
         );
 
         $createdArchives[] = $application->run(
             name: 'test-backup-2',
-            paths: $paths,
+            paths: $this->testFilesPaths,
         );
 
         foreach($createdArchives as $archive) {
@@ -208,16 +204,12 @@ final class ArchiveApplicationTest extends TestCase
 
         $application = new ArchiveApplication($service);
 
-        $paths = [
-            $this->sourceDirectory . '/test1.txt',
-        ];
-
-        $archiveToExtract = $application->run($paths, 'backup-to-extract');
+        $archiveToExtract = $application->run(name: 'backup-to-extract', paths: $this->testFilesPaths);
 
         $this->assertInstanceOf(ArchiveInfo::class, $archiveToExtract);
 
-        $application->extract($archiveToExtract, '');
+        $application->extract($archiveToExtract, $this->sourceDirectory);
 
-        $this->assertFileExists($paths[0]);
+        $this->assertFileExists($this->testFilesPaths[0]);
     }
 }

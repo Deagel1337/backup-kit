@@ -9,9 +9,7 @@ use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
-use FilesystemIterator;
 use PHPUnit\Framework\TestCase;
-use RecursiveIteratorIterator;
 
 final class ArchiveApplicationTest extends TestCase
 {
@@ -199,6 +197,27 @@ final class ArchiveApplicationTest extends TestCase
 
     public function test_it_extracts_content_of_archive(): void
     {
-        
+        $driver = new BorgArchiveDriver(
+            repository: $this->repository,
+            passphrase: '',
+            sshPort: 22,
+            process: $this->processRunner,
+        );
+
+        $service = new ArchiveService($driver);
+
+        $application = new ArchiveApplication($service);
+
+        $paths = [
+            $this->sourceDirectory . '/test1.txt',
+        ];
+
+        $archiveToExtract = $application->run($paths, 'backup-to-extract');
+
+        $this->assertInstanceOf(ArchiveInfo::class, $archiveToExtract);
+
+        $application->extract($archiveToExtract, '');
+
+        $this->assertFileExists($paths[0]);
     }
 }

@@ -19,7 +19,6 @@ final class Application extends SymfonyApplication
     public function __construct(
         ArchiveApplication $archive,
         DatabaseBackupDriver $driver,
-        ArchiveInfo $repository
     )
     {
         parent::__construct(
@@ -28,7 +27,7 @@ final class Application extends SymfonyApplication
         );
 
         $this->addCommand(
-            new BorgRestoreCommand($archive, $repository)
+            new BorgRestoreCommand($archive)
         );
 
         $this->addCommand(

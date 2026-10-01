@@ -15,8 +15,10 @@ final class CleanupBackupStep implements BackupStep
 
     public function execute(BackupContext $context): void
     {
-        if(!unlink($context->dump->path)) {
-            throw new RuntimeException('Das Backup konnte nicht gelöscht werden.');
+        if($context->dump) {
+            if(!unlink($context->dump->path)) {
+                throw new RuntimeException('Das Backup konnte nicht gelöscht werden.');
+            }
         }
     }
 }

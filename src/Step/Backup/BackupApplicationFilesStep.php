@@ -9,6 +9,12 @@ use RuntimeException;
 
 final class BackupApplicationFilesStep implements BackupStep
 {
+    /**
+     * 
+     * @param ArchiveDriver $archive
+     * @param string $name
+     * @param array<string> $paths
+     */
     public function __construct(
         private readonly ArchiveDriver $archive,
         private string $name,

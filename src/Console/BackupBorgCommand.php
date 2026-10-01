@@ -19,6 +19,13 @@ final class BackupBorgCommand
         private readonly ArchiveApplication $archive,
     ) {}
 
+    /**
+     * @param string $name
+     * @param array<string> $paths
+     * @param OutputInterface $output
+     * @throws RuntimeException
+     * @return int
+     */
     public function __invoke(
         #[Argument('Name of the archive')] string $name,
         #[Argument('Paths to files or direcotries that needed to be archived')] array $paths,

@@ -111,25 +111,30 @@ final class MariaDbTestDatabase
         return (int) $statement->fetchColumn() > 0;
     }
 
-    public function fetchAll(
-        string $database,
-        string $sql
-    ): array {
+    /**
+    * @return array<int, array<string, mixed>>
+    */
+    public function fetchAll(string $database, string $sql): array
+    {
         $pdo = $this->connect($database);
 
         $statement = $pdo->query($sql);
 
-        $result = $statement->fetchAll();
-
-        if ($result === false) {
+        if ($statement === false) {
             throw new RuntimeException(
                 'Die Abfrage konnte nicht ausgeführt werden.'
             );
         }
 
+        /** @var array<int, array<string, mixed>> $result */
+        $result =  $statement->fetchAll();
+
         return $result;
     }
 
+    /**
+    * @return array<int, array<string, mixed>>
+    */
     public function fetchTableData(
         string $database,
         string $table
@@ -143,13 +148,15 @@ final class MariaDbTestDatabase
             )
         );
 
-        $result = $statement->fetchAll();
-
-        if ($result === false) {
+        if ($statement === false) {
             throw new RuntimeException(
                 "Die Tabelle konnte nicht gelesen werden: {$table}"
             );
         }
+
+        
+        /** @var array<int, array<string, mixed>> $result */
+        $result =  $statement->fetchAll();
 
         return $result;
     }
@@ -166,6 +173,12 @@ final class MariaDbTestDatabase
                 $this->escapeIdentifier($table)
             )
         );
+
+        if ($statement === false) {
+            throw new RuntimeException(
+                "Die Tabelle konnte nicht gelesen werden: {$table}"
+            );
+        }
 
         return (int) $statement->fetchColumn();
     }

@@ -17,6 +17,9 @@ final class ArchiveApplicationTest extends TestCase
     private string $sourceDirectory;
     private ProcOpenProcessRunner $processRunner;
 
+    /**
+     * @var string[]
+     */
     private array $testFilesPaths = [];
 
     protected function setUp(): void
@@ -94,6 +97,7 @@ final class ArchiveApplicationTest extends TestCase
             \RecursiveIteratorIterator::CHILD_FIRST,
         );
 
+        /** @var \SplFileInfo $item */
         foreach ($iterator as $item) {
             if ($item->isDir()) {
                 rmdir($item->getPathname());
@@ -152,7 +156,8 @@ final class ArchiveApplicationTest extends TestCase
         $this->assertInstanceOf(ArchiveInfo::class, $archive);
 
         $archiveContent = $application->list($archive);
-
+        
+        /** @var int $index */
         foreach($archiveContent as $index => $entry) {
             $expectedPath = ltrim($this->testFilesPaths[$index], '/');
             $this->assertEquals($expectedPath, $entry->path);

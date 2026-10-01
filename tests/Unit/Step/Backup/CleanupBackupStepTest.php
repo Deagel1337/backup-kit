@@ -10,6 +10,10 @@ use RuntimeException;
 
 final class CleanupBackupStepTest extends TestCase
 {
+    /**
+     * Paths of temporary created files
+     * @var array<string>
+     */
     private array $temporaryFiles = [];
 
     protected function tearDown(): void

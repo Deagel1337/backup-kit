@@ -45,7 +45,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     private function rshOption(): array
     {
@@ -67,7 +67,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
-     * Gibt die Einträge eines Archives zurück
+     * Returns the contents of the archive
      * @param ArchiveInfo $archive
      * @throws RuntimeException
      * @return iterable<ArchiveEntry>
@@ -125,11 +125,17 @@ final class BorgArchiveDriver implements ArchiveDriver
         }
     }
 
+    /**
+     * Prases the type of the entry
+     * @param string $mode
+     * @return ArchiveEntryType
+     */
     private function parseType(string $mode): ArchiveEntryType {
         return match ($mode) {
             '-' => ArchiveEntryType::File,
             'd' => ArchiveEntryType::Directory,
             'l' => ArchiveEntryType::Symlink,
+            default => ArchiveEntryType::Undefined 
         };
     }
 
@@ -162,7 +168,7 @@ final class BorgArchiveDriver implements ArchiveDriver
 
             $parts = preg_split('/\s{2,}/', trim($line));
 
-            if($parts == false || !isset($parts[0])) {
+            if($parts == false) {
                 continue;
             }
 
@@ -175,6 +181,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
+     * Creates an Archive
      * @param array<string> $paths
      * @param string $archiveName 
      * @throws RuntimeException
@@ -207,6 +214,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
+     * Validates the archive.
      * @param ArchiveInfo $archive
      * @throws RuntimeException
      * @return void
@@ -220,6 +228,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
+     * Extracts the content to a given destination.
      * @param ArchiveInfo $archive
      * @param string $destination
      * @throws RuntimeException
@@ -265,6 +274,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
+     * Validates the integrity of the archive.
      * @throws RuntimeException
      * @return void
      */

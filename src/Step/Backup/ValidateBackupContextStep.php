@@ -18,9 +18,17 @@ final class ValidateBackupContextStep implements BackupStep
         return "Validiere den Context für das Erstellen eines Dumps einer Datenbank\n";
     }
 
+    /**
+     * Validates the context of on archive for backup steps
+     * @param BackupContext $context
+     * @return void
+     */
     public function execute(BackupContext $context): void
     {
         $this->databaseBackupDriver->validateRequirements();
-        $this->databaseBackupDriver->validateDump($context->dump);
+
+        if($context->dump && $context->dump->exists()) {
+            $this->databaseBackupDriver->validateDump($context->dump);
+        }
     }
 }

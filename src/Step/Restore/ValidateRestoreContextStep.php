@@ -24,8 +24,13 @@ final class ValidateRestoreContextStep implements RestoreStep
     public function execute(RestoreContext $context): void
     {
         $this->databaseBackupDriver->validateRequirements();
-        $this->databaseBackupDriver->validateDump($context->dump);
         $this->archiveDriver->validateRequirements();
-        $this->archiveDriver->validateArchive($context->archive);
+        
+        if($context->dump) {
+            $this->databaseBackupDriver->validateDump($context->dump);
+        }
+        if($context->archive) {
+            $this->archiveDriver->validateArchive($context->archive);
+        }
     }
 }

@@ -11,6 +11,10 @@ use RuntimeException;
 
 final class BackupApplicationFilesStepTest extends TestCase
 {
+    /**
+     * Paths of temporary files
+     * @var array<string>
+     */
     private array $temporaryFiles = [];
 
     protected function tearDown(): void

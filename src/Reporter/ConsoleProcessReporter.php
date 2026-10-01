@@ -6,6 +6,11 @@ use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
 
 final class ConsoleProcessReporter implements ProcessReporter
 {
+     /**
+     * Summary of command
+     * @param array<string> $command
+     * @return void
+     */
     public function command(array $command): void
     {
         echo PHP_EOL;
@@ -13,6 +18,10 @@ final class ConsoleProcessReporter implements ProcessReporter
         echo ' ' . $this->formatCommand($command) . PHP_EOL;
     }
 
+    /**
+     * @param array<string> $command
+     * @return string
+     */
     private function formatCommand(array $command): string
     {
         return implode(' ', array_map(

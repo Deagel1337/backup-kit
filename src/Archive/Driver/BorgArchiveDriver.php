@@ -148,7 +148,7 @@ final class BorgArchiveDriver implements ArchiveDriver
     public function listArchives(): iterable
     {
         $command = array_merge(
-            ['borg', 'list'],
+            ['borg', 'list', '--format', '{archive}{NL}'],
             $this->rshOption(),
             [$this->repository],
         );

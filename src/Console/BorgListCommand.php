@@ -6,7 +6,6 @@ namespace Deagel1337\Backup\Kit\Console;
 
 use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,13 +28,7 @@ final class BorgListCommand
                 throw new RuntimeException('No repsotiory in environment defined.');
             }
 
-            $repositoryInfo = new ArchiveInfo(
-                path: $repository,
-                driver: 'borg',
-                format: 'borg',
-            );
-
-            $proccOutput = $this->archive->list($repositoryInfo);
+            $proccOutput = $this->archive->listAllArchives();
             
             /** @var ArchiveEntry $proccO */
             foreach($proccOutput as $proccO) {

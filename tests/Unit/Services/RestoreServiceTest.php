@@ -11,10 +11,19 @@ use Deagel1337\Backup\Kit\Services\RestoreService;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 
 final class RestoreServiceTest extends TestCase
 {
+    /**
+     * Creates a mock service
+     * @param array<RestoreStep> $steps
+     * @return array{
+     *   progress: MockObject,
+     *   service: RestoreService
+    * }
+     */
     private function createRestoreService(array $steps): array
     {
         $progress = $this->createMock(ProgressReporter::class);

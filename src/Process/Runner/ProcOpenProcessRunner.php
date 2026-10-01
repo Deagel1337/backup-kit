@@ -9,6 +9,16 @@ use RuntimeException;
 
 final class ProcOpenProcessRunner implements ProcessRunner
 {
+    /**
+     * Runs a command with php processes
+     * @param list<string> $command
+     * @param array<string, mixed> $environment
+     * @param string | null $workingDirectory
+     * @param string | null $outputFile
+     * @param string | null $inputFile
+     * @throws RuntimeException
+     * @return ProcessResult
+     */
     public function run(
         array $command,
         array $environment = [],

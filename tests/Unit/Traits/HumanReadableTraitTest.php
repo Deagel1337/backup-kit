@@ -7,18 +7,14 @@ use PHPUnit\Framework\TestCase;
 
 final class HumanReadableTraitTest extends TestCase
 {
-    private object $testClass;
+    /**
+     * Summary of testClass
+     */
+    private HumanReadableTestClass $testClass;
 
     protected function setUp(): void
     {
-        $this->testClass = new class {
-            use HumanReadableTrait;
-
-            public function format(float $bytes, int $precision = 2): string
-            {
-                return $this->formatBytes($bytes, $precision);
-            }
-        };
+        $this->testClass = new HumanReadableTestClass();
     }
 
     public function testFormatsBytes(): void

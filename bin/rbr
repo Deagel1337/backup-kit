@@ -50,7 +50,6 @@ $databaseDriver = new MariaDbBackupDriver(
 
 $application = new Application(
     archive: $archiveApplication,
-    repository: $repositoryInfo,
     driver: $databaseDriver,
 );
 

@@ -6,17 +6,17 @@ namespace Deagel1337\Backup\Kit\Console;
 
 use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'borg:restore')]
 final class BorgRestoreCommand extends Command
 {
-        protected static $defaultName = 'borg:restore';
+        protected static string $defaultName = 'borg:restore';
 
         public function __construct(
             private readonly ArchiveApplication $archive,
@@ -39,20 +39,23 @@ final class BorgRestoreCommand extends Command
         ): int {
             $io = new SymfonyStyle($input, $output);
 
-            $destination = (string) $input->getArgument('destination');
+            /** @var string $destination */
+            $destination = $input->getArgument('destination');
 
             $archives = [];
 
+            /** @var ArchiveInfo $archive */
             foreach($this->archive->listAllArchives() as $archive) {
                 $archives[$archive->path] = $archive;
             }
 
-            $selected = $io->choice(
+            /** @var string $selectedIndex */
+            $selectedIndex = $io->choice(
                 'Backup auswählen',
                 array_keys($archives),
             );
 
-            $archive = $archives[$selected];
+            $archive = $archives[$selectedIndex];
 
             $this->archive->extract(
                 archiveInfo: $archive,

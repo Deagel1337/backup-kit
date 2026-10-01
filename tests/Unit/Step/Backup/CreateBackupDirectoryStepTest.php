@@ -9,6 +9,10 @@ use RuntimeException;
 
 final class CreateBackupDirectoryStepTest extends TestCase
 {
+    /**
+     * Paths of temporary directories
+     * @var array<string>
+     */
     private array $temporaryDirectories = [];
 
     protected function tearDown(): void

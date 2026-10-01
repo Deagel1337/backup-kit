@@ -188,6 +188,8 @@ final class BorgArchiveDriverTest extends TestCase
                 [
                     'borg',
                     'list',
+                    '--format',
+                    '{archive}{NL}',
                     '--rsh',
                     "ssh -p '2222'",
                     '/var/lib/borg',
@@ -304,6 +306,8 @@ final class BorgArchiveDriverTest extends TestCase
                 [
                     'borg',
                     'list',
+                    '--format',
+                    '{archive}{NL}',
                     '--rsh',
                     "ssh -p '2222'",
                     '/var/lib/borg',

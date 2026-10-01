@@ -4,7 +4,8 @@ namespace Deagel1337\Backup\Kit\Step\Restore;
 
 use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
-use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver; 
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use RuntimeException; 
 
 final class RestoreDatabaseStep implements RestoreStep
 {
@@ -20,6 +21,10 @@ final class RestoreDatabaseStep implements RestoreStep
 
     public function execute(RestoreContext $context): void
     {
+        if(!$context->dump) {
+            throw new RuntimeException("No dump given");
+        }
+        
         $this->driver->restoreDump($context->dump);
     }
 }

@@ -12,6 +12,10 @@ use RuntimeException;
 
 final class CreateDatabaseBackupStepTest extends TestCase
 {
+    /**
+     * String paths of temporary files.
+     * @var array<string>
+     */
     private array $temporaryFiles = [];
 
     protected function tearDown(): void

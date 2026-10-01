@@ -55,7 +55,7 @@ final class ValidateRestoreContextStepTest extends TestCase
             ->with($dump)
             ->willReturnCallback(
                 function () use (&$step): void {
-                    $this->assertSame(1, $step++);
+                    $this->assertSame(2, $step++);
                 }
             );
 
@@ -64,7 +64,7 @@ final class ValidateRestoreContextStepTest extends TestCase
             ->method('validateRequirements')
             ->willReturnCallback(
                 function () use (&$step): void {
-                    $this->assertSame(2, $step++);
+                    $this->assertSame(1, $step++);
                 }
             );
 
@@ -144,7 +144,7 @@ final class ValidateRestoreContextStepTest extends TestCase
             );
 
         $archiveDriver
-            ->expects($this->never())
+            ->expects($this->once())
             ->method('validateRequirements');
 
         $archiveDriver
@@ -176,7 +176,7 @@ final class ValidateRestoreContextStepTest extends TestCase
             ->method('validateRequirements');
 
         $databaseDriver
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('validateDump');
 
         $archiveDriver

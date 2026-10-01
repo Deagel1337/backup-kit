@@ -134,11 +134,16 @@ final class SqliteBackupDriverTest extends TestCase
             ->method('run')
             ->with(
                 $this->callback(
+                    /**
+                    * @param array<int, string> $command
+                    */
                     function (array $command): bool {
+                        /** @var string $backupCommand */
+                        $backupCommand = $command[2];
+
                         return $command[0] === 'sqlite3'
                             && $command[1] === '/tmp/database.sqlite'
-                            && str_starts_with($command[2], '.backup ')
-                            && str_contains($command[2], '.backup');
+                            && str_starts_with($backupCommand, '.backup ');
                     }
                 ),
                 [],

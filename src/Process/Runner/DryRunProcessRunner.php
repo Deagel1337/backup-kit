@@ -11,6 +11,14 @@ final class DryRunProcessRunner implements ProcessRunner
         private readonly ProcessReporter $reporter,
     ) {}
 
+    /**
+     * @param array<string> $command
+     * @param array<string> $environment
+     * @param string | null $workingDirectory
+     * @param string | null $outputFile
+     * @param string | null $inputFile
+     * @return ProcessResult
+     */
     public function run(
         array $command,
         array $environment = [],

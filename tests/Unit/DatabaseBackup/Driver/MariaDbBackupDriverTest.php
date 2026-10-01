@@ -195,7 +195,7 @@ final class MariaDbBackupDriverTest extends TestCase
     {
         $process = $this->createMock(ProcessRunner::class);
 
-        $outputFile = null;
+        $outputFile = '';
 
         $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
         mkdir($directory, 0777, true);
@@ -215,9 +215,12 @@ final class MariaDbBackupDriverTest extends TestCase
                 ) use (&$outputFile): ProcessResult {
                     $outputFile = $outputFileArgument;
 
+                    if($outputFile === null) {
+                        return new ProcessResult(1, '', 'Filename is missing');
+                    }
                     // Simuliere, dass mariadb-dump eine Datei erzeugt hat,
                     // bevor der Prozess fehlschlägt.
-                    file_put_contents($outputFileArgument, 'partial dump');
+                    file_put_contents($outputFile, 'partial dump');
 
                     return new ProcessResult(
                         1,
@@ -237,10 +240,7 @@ final class MariaDbBackupDriverTest extends TestCase
             $this->driver($process)->createDump($destination);
         } finally {
             $this->assertNotNull($outputFile);
-
-            if ($outputFile !== null) {
-                $this->assertFileDoesNotExist($outputFile);
-            }
+            $this->assertFileDoesNotExist($outputFile);
 
             if (is_dir($directory)) {
                 rmdir($directory);

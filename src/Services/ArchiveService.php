@@ -25,7 +25,7 @@ final class ArchiveService
     /**
      * Erstellt ein Archiv eines Types
      * @param array<string> $paths Die Pfade zu den Dateien/Ordner
-     * @param string $archiveName Der Name vom Archiv
+     * @param string $archiveName
      * @return ArchiveInfo Gibt die Informationen zum erstellten Archiv zurück
      */
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
@@ -58,6 +58,10 @@ final class ArchiveService
         return $this->driver->listArchive($archive);
     }
 
+    /**
+     * list all Alrchives in the archive directory. It dependes on the driver implementation
+     * @return iterable<ArchiveInfo>
+     */
     public function listArchives(): iterable
     {
         return $this->driver->listArchives();

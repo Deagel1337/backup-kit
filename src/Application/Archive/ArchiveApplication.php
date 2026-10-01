@@ -32,7 +32,7 @@ final class ArchiveApplication
 
     /**
      * Lists all archives in a directory or a different structure. It really depends on the driver implementation
-     * @return iterable
+     * @return iterable<ArchiveInfo>
      */
     public function listAllArchives(): iterable
     {

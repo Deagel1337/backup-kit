@@ -2,7 +2,7 @@
 
 namespace Deagel1337\Backup\Kit\Console;
 
-use Deagel1337\Backup\Kit\Application\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Backup\CheckDiskSpaceStep;

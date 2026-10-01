@@ -12,7 +12,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->runner = new ProcOpenProcessRunner();
+        $this->runner = new ProcOpenProcessRunner([basename(PHP_BINARY)]);
     }
 
     public function testRunsCommandSuccessfully(): void
@@ -146,15 +146,29 @@ final class ProcOpenProcessRunnerTest extends TestCase
         $this->assertSame('test-value', $result->output);
     }
 
+    public function testThrowsExceptionWhenCommandIsNotAllowed(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Befehl "not-allowed" ist nicht erlaubt.'
+        );
+
+        $this->runner->run([
+            'not-allowed',
+        ]);
+    }
+
     public function testThrowsExceptionWhenProcessCannotBeStarted(): void
     {
+        $runner = new ProcOpenProcessRunner(['does-not-exist']);
+
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
             'Der Prozess konnte nicht gestartet werden.'
         );
 
-        $this->runner->run([
-            '/this/command/does/not/exist',
+        $runner->run([
+            '/usr/bin/does-not-exist',
         ]);
     }
 }

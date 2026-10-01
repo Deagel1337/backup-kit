@@ -9,6 +9,27 @@ use RuntimeException;
 
 final class ProcOpenProcessRunner implements ProcessRunner
 {
+    private const DEFAULT_ALLOWED_COMMANDS = [
+        'borg',
+        'tar',
+        'mariadb-dump',
+        'mariadb',
+        'pg_dump',
+        'psql',
+        'sqlite3',
+    ];
+
+    /** @var list<string> */
+    private readonly array $allowedCommands;
+
+    /**
+     * @param list<string> $allowedCommands
+     */
+    public function __construct(array $allowedCommands = self::DEFAULT_ALLOWED_COMMANDS)
+    {
+        $this->allowedCommands = $allowedCommands;
+    }
+
     /**
      * Runs a command with php processes
      * @param list<string> $command
@@ -25,8 +46,15 @@ final class ProcOpenProcessRunner implements ProcessRunner
         ?string $workingDirectory = null,
         ?string $outputFile = null,
         ?string $inputFile = null
-    ): ProcessResult 
+    ): ProcessResult
     {
+        $executable = basename($command[0] ?? '');
+        if (!in_array($executable, $this->allowedCommands, true)) {
+            throw new RuntimeException(
+                sprintf('Befehl "%s" ist nicht erlaubt.', $executable)
+            );
+        }
+
         $stdout = $outputFile !== null
             ? ['file', $outputFile, 'w']
             : ['pipe', 'w'];

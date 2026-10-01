@@ -16,7 +16,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
     {
         parent::setUp();
 
-        $this->runner = new ProcOpenProcessRunner();
+        $this->runner = new ProcOpenProcessRunner([basename(PHP_BINARY)]);
     }
 
     public function testRunsProcessSuccessfully(): void
@@ -155,12 +155,24 @@ final class ProcOpenProcessRunnerTest extends TestCase
         }
     }
 
-    public function testThrowsExceptionWhenProcessCannotBeStarted(): void
+    public function testThrowsExceptionWhenCommandIsNotAllowed(): void
     {
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Befehl "not-allowed" ist nicht erlaubt.');
 
         $this->runner->run([
-            '/this/command/does/not/exist',
+            'not-allowed',
+        ]);
+    }
+
+    public function testThrowsExceptionWhenProcessCannotBeStarted(): void
+    {
+        $runner = new ProcOpenProcessRunner(['does-not-exist']);
+
+        $this->expectException(RuntimeException::class);
+
+        $runner->run([
+            '/usr/bin/does-not-exist',
         ]);
     }
 }

@@ -9,6 +9,8 @@ Backup-Kit ist eine PHP-Bibliothek zum Erstellen und Wiederherstellen von Datenb
 - Lokale Archive im TAR-Format
 - Validierung von Dumps und Archiven sowie Fortschritts- und Prozessausgabe
 
+Eine Übersicht der Schichten, Abläufe und Erweiterungspunkte steht in der [Architekturdokumentation](./ARCHITECTURE.md).
+
 ## Voraussetzungen
 
 - PHP 8.3 oder neuer

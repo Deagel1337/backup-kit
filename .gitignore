@@ -5,3 +5,5 @@ vendor/
 .vscode
 tmp/
 /docs/api
+.idea
+before-restore.sql

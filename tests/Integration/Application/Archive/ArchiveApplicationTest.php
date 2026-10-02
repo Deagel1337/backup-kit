@@ -14,7 +14,9 @@ use PHPUnit\Framework\TestCase;
 final class ArchiveApplicationTest extends TestCase
 {
     private string $repository;
+
     private string $sourceDirectory;
+
     private ProcOpenProcessRunner $processRunner;
 
     /**
@@ -24,14 +26,14 @@ final class ArchiveApplicationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->repository = sys_get_temp_dir() . '/borg-test-repository-' . bin2hex(random_bytes(8));
+        $this->repository = sys_get_temp_dir().'/borg-test-repository-'.bin2hex(random_bytes(8));
 
-        $this->sourceDirectory = sys_get_temp_dir() . '/borg-test-source-' . bin2hex(random_bytes(8));
+        $this->sourceDirectory = sys_get_temp_dir().'/borg-test-source-'.bin2hex(random_bytes(8));
 
         mkdir($this->repository, 0700, true);
         mkdir($this->sourceDirectory, 0700, true);
 
-        $this->processRunner = new ProcOpenProcessRunner();
+        $this->processRunner = new ProcOpenProcessRunner;
 
         $this->initializeRepository();
         $this->createTestFiles();
@@ -52,9 +54,9 @@ final class ArchiveApplicationTest extends TestCase
     private function createTestFiles(): void
     {
         $filePaths = [];
-        
-        for($i = 0; $i < 3; $i++) {
-            $filePaths[$i] = sprintf("%s/test%s.txt", $this->sourceDirectory, $i);
+
+        for ($i = 0; $i < 3; $i++) {
+            $filePaths[$i] = sprintf('%s/test%s.txt', $this->sourceDirectory, $i);
 
             file_put_contents(
                 $filePaths[$i],
@@ -67,8 +69,8 @@ final class ArchiveApplicationTest extends TestCase
 
     private function deleteTestFiles(): void
     {
-        if(count($this->testFilesPaths) > 0) {
-            foreach($this->testFilesPaths as $file) {
+        if (count($this->testFilesPaths) > 0) {
+            foreach ($this->testFilesPaths as $file) {
                 unlink($file);
             }
         }
@@ -85,7 +87,7 @@ final class ArchiveApplicationTest extends TestCase
 
     private function removeDirectory(string $directory): void
     {
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             return;
         }
 
@@ -149,16 +151,16 @@ final class ArchiveApplicationTest extends TestCase
         $application = new ArchiveApplication($service);
 
         $archive = $application->run(
-            name: 'test-borg-backup', 
-            paths: $this->testFilesPaths 
+            name: 'test-borg-backup',
+            paths: $this->testFilesPaths
         );
 
         $this->assertInstanceOf(ArchiveInfo::class, $archive);
 
         $archiveContent = $application->list($archive);
-        
+
         /** @var int $index */
-        foreach($archiveContent as $index => $entry) {
+        foreach ($archiveContent as $index => $entry) {
             $expectedPath = ltrim($this->testFilesPaths[$index], '/');
             $this->assertEquals($expectedPath, $entry->path);
         }
@@ -189,12 +191,12 @@ final class ArchiveApplicationTest extends TestCase
             paths: $this->testFilesPaths,
         );
 
-        foreach($createdArchives as $archive) {
+        foreach ($createdArchives as $archive) {
             $this->assertInstanceOf(ArchiveInfo::class, $archive);
         }
 
-        foreach($application->listAllArchives() as $archive) {
-            $this->assertContainsEquals($archive, $createdArchives);            
+        foreach ($application->listAllArchives() as $archive) {
+            $this->assertContainsEquals($archive, $createdArchives);
         }
     }
 

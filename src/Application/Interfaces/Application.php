@@ -1,6 +1,3 @@
 <?php
 
-interface Application
-{
-    
-}
+interface Application {}

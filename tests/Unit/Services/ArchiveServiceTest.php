@@ -8,10 +8,9 @@ use Deagel1337\Backup\Kit\Services\ArchiveService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
 final class ArchiveServiceTest extends TestCase
 {
-    public function testCreateArchiveDelegatesToDriver(): void
+    public function test_create_archive_delegates_to_driver(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -48,7 +47,7 @@ final class ArchiveServiceTest extends TestCase
         );
     }
 
-    public function testCreateArchivePropagatesDriverException(): void
+    public function test_create_archive_propagates_driver_exception(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -74,7 +73,7 @@ final class ArchiveServiceTest extends TestCase
         );
     }
 
-    public function testExtractArchiveDelegatesToDriver(): void
+    public function test_extract_archive_delegates_to_driver(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -100,7 +99,7 @@ final class ArchiveServiceTest extends TestCase
         );
     }
 
-    public function testExtractArchivePropagatesDriverException(): void
+    public function test_extract_archive_propagates_driver_exception(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 

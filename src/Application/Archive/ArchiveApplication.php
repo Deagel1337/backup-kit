@@ -2,9 +2,10 @@
 
 namespace Deagel1337\Backup\Kit\Application\Archive;
 
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+
 final class ArchiveApplication
 {
     public function __construct(
@@ -12,8 +13,7 @@ final class ArchiveApplication
     ) {}
 
     /**
-     * @param array<string> $paths
-     * @param string $name
+     * @param  array<string>  $paths
      */
     public function run(array $paths, string $name): ArchiveInfo
     {
@@ -22,7 +22,7 @@ final class ArchiveApplication
 
     /**
      * Lists the content of an archive
-     * @param ArchiveInfo $archive
+     *
      * @return iterable<ArchiveEntry>
      */
     public function list(ArchiveInfo $archive): iterable
@@ -32,6 +32,7 @@ final class ArchiveApplication
 
     /**
      * Lists all archives in a directory or a different structure. It really depends on the driver implementation
+     *
      * @return iterable<ArchiveInfo>
      */
     public function listAllArchives(): iterable
@@ -41,13 +42,10 @@ final class ArchiveApplication
 
     /**
      * Extract an archive
-     * @param ArchiveInfo $archiveInfo
-     * @param string $destination
-     * @return void
      */
     public function extract(ArchiveInfo $archiveInfo, string $destination): void
     {
-        if(strcmp($destination, '') === 0) {
+        if (strcmp($destination, '') === 0) {
             $destination = '.';
         }
 

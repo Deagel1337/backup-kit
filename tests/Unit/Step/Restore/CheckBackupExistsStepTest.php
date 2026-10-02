@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CheckBackupExistsStepTest extends TestCase
 {
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 
@@ -23,7 +23,7 @@ final class CheckBackupExistsStepTest extends TestCase
         );
     }
 
-    public function testChecksBackupWithArchiveDriver(): void
+    public function test_checks_backup_with_archive_driver(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 

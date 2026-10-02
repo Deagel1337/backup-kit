@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CommandTraitTest extends TestCase
 {
-    public function testReturnsTrueWhenCommandSucceeds(): void
+    public function test_returns_true_when_command_succeeds(): void
     {
         $runner = $this->createMock(ProcessRunner::class);
 
@@ -28,13 +28,13 @@ final class CommandTraitTest extends TestCase
                 )
             );
 
-        $testClass = new class ($runner) {
+        $testClass = new class($runner)
+        {
             use CommandTrait;
 
             public function __construct(
                 private ProcessRunner $runner
-            ) {
-            }
+            ) {}
 
             protected function processRunner(): ProcessRunner
             {
@@ -47,7 +47,7 @@ final class CommandTraitTest extends TestCase
         );
     }
 
-    public function testReturnsFalseWhenCommandFails(): void
+    public function test_returns_false_when_command_fails(): void
     {
         $runner = $this->createMock(ProcessRunner::class);
 
@@ -66,13 +66,13 @@ final class CommandTraitTest extends TestCase
                 )
             );
 
-        $testClass = new class ($runner) {
+        $testClass = new class($runner)
+        {
             use CommandTrait;
 
             public function __construct(
                 private ProcessRunner $runner
-            ) {
-            }
+            ) {}
 
             protected function processRunner(): ProcessRunner
             {

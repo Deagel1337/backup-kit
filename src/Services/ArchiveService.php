@@ -2,9 +2,9 @@
 
 namespace Deagel1337\Backup\Kit\Services;
 
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 
 /**
  * Ein Orchestrator für den Driver. Die Klasse ist so gedacht klein zu sein.
@@ -14,7 +14,6 @@ final class ArchiveService
 {
     /**
      * Injetziert einen Driver, der für die Archiverung verantwortlich ist und keine genauen Implementationsdetails hat
-     * @param ArchiveDriver $driver
      */
     public function __construct(
         private readonly ArchiveDriver $driver
@@ -24,8 +23,8 @@ final class ArchiveService
 
     /**
      * Erstellt ein Archiv eines Types
-     * @param array<string> $paths Die Pfade zu den Dateien/Ordner
-     * @param string $archiveName
+     *
+     * @param  array<string>  $paths  Die Pfade zu den Dateien/Ordner
      * @return ArchiveInfo Gibt die Informationen zum erstellten Archiv zurück
      */
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
@@ -35,9 +34,9 @@ final class ArchiveService
 
     /**
      * Extrahiert den Inhalt eines Archives
-     * @param ArchiveInfo $archive Die Archivinformationen vom Ziel
-     * @param string $destination Der Ablageort für die Extrahierung
-     * @return void
+     *
+     * @param  ArchiveInfo  $archive  Die Archivinformationen vom Ziel
+     * @param  string  $destination  Der Ablageort für die Extrahierung
      */
     public function extractArchive(ArchiveInfo $archive, string $destination): void
     {
@@ -48,10 +47,10 @@ final class ArchiveService
 
     /**
      * Gibt den Inhalt eines Archives zurück
-     * @param ArchiveInfo $archive
+     *
      * @return iterable<ArchiveEntry>
      */
-    public function listArchiveContent(ArchiveInfo $archive): iterable 
+    public function listArchiveContent(ArchiveInfo $archive): iterable
     {
         $this->driver->validateArchive($archive);
 
@@ -60,6 +59,7 @@ final class ArchiveService
 
     /**
      * list all Alrchives in the archive directory. It dependes on the driver implementation
+     *
      * @return iterable<ArchiveInfo>
      */
     public function listArchives(): iterable

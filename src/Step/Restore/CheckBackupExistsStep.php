@@ -18,10 +18,10 @@ final class CheckBackupExistsStep implements RestoreStep
 
     public function execute(RestoreContext $context): void
     {
-        if(!$context->archive) {
-            throw new RuntimeException("No Archive Found");
+        if (! $context->archive) {
+            throw new RuntimeException('No Archive Found');
         }
-        
+
         $this->archive->listArchive($context->archive);
     }
 }

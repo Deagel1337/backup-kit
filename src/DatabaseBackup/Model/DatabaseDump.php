@@ -12,17 +12,16 @@ final readonly class DatabaseDump
     public function __construct(
         public string $path,
         public string $driver,
-        public string $format, 
-    ) {
-    }
+        public string $format,
+    ) {}
 
     // Das File-System soll die Größe ermitteln
     public function size(): int
     {
         $size = filesize($this->path);
 
-        if($size == false) {
-            throw new EmptyDumpException();
+        if ($size == false) {
+            throw new EmptyDumpException;
         }
 
         return $size;
@@ -42,16 +41,16 @@ final readonly class DatabaseDump
 
     public function validate(): void
     {
-        if (!$this->exists()) {
+        if (! $this->exists()) {
             throw new DumpNotFoundException("Dump doesn't exist");
         }
 
-        if (!$this->isReadable()) {
-            throw new DumpNotReadableException();
+        if (! $this->isReadable()) {
+            throw new DumpNotReadableException;
         }
 
         if ($this->size() <= 0) {
-            throw new EmptyDumpException();
+            throw new EmptyDumpException;
         }
     }
 }

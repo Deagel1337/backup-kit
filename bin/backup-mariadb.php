@@ -7,8 +7,7 @@ use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Backup\CheckDiskSpaceStep;
 use Deagel1337\Backup\Kit\Step\Backup\ShowBackupContextStep;
 
-
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 $connection = new DatabaseConnection(
     driver: 'mariadb',
@@ -22,9 +21,9 @@ $connection = new DatabaseConnection(
 $driver = new MariaDbBackupDriver($connection);
 
 $steps = [
-    new CheckDiskSpaceStep(),
+    new CheckDiskSpaceStep,
     new BackupDatabaseStep($driver),
-    new ShowBackupContextStep(),
+    new ShowBackupContextStep,
 ];
 
 $application = BackupMariaDbApplication::create(steps: $steps);

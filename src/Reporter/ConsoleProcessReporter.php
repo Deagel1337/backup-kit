@@ -6,21 +6,20 @@ use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
 
 final class ConsoleProcessReporter implements ProcessReporter
 {
-     /**
+    /**
      * Summary of command
-     * @param array<string> $command
-     * @return void
+     *
+     * @param  array<string>  $command
      */
     public function command(array $command): void
     {
         echo PHP_EOL;
-        echo "Would execute:" . PHP_EOL;
-        echo ' ' . $this->formatCommand($command) . PHP_EOL;
+        echo 'Would execute:'.PHP_EOL;
+        echo ' '.$this->formatCommand($command).PHP_EOL;
     }
 
     /**
-     * @param array<string> $command
-     * @return string
+     * @param  array<string>  $command
      */
     private function formatCommand(array $command): string
     {

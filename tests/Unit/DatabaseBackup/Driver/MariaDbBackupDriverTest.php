@@ -51,7 +51,7 @@ final class MariaDbBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testAcceptsReadableNonEmptySqlDump(): void
+    public function test_accepts_readable_non_empty_sql_dump(): void
     {
         $dump = new DatabaseDump(
             $this->dumpPath,
@@ -67,7 +67,7 @@ final class MariaDbBackupDriverTest extends TestCase
         );
     }
 
-    public function testRejectsWrongDriver(): void
+    public function test_rejects_wrong_driver(): void
     {
         $this->expectException(InvalidDumpDriverException::class);
         $this->expectExceptionMessage(
@@ -83,7 +83,7 @@ final class MariaDbBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsWrongFormat(): void
+    public function test_rejects_wrong_format(): void
     {
         $this->expectException(InvalidDumpFormatException::class);
         $this->expectExceptionMessage(
@@ -99,7 +99,7 @@ final class MariaDbBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsMissingDump(): void
+    public function test_rejects_missing_dump(): void
     {
         $this->expectException(DumpNotFoundException::class);
         $this->expectExceptionMessage(
@@ -115,7 +115,7 @@ final class MariaDbBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsEmptyDump(): void
+    public function test_rejects_empty_dump(): void
     {
         file_put_contents($this->dumpPath, '');
 
@@ -139,7 +139,7 @@ final class MariaDbBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testCreateDumpUsesProvidedBackupName(): void
+    public function test_create_dump_uses_provided_backup_name(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -191,16 +191,16 @@ final class MariaDbBackupDriverTest extends TestCase
         }
     }
 
-    public function testCreateDumpRemovesDumpFileWhenMariaDbDumpFails(): void
+    public function test_create_dump_removes_dump_file_when_maria_db_dump_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
         $outputFile = '';
 
-        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+        $directory = sys_get_temp_dir().'/backup-test-'.uniqid();
         mkdir($directory, 0777, true);
 
-        $destination = $directory . '/backup.sql';
+        $destination = $directory.'/backup.sql';
 
         $process
             ->expects($this->once())
@@ -215,7 +215,7 @@ final class MariaDbBackupDriverTest extends TestCase
                 ) use (&$outputFile): ProcessResult {
                     $outputFile = $outputFileArgument;
 
-                    if($outputFile === null) {
+                    if ($outputFile === null) {
                         return new ProcessResult(1, '', 'Filename is missing');
                     }
                     // Simuliere, dass mariadb-dump eine Datei erzeugt hat,
@@ -248,14 +248,14 @@ final class MariaDbBackupDriverTest extends TestCase
         }
     }
 
-    public function testCreateDumpUsesMariaDbDumpCommand(): void
+    public function test_create_dump_uses_maria_db_dump_command(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
-        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+        $directory = sys_get_temp_dir().'/backup-test-'.uniqid();
         mkdir($directory, 0777, true);
 
-        $destination = $directory . '/backup.sql';
+        $destination = $directory.'/backup.sql';
 
         $process
             ->expects($this->once())
@@ -314,7 +314,7 @@ final class MariaDbBackupDriverTest extends TestCase
         }
     }
 
-    public function testCreateDumpThrowsWhenMariaDbDumpFails(): void
+    public function test_create_dump_throws_when_maria_db_dump_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -334,11 +334,11 @@ final class MariaDbBackupDriverTest extends TestCase
             'Das MariaDB-Dump konnte nicht erstellt werden: Access denied'
         );
 
-        $directory = sys_get_temp_dir() . '/backup-test-' . uniqid();
+        $directory = sys_get_temp_dir().'/backup-test-'.uniqid();
 
         mkdir($directory, 0777, true);
 
-        $destination = $directory . '/backup.sql';
+        $destination = $directory.'/backup.sql';
 
         try {
             // Test
@@ -356,7 +356,7 @@ final class MariaDbBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testRestoreDumpUsesMariaDbCommand(): void
+    public function test_restore_dump_uses_maria_db_command(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -395,7 +395,7 @@ final class MariaDbBackupDriverTest extends TestCase
         $this->assertFileExists($dump->path);
     }
 
-    public function testRestoreDumpThrowsWhenMariaDbFails(): void
+    public function test_restore_dump_throws_when_maria_db_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 

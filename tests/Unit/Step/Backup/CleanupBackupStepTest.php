@@ -12,6 +12,7 @@ final class CleanupBackupStepTest extends TestCase
 {
     /**
      * Paths of temporary created files
+     *
      * @var array<string>
      */
     private array $temporaryFiles = [];
@@ -27,9 +28,9 @@ final class CleanupBackupStepTest extends TestCase
         parent::tearDown();
     }
 
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
-        $step = new CleanupBackupStep();
+        $step = new CleanupBackupStep;
 
         $this->assertSame(
             'Temporäre Datein für das Backup löschen',
@@ -37,7 +38,7 @@ final class CleanupBackupStepTest extends TestCase
         );
     }
 
-    public function testDeletesDumpFile(): void
+    public function test_deletes_dump_file(): void
     {
         $file = $this->createTemporaryFile();
 
@@ -51,18 +52,18 @@ final class CleanupBackupStepTest extends TestCase
             dump: $dump
         );
 
-        $step = new CleanupBackupStep();
+        $step = new CleanupBackupStep;
 
         $step->execute($context);
 
         $this->assertFileDoesNotExist($file);
     }
 
-    public function testThrowsExceptionWhenDumpFileDoesNotExist(): void
+    public function test_throws_exception_when_dump_file_does_not_exist(): void
     {
         $file = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . 'cleanup_backup_test_nonexistent.sql';
+            .DIRECTORY_SEPARATOR
+            .'cleanup_backup_test_nonexistent.sql';
 
         $dump = new DatabaseDump(
             $file,
@@ -74,7 +75,7 @@ final class CleanupBackupStepTest extends TestCase
             dump: $dump
         );
 
-        $step = new CleanupBackupStep();
+        $step = new CleanupBackupStep;
 
         $this->expectException(RuntimeException::class);
 

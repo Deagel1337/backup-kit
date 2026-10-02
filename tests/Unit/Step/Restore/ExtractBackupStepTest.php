@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ExtractBackupStepTest extends TestCase
 {
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 
@@ -23,7 +23,7 @@ final class ExtractBackupStepTest extends TestCase
         );
     }
 
-    public function testExtractsBackupToConfiguredDestination(): void
+    public function test_extracts_backup_to_configured_destination(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 
@@ -63,7 +63,7 @@ final class ExtractBackupStepTest extends TestCase
         $step->execute($context);
     }
 
-    public function testUsesEmptyDestinationByDefault(): void
+    public function test_uses_empty_destination_by_default(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 

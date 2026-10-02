@@ -24,25 +24,25 @@ final class TarArchiveDriverTest extends TestCase
         parent::tearDown();
     }
 
-    public function testAcceptsExistingTarArchive(): void
+    public function test_accepts_existing_tar_archive(): void
     {
-        (new TarArchiveDriver())->validateArchive(new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'));
+        (new TarArchiveDriver)->validateArchive(new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'));
 
         $this->addToAssertionCount(1);
     }
 
-    public function testRejectsArchiveForAnotherDriver(): void
+    public function test_rejects_archive_for_another_driver(): void
     {
         $this->expectExceptionMessage('Kein Tar-Archiv.');
 
-        (new TarArchiveDriver())->validateArchive(new ArchiveInfo($this->archivePath, 'borg', 'borg'));
+        (new TarArchiveDriver)->validateArchive(new ArchiveInfo($this->archivePath, 'borg', 'borg'));
     }
 
-    public function testRejectsMissingArchive(): void
+    public function test_rejects_missing_archive(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Die Archiv-Datei existiert nicht.');
 
-        (new TarArchiveDriver())->validateArchive(new ArchiveInfo('/tmp/missing-tar-archive', 'tar', 'tar.gz'));
+        (new TarArchiveDriver)->validateArchive(new ArchiveInfo('/tmp/missing-tar-archive', 'tar', 'tar.gz'));
     }
 }

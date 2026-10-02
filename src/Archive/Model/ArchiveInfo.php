@@ -8,7 +8,7 @@ final readonly class ArchiveInfo
         public string $path,
         public string $driver,
         public string $format
-    ) { }
+    ) {}
 
     public function exists(): bool
     {

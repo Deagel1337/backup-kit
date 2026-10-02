@@ -12,7 +12,7 @@ use RuntimeException;
 
 final class RestoreArchiveStepTest extends TestCase
 {
-    public function testExtractsContextArchiveToDestination(): void
+    public function test_extracts_context_archive_to_destination(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -36,7 +36,7 @@ final class RestoreArchiveStepTest extends TestCase
         (new RestoreArchiveStep($driver))->execute($context);
     }
 
-    public function testExtractExceptionIsPropagated(): void
+    public function test_extract_exception_is_propagated(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -60,7 +60,7 @@ final class RestoreArchiveStepTest extends TestCase
         (new RestoreArchiveStep($driver))->execute($context);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $this->assertSame(
             'Archiv wiederherstellen',

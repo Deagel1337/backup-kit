@@ -14,7 +14,7 @@ final class ConsoleProgressReporter implements ProgressReporter
 
     public function stepStarted(int $number, int $total, string $name): void
     {
-        echo "[{$number}/{$total}] {$name} ...";   
+        echo "[{$number}/{$total}] {$name} ...";
     }
 
     public function stepFinished(int $number, int $total, string $name): void

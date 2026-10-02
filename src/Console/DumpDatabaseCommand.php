@@ -20,36 +20,37 @@ final class DumpDatabaseCommand
 {
     public function __construct(
         private readonly DatabaseBackupDriver $driver,
-    )
-    { }
+    ) {}
 
     public function __invoke(
         #[Argument('Database dump destination')] string $destination,
         OutputInterface $output
-    ): int
-    {
+    ): int {
         $steps = [
-            new CheckDiskSpaceStep(),
+            new CheckDiskSpaceStep,
             new BackupDatabaseStep($this->driver),
             new ValidateBackupContextStep($this->driver),
         ];
 
         $app = BackupMariaDbApplication::create($steps);
 
-        $dump = $app->run($destination . 'backup.sql');
+        $dump = $app->run($destination.'backup.sql');
 
-        if (!$dump->exists()) {
+        if (! $dump->exists()) {
             $output->writeln('<error>Dump was not created.</error>');
+
             return Command::FAILURE;
         }
 
-        if (!$dump->isReadable()) {
+        if (! $dump->isReadable()) {
             $output->writeln('<error>Dump is not readable.</error>');
+
             return Command::FAILURE;
         }
 
         if ($dump->size() <= 0) {
             $output->writeln('<error>Dump is empty.</error>');
+
             return Command::FAILURE;
         }
 

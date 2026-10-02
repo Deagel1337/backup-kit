@@ -41,5 +41,15 @@
         "allow-plugins": {
             "phpdocumentor/shim": true
         }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse",
+        "format": "pint",
+        "check": [
+            "@format",
+            "@analyse",
+            "@test"
+        ]
     }
 }

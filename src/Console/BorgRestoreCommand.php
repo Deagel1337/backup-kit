@@ -16,59 +16,59 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'borg:restore')]
 final class BorgRestoreCommand extends Command
 {
-        protected static string $defaultName = 'borg:restore';
+    protected static string $defaultName = 'borg:restore';
 
-        public function __construct(
-            private readonly ArchiveApplication $archive,
-        ) {
-            parent::__construct();
+    public function __construct(
+        private readonly ArchiveApplication $archive,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this->addArgument(
+            'destination',
+            InputArgument::OPTIONAL,
+            'Directory where the backup should be restored.'
+        );
+    }
+
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
+        $io = new SymfonyStyle($input, $output);
+
+        /** @var string $destination */
+        $destination = $input->getArgument('destination');
+
+        $archives = [];
+
+        /** @var ArchiveInfo $archive */
+        foreach ($this->archive->listAllArchives() as $archive) {
+            $archives[$archive->path] = $archive;
         }
 
-        protected function configure(): void
-        {
-            $this->addArgument(
-                'destination',
-                InputArgument::OPTIONAL,
-                'Directory where the backup should be restored.'  
-            );
-        }
+        /** @var string $selectedIndex */
+        $selectedIndex = $io->choice(
+            'Backup auswählen',
+            array_keys($archives),
+        );
 
-        protected function execute(
-            InputInterface $input,
-            OutputInterface $output,
-        ): int {
-            $io = new SymfonyStyle($input, $output);
+        $archive = $archives[$selectedIndex];
 
-            /** @var string $destination */
-            $destination = $input->getArgument('destination');
+        $this->archive->extract(
+            archiveInfo: $archive,
+            destination: $destination,
+        );
 
-            $archives = [];
+        $io->info([
+            'Backup: '.$archive->path,
+            'Destination: '.$destination,
+        ]);
 
-            /** @var ArchiveInfo $archive */
-            foreach($this->archive->listAllArchives() as $archive) {
-                $archives[$archive->path] = $archive;
-            }
+        $io->success('Restore erfolgreich');
 
-            /** @var string $selectedIndex */
-            $selectedIndex = $io->choice(
-                'Backup auswählen',
-                array_keys($archives),
-            );
-
-            $archive = $archives[$selectedIndex];
-
-            $this->archive->extract(
-                archiveInfo: $archive,
-                destination: $destination,
-            );
-
-            $io->info([
-                'Backup: ' . $archive->path,
-                'Destination: ' . $destination,
-            ]);
-
-            $io->success('Restore erfolgreich');
-
-            return Command::SUCCESS;
-        }
+        return Command::SUCCESS;
+    }
 }

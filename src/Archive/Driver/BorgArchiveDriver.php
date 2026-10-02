@@ -23,20 +23,19 @@ final class BorgArchiveDriver implements ArchiveDriver
         private readonly string $passphrase = '',
         private readonly ?string $sshKeyPath = null,
         private readonly ?int $sshPort = null,
-        private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner,
     ) {
         if (trim($this->repository) === '') {
             throw new RuntimeException('Es wurde kein Borg-Repository angegeben.');
         }
 
-        if ($this->sshKeyPath !== null && !is_readable($this->sshKeyPath)) {
-            throw new RuntimeException('Der SSH-Key ist unter "' . $this->sshKeyPath . '" nicht lesbar.');
+        if ($this->sshKeyPath !== null && ! is_readable($this->sshKeyPath)) {
+            throw new RuntimeException('Der SSH-Key ist unter "'.$this->sshKeyPath.'" nicht lesbar.');
         }
     }
 
     /**
      * Needs to be implemented for the CommandTrait
-     * @return ProcessRunner
      */
     #[Override]
     protected function processRunner(): ProcessRunner
@@ -56,11 +55,11 @@ final class BorgArchiveDriver implements ArchiveDriver
         $sshCommand = 'ssh';
 
         if ($this->sshPort !== null) {
-            $sshCommand .= ' -p ' . escapeshellarg((string) $this->sshPort);
+            $sshCommand .= ' -p '.escapeshellarg((string) $this->sshPort);
         }
 
         if ($this->sshKeyPath !== null) {
-            $sshCommand .= ' -i ' . escapeshellarg($this->sshKeyPath);
+            $sshCommand .= ' -i '.escapeshellarg($this->sshKeyPath);
         }
 
         return ['--rsh', $sshCommand];
@@ -68,9 +67,10 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     /**
      * Returns the contents of the archive
-     * @param ArchiveInfo $archive
-     * @throws RuntimeException
+     *
      * @return iterable<ArchiveEntry>
+     *
+     * @throws RuntimeException
      */
     #[Override]
     public function listArchive(ArchiveInfo $archive): iterable
@@ -78,37 +78,36 @@ final class BorgArchiveDriver implements ArchiveDriver
         $command = [];
         $format = '{path}{TAB}{size}{TAB}{type}{NL}';
 
-        if(str_contains($archive->path, $this->repository)) {
+        if (str_contains($archive->path, $this->repository)) {
             $command = array_merge(
                 ['borg', 'list'],
                 $this->rshOption(),
                 ['--format', $format],
                 [$archive->path]
             );
-        } else if(strcmp($this->repository, $archive->path) != 0) {
+        } elseif (strcmp($this->repository, $archive->path) != 0) {
             $command = array_merge(
-                ['borg', 'list'], 
+                ['borg', 'list'],
                 $this->rshOption(),
                 ['--format', $format],
-                [sprintf("%s::%s",$this->repository, $archive->path)]
+                [sprintf('%s::%s', $this->repository, $archive->path)]
             );
         } else {
             $command = array_merge(
                 ['borg', 'list'],
                 $this->rshOption(),
                 ['--format', $format],
-                [sprintf("%s", $this->repository)]
+                [sprintf('%s', $this->repository)]
             );
         }
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-        if(!$result->successful()) {
-            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: ' . trim($result->errorOutput));
+        if (! $result->successful()) {
+            throw new RuntimeException('Beim Ausführen des Prozesses ist etwas schiefgelaufen: '.trim($result->errorOutput));
         }
 
-
-        foreach(explode("\n", trim($result->output)) as $line) {
+        foreach (explode("\n", trim($result->output)) as $line) {
             if ($line === '') {
                 continue;
             }
@@ -127,22 +126,23 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     /**
      * Prases the type of the entry
-     * @param string $mode
-     * @return ArchiveEntryType
      */
-    private function parseType(string $mode): ArchiveEntryType {
+    private function parseType(string $mode): ArchiveEntryType
+    {
         return match ($mode) {
             '-' => ArchiveEntryType::File,
             'd' => ArchiveEntryType::Directory,
             'l' => ArchiveEntryType::Symlink,
-            default => ArchiveEntryType::Undefined 
+            default => ArchiveEntryType::Undefined
         };
     }
 
     /**
      * Gives an borg archive entry
-     * @throws RuntimeException
+     *
      * @return iterable<ArchiveInfo>
+     *
+     * @throws RuntimeException
      */
     #[Override]
     public function listArchives(): iterable
@@ -155,25 +155,25 @@ final class BorgArchiveDriver implements ArchiveDriver
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-        if(!$result->successful()) {
+        if (! $result->successful()) {
             throw new RuntimeException(
-                sprintf("<error>Auflistung fehlgeschlagen: %s</error>", $this->repository)
+                sprintf('<error>Auflistung fehlgeschlagen: %s</error>', $this->repository)
             );
         }
 
-        foreach(explode("\n", trim($result->output)) as $line) {
-            if($line === '') {
+        foreach (explode("\n", trim($result->output)) as $line) {
+            if ($line === '') {
                 continue;
             }
 
             $parts = preg_split('/\s{2,}/', trim($line));
 
-            if($parts == false) {
+            if ($parts == false) {
                 continue;
             }
 
             yield new ArchiveInfo(
-                path: $this->repository . '::' . $parts[0],
+                path: $this->repository.'::'.$parts[0],
                 driver: 'borg',
                 format: 'borg'
             );
@@ -182,31 +182,31 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     /**
      * Creates an Archive
-     * @param array<string> $paths
-     * @param string $archiveName 
+     *
+     * @param  array<string>  $paths
+     *
      * @throws RuntimeException
-     * @return ArchiveInfo
      */
     #[Override]
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
         foreach ($paths as $path) {
-            if (!$this->doesPathExist($path)) {
+            if (! $this->doesPathExist($path)) {
                 throw new RuntimeException(
-                    sprintf("<error>Invalider Pfad entdeckt: %s</error>", $path)
+                    sprintf('<error>Invalider Pfad entdeckt: %s</error>', $path)
                 );
             }
         }
 
-        $target = $this->repository . '::' . $archiveName;
+        $target = $this->repository.'::'.$archiveName;
 
         $command = array_merge(['borg', 'create'], $this->rshOption(), ['--stats', $target], $paths);
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
-        
+
         if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das Borg-Archiv konnte nicht erstellt werden: ' . trim($result->errorOutput)
+                'Das Borg-Archiv konnte nicht erstellt werden: '.trim($result->errorOutput)
             );
         }
 
@@ -215,9 +215,8 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     /**
      * Validates the archive.
-     * @param ArchiveInfo $archive
+     *
      * @throws RuntimeException
-     * @return void
      */
     #[Override]
     public function validateArchive(ArchiveInfo $archive): void
@@ -229,21 +228,19 @@ final class BorgArchiveDriver implements ArchiveDriver
 
     /**
      * Extracts the content to a given destination.
-     * @param ArchiveInfo $archive
-     * @param string $destination
+     *
      * @throws RuntimeException
-     * @return void
      */
     #[Override]
-    public function extractArchive(ArchiveInfo $archive, string $destination = '.'): void 
+    public function extractArchive(ArchiveInfo $archive, string $destination = '.'): void
     {
         $this->validateArchive($archive);
 
-        if (!is_dir($destination)) {
-            if (!mkdir($destination, 0775, true) && !is_dir($destination)) {
+        if (! is_dir($destination)) {
+            if (! mkdir($destination, 0775, true) && ! is_dir($destination)) {
                 throw new RuntimeException(
                     'Restore-Ziel konnte nicht erstellt werden: '
-                    . $destination
+                    .$destination
                 );
             }
         }
@@ -268,20 +265,20 @@ final class BorgArchiveDriver implements ArchiveDriver
         if ($result->exitCode !== 0) {
             throw new RuntimeException(
                 'Borg Restore fehlgeschlagen: '
-                . trim($result->errorOutput)
+                .trim($result->errorOutput)
             );
         }
     }
 
     /**
      * Validates the integrity of the archive.
+     *
      * @throws RuntimeException
-     * @return void
      */
     #[Override]
     public function validateRequirements(): void
     {
-        if (!$this->isCommandAvailable('borg')) {
+        if (! $this->isCommandAvailable('borg')) {
             throw new RuntimeException('Das Programm borg ist nicht verfügbar.');
         }
 
@@ -289,9 +286,9 @@ final class BorgArchiveDriver implements ArchiveDriver
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
-        if($result->exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das Borg-Repository konnte nicht erreicht werden: ' . trim($result->errorOutput)
+                'Das Borg-Repository konnte nicht erreicht werden: '.trim($result->errorOutput)
             );
         }
     }

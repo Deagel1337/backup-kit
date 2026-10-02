@@ -15,7 +15,7 @@ final class MariaDbTestDatabase
         private readonly string $username,
         private readonly string $password,
     ) {
-        if (!extension_loaded('pdo_mysql')) {
+        if (! extension_loaded('pdo_mysql')) {
             throw new RuntimeException(
                 'Die PHP Extension pdo_mysql ist nicht installiert.'
             );
@@ -73,7 +73,7 @@ final class MariaDbTestDatabase
         string $database,
         string $fixture
     ): void {
-        if (!is_file($fixture)) {
+        if (! is_file($fixture)) {
             throw new RuntimeException(
                 "Die Fixture-Datei existiert nicht: {$fixture}"
             );
@@ -112,8 +112,8 @@ final class MariaDbTestDatabase
     }
 
     /**
-    * @return array<int, array<string, mixed>>
-    */
+     * @return array<int, array<string, mixed>>
+     */
     public function fetchAll(string $database, string $sql): array
     {
         $pdo = $this->connect($database);
@@ -127,14 +127,14 @@ final class MariaDbTestDatabase
         }
 
         /** @var array<int, array<string, mixed>> $result */
-        $result =  $statement->fetchAll();
+        $result = $statement->fetchAll();
 
         return $result;
     }
 
     /**
-    * @return array<int, array<string, mixed>>
-    */
+     * @return array<int, array<string, mixed>>
+     */
     public function fetchTableData(
         string $database,
         string $table
@@ -154,9 +154,8 @@ final class MariaDbTestDatabase
             );
         }
 
-        
         /** @var array<int, array<string, mixed>> $result */
-        $result =  $statement->fetchAll();
+        $result = $statement->fetchAll();
 
         return $result;
     }

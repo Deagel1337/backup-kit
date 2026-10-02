@@ -51,7 +51,7 @@ final class PostgresBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testAcceptsReadableNonEmptySqlDump(): void
+    public function test_accepts_readable_non_empty_sql_dump(): void
     {
         $dump = new DatabaseDump(
             $this->dumpPath,
@@ -67,7 +67,7 @@ final class PostgresBackupDriverTest extends TestCase
         );
     }
 
-    public function testRejectsWrongDriver(): void
+    public function test_rejects_wrong_driver(): void
     {
         $this->expectException(InvalidDumpDriverException::class);
         $this->expectExceptionMessage(
@@ -83,7 +83,7 @@ final class PostgresBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsWrongFormat(): void
+    public function test_rejects_wrong_format(): void
     {
         $this->expectException(InvalidDumpFormatException::class);
         $this->expectExceptionMessage(
@@ -99,7 +99,7 @@ final class PostgresBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsMissingDump(): void
+    public function test_rejects_missing_dump(): void
     {
         $this->expectException(DumpNotFoundException::class);
         $this->expectExceptionMessage(
@@ -115,7 +115,7 @@ final class PostgresBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsEmptyDump(): void
+    public function test_rejects_empty_dump(): void
     {
         file_put_contents($this->dumpPath, '');
 
@@ -139,7 +139,7 @@ final class PostgresBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testCreateDumpUsesPgDumpCommand(): void
+    public function test_create_dump_uses_pg_dump_command(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -190,7 +190,7 @@ final class PostgresBackupDriverTest extends TestCase
         unlink($dump->path);
     }
 
-    public function testCreateDumpThrowsWhenPgDumpFails(): void
+    public function test_create_dump_throws_when_pg_dump_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -219,7 +219,7 @@ final class PostgresBackupDriverTest extends TestCase
      * ---------------------------------------------------------
      */
 
-    public function testRestoreDumpUsesPgCommand(): void
+    public function test_restore_dump_uses_pg_command(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -258,7 +258,7 @@ final class PostgresBackupDriverTest extends TestCase
         $this->assertFileExists($dump->path);
     }
 
-    public function testRestoreDumpThrowsWhenPsqlFails(): void
+    public function test_restore_dump_throws_when_psql_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 

@@ -14,6 +14,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
 {
     /**
      * String paths of temporary files.
+     *
      * @var array<string>
      */
     private array $temporaryFiles = [];
@@ -29,7 +30,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
         parent::tearDown();
     }
 
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -44,7 +45,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
         );
     }
 
-    public function testCreatesDumpWithCorrectName(): void
+    public function test_creates_dump_with_correct_name(): void
     {
         $dump = $this->createExistingDump();
 
@@ -66,7 +67,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
         $step->execute($context);
     }
 
-    public function testStoresCreatedDumpInContext(): void
+    public function test_stores_created_dump_in_context(): void
     {
         $dump = $this->createExistingDump();
 
@@ -92,7 +93,7 @@ final class CreateDatabaseBackupStepTest extends TestCase
         );
     }
 
-    public function testThrowsExceptionWhenDumpDoesNotExist(): void
+    public function test_throws_exception_when_dump_does_not_exist(): void
     {
         $dump = new DatabaseDump(
             '/this/file/does/not/exist/dump.sql',

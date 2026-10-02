@@ -6,12 +6,13 @@ use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
 use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Restore\CreateDatabaseBackupStep;
 use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
-use Tests\Integration\Support\MariaDbTestDatabase;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Tests\Integration\Support\MariaDbTestDatabase;
 
 final class MariaDbBackupRestoreTest extends TestCase
 {
@@ -58,7 +59,7 @@ final class MariaDbBackupRestoreTest extends TestCase
 
         $this->database->importFixture(
             $this->sourceConnection->database,
-            __DIR__ . '/../../../Fixtures/database/source.sql'
+            __DIR__.'/../../../Fixtures/database/source.sql'
         );
     }
 
@@ -75,7 +76,7 @@ final class MariaDbBackupRestoreTest extends TestCase
         parent::tearDown();
     }
 
-    public function testBackupAndRestore(): void
+    public function test_backup_and_restore(): void
     {
         /*
          * ---------------------------------------------------------
@@ -165,7 +166,7 @@ final class MariaDbBackupRestoreTest extends TestCase
         }
     }
 
-    public function testRestoreRollsBackWhenRestoreFails(): void
+    public function test_restore_rolls_back_when_restore_fails(): void
     {
         /*
          * ---------------------------------------------------------
@@ -187,7 +188,7 @@ final class MariaDbBackupRestoreTest extends TestCase
          */
         $this->database->importFixture(
             $this->targetConnection->database,
-            __DIR__ . '/../../../Fixtures/database/source.sql'
+            __DIR__.'/../../../Fixtures/database/source.sql'
         );
 
         $originalUsers = $this->database->fetchTableData(
@@ -252,12 +253,12 @@ final class MariaDbBackupRestoreTest extends TestCase
          */
 
         $brokenDumpPath = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . 'mariadb-broken-restore.sql';
+            .DIRECTORY_SEPARATOR
+            .'mariadb-broken-restore.sql';
 
         file_put_contents(
             $brokenDumpPath,
-            <<<SQL
+            <<<'SQL'
 DROP TABLE users;
 
 THIS IS INVALID SQL;
@@ -265,7 +266,7 @@ THIS IS INVALID SQL;
 SQL
         );
 
-        $brokenDump = new \Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump(
+        $brokenDump = new DatabaseDump(
             path: $brokenDumpPath,
             driver: 'mariadb',
             format: 'sql',
@@ -319,8 +320,8 @@ SQL
             }
 
             $rollbackPath = sys_get_temp_dir()
-                . DIRECTORY_SEPARATOR
-                . 'before-restore.sql';
+                .DIRECTORY_SEPARATOR
+                .'before-restore.sql';
 
             if (is_file($rollbackPath)) {
                 unlink($rollbackPath);

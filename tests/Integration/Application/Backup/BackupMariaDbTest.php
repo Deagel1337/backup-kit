@@ -39,7 +39,7 @@ final class BackupMariaDbTest extends TestCase
 
         $this->database->importFixture(
             $this->sourceConnection->database,
-            __DIR__ . '/../../../Fixtures/database/source.sql'
+            __DIR__.'/../../../Fixtures/database/source.sql'
         );
     }
 
@@ -52,7 +52,7 @@ final class BackupMariaDbTest extends TestCase
         parent::tearDown();
     }
 
-    public function testCreatesMariaDbBackup(): void
+    public function test_creates_maria_db_backup(): void
     {
         $driver = new MariaDbBackupDriver(
             connection: $this->sourceConnection,
@@ -65,8 +65,8 @@ final class BackupMariaDbTest extends TestCase
         ]);
 
         $backupPath = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . 'mariadb-application-test.sql';
+            .DIRECTORY_SEPARATOR
+            .'mariadb-application-test.sql';
 
         $dump = $application->run($backupPath);
 

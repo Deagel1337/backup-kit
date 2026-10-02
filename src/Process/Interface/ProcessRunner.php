@@ -8,16 +8,13 @@ interface ProcessRunner
 {
     /**
      * Summary of run
-     * @param array<string> $command
-     * @param array<string> $environment
-     * @param string | null $workingDirectory
-     * @param string | null $outputFile
-     * @param string | null $inputFile
-     * @return ProcessResult
+     *
+     * @param  array<string>  $command
+     * @param  array<string>  $environment
      */
     public function run(
-        array $command, 
-        array $environment = [], 
+        array $command,
+        array $environment = [],
         ?string $workingDirectory = null,
         ?string $outputFile = null,
         ?string $inputFile = null

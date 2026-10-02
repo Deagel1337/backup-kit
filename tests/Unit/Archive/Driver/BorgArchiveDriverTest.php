@@ -9,25 +9,23 @@ use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
-
 final class BorgArchiveDriverTest extends TestCase
 {
-    public function testRejectsEmptyRepository(): void
+    public function test_rejects_empty_repository(): void
     {
         $this->expectExceptionMessage('Es wurde kein Borg-Repository angegeben.');
 
         new BorgArchiveDriver('   ');
     }
 
-    public function testAcceptsBorgArchiveWithoutCheckingLocalFile(): void
+    public function test_accepts_borg_archive_without_checking_local_file(): void
     {
         (new BorgArchiveDriver('/var/lib/borg'))->validateArchive(new ArchiveInfo('repo::backup', 'borg', 'borg'));
 
         $this->addToAssertionCount(1);
     }
 
-    public function testRejectsArchiveForAnotherDriver(): void
+    public function test_rejects_archive_for_another_driver(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Kein Borg-Archiv.');
@@ -35,7 +33,7 @@ final class BorgArchiveDriverTest extends TestCase
         (new BorgArchiveDriver('/var/lib/borg'))->validateArchive(new ArchiveInfo('repo::backup', 'tar', 'tar.gz'));
     }
 
-    public function testCreatesBorgArchive(): void
+    public function test_creates_borg_archive(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'borg-test-');
 
@@ -85,7 +83,7 @@ final class BorgArchiveDriverTest extends TestCase
         }
     }
 
-    public function testCreateArchiveThrowsWhenBorgFails(): void
+    public function test_create_archive_throws_when_borg_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -115,7 +113,7 @@ final class BorgArchiveDriverTest extends TestCase
         );
     }
 
-    public function testCreateArchiveRejectsNonExistingPath(): void
+    public function test_create_archive_rejects_non_existing_path(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -137,7 +135,7 @@ final class BorgArchiveDriverTest extends TestCase
         );
     }
 
-    public function testExtractArchiveRunsBorgExtract(): void
+    public function test_extract_archive_runs_borg_extract(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -177,7 +175,7 @@ final class BorgArchiveDriverTest extends TestCase
         );
     }
 
-    public function testUsesSshPort(): void
+    public function test_uses_ssh_port(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -211,7 +209,7 @@ final class BorgArchiveDriverTest extends TestCase
         iterator_to_array($driver->listArchives());
     }
 
-    public function testListsBorgArchiveContent(): void
+    public function test_lists_borg_archive_content(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -238,22 +236,22 @@ final class BorgArchiveDriverTest extends TestCase
                 )
             );
 
-            $driver = new BorgArchiveDriver(
-                repository: '/var/lib/borg',
-                sshPort: 2222,
-                process: $process,
-            );
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            sshPort: 2222,
+            process: $process,
+        );
 
-            $archive = new ArchiveInfo(
-                path: 'testArchive',
-                driver: 'borg',
-                format: 'borg'
-            );
+        $archive = new ArchiveInfo(
+            path: 'testArchive',
+            driver: 'borg',
+            format: 'borg'
+        );
 
-            iterator_to_array($driver->listArchive($archive));
+        iterator_to_array($driver->listArchive($archive));
     }
 
-    public function testListsBorgArchiveWithRepositoryAndArchiveNamePath(): void
+    public function test_lists_borg_archive_with_repository_and_archive_name_path(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -280,22 +278,22 @@ final class BorgArchiveDriverTest extends TestCase
                 )
             );
 
-            $driver = new BorgArchiveDriver(
-                repository: '/var/lib/borg',
-                sshPort: 2222,
-                process: $process,
-            );
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            sshPort: 2222,
+            process: $process,
+        );
 
-            $archive = new ArchiveInfo(
-                path: '/var/lib/borg::testArchive',
-                driver: 'borg',
-                format: 'borg'
-            );
-            
-            iterator_to_array($driver->listArchive($archive));
+        $archive = new ArchiveInfo(
+            path: '/var/lib/borg::testArchive',
+            driver: 'borg',
+            format: 'borg'
+        );
+
+        iterator_to_array($driver->listArchive($archive));
     }
 
-    public function testListAllBorgArchives(): void
+    public function test_list_all_borg_archives(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -320,7 +318,7 @@ final class BorgArchiveDriverTest extends TestCase
                     errorOutput: ''
                 )
             );
-        
+
         $driver = new BorgArchiveDriver(
             repository: '/var/lib/borg',
             sshPort: 2222,

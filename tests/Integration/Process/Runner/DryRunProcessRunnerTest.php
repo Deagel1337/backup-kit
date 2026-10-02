@@ -10,9 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 final class DryRunProcessRunnerTest extends TestCase
 {
-    public function testItReportsCommandWithoutExecutingIt(): void
+    public function test_it_reports_command_without_executing_it(): void
     {
-        $reporter = new ConsoleProcessReporter();
+        $reporter = new ConsoleProcessReporter;
 
         $runner = new DryRunProcessRunner($reporter);
 
@@ -25,21 +25,21 @@ final class DryRunProcessRunnerTest extends TestCase
         ]);
 
         self::expectOutputString(
-            PHP_EOL .
-            "Would execute:" . PHP_EOL .
-            " 'borg' 'create' '/backup/repository' 'test-backup' '/var/www/html'" .
+            PHP_EOL.
+            'Would execute:'.PHP_EOL.
+            " 'borg' 'create' '/backup/repository' 'test-backup' '/var/www/html'".
             PHP_EOL
         );
     }
 
-    public function testItDoesNotCreateOutputFile(): void
+    public function test_it_does_not_create_output_file(): void
     {
-        $reporter = new ConsoleProcessReporter();
+        $reporter = new ConsoleProcessReporter;
 
         $runner = new DryRunProcessRunner($reporter);
 
         $outputFile = sys_get_temp_dir()
-            . '/dry-run-' . bin2hex(random_bytes(8)) . '.sql';
+            .'/dry-run-'.bin2hex(random_bytes(8)).'.sql';
 
         $runner->run(
             command: [

@@ -11,11 +11,9 @@ use Deagel1337\Backup\Kit\Step\Restore\ValidateRestoreContextStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
-
 final class ValidateRestoreContextStepTest extends TestCase
 {
-    public function testValidatesRequirementsAndContextInOrder(): void
+    public function test_validates_requirements_and_context_in_order(): void
     {
         $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
         $archiveDriver = $this->createMock(ArchiveDriver::class);
@@ -86,7 +84,7 @@ final class ValidateRestoreContextStepTest extends TestCase
         $this->assertSame(4, $step);
     }
 
-    public function testStopsWhenDatabaseRequirementsAreInvalid(): void
+    public function test_stops_when_database_requirements_are_invalid(): void
     {
         $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
         $archiveDriver = $this->createMock(ArchiveDriver::class);
@@ -127,7 +125,7 @@ final class ValidateRestoreContextStepTest extends TestCase
         ))->execute($context);
     }
 
-    public function testStopsWhenDatabaseDumpIsInvalid(): void
+    public function test_stops_when_database_dump_is_invalid(): void
     {
         $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
         $archiveDriver = $this->createMock(ArchiveDriver::class);
@@ -166,7 +164,7 @@ final class ValidateRestoreContextStepTest extends TestCase
         ))->execute($context);
     }
 
-    public function testStopsWhenArchiveRequirementsAreInvalid(): void
+    public function test_stops_when_archive_requirements_are_invalid(): void
     {
         $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
         $archiveDriver = $this->createMock(ArchiveDriver::class);
@@ -207,7 +205,7 @@ final class ValidateRestoreContextStepTest extends TestCase
         ))->execute($context);
     }
 
-    public function testStopsWhenArchiveIsInvalid(): void
+    public function test_stops_when_archive_is_invalid(): void
     {
         $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
         $archiveDriver = $this->createMock(ArchiveDriver::class);
@@ -246,7 +244,7 @@ final class ValidateRestoreContextStepTest extends TestCase
         ))->execute($context);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $step = new ValidateRestoreContextStep(
             $this->createMock(DatabaseBackupDriver::class),

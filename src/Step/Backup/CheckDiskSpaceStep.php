@@ -12,8 +12,8 @@ final class CheckDiskSpaceStep implements BackupStep
     use HumanReadableTrait;
 
     public function __construct(
-        private readonly string $path = "/",
-    ){ }
+        private readonly string $path = '/',
+    ) {}
 
     public function name(): string
     {
@@ -22,12 +22,12 @@ final class CheckDiskSpaceStep implements BackupStep
 
     public function execute(BackupContext $context): void
     {
-        $freeSpace = diskfreespace($this->path);
+        $freeSpace = disk_free_space($this->path);
 
-        if($freeSpace !== false) {
-            echo "Free space: " . $this->formatBytes($freeSpace) . " bytes";
+        if ($freeSpace !== false) {
+            echo 'Free space: '.$this->formatBytes($freeSpace).' bytes';
         } else {
-            echo "Could not determine free space";
+            echo 'Could not determine free space';
             throw new RuntimeException('Nicht genug Speicherplatz verfügbar.');
         }
     }

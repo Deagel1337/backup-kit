@@ -12,10 +12,10 @@ final class ConsoleProgressReporterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->reporter = new ConsoleProgressReporter();
+        $this->reporter = new ConsoleProgressReporter;
     }
 
-    public function testStartedOutputsCorrectMessage(): void
+    public function test_started_outputs_correct_message(): void
     {
         $this->expectOutputString(
             "Backup gestartet(3 Schritte)\n"
@@ -24,10 +24,10 @@ final class ConsoleProgressReporterTest extends TestCase
         $this->reporter->started(3);
     }
 
-    public function testStepStartedOutputsCorrectMessage(): void
+    public function test_step_started_outputs_correct_message(): void
     {
         $this->expectOutputString(
-            "[2/5] Dateien kopieren ..."
+            '[2/5] Dateien kopieren ...'
         );
 
         $this->reporter->stepStarted(
@@ -37,7 +37,7 @@ final class ConsoleProgressReporterTest extends TestCase
         );
     }
 
-    public function testStepFinishedOutputsOk(): void
+    public function test_step_finished_outputs_ok(): void
     {
         $this->expectOutputString(
             "OK\n"
@@ -50,7 +50,7 @@ final class ConsoleProgressReporterTest extends TestCase
         );
     }
 
-    public function testStepFailedOutputsErrorMessage(): void
+    public function test_step_failed_outputs_error_message(): void
     {
         $exception = new Exception(
             'Datei konnte nicht kopiert werden.'
@@ -58,7 +58,7 @@ final class ConsoleProgressReporterTest extends TestCase
 
         $this->expectOutputString(
             "[2/5] Schritt Dateien kopieren Fehlgeschlagen:\n"
-            . "Datei konnte nicht kopiert werden."
+            .'Datei konnte nicht kopiert werden.'
         );
 
         $this->reporter->stepFailed(
@@ -69,7 +69,7 @@ final class ConsoleProgressReporterTest extends TestCase
         );
     }
 
-    public function testFinishedOutputsCorrectMessage(): void
+    public function test_finished_outputs_correct_message(): void
     {
         $this->expectOutputString(
             "Backup abgeschlossen.\n"

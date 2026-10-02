@@ -11,6 +11,7 @@ final class CreateBackupDirectoryStepTest extends TestCase
 {
     /**
      * Paths of temporary directories
+     *
      * @var array<string>
      */
     private array $temporaryDirectories = [];
@@ -26,9 +27,9 @@ final class CreateBackupDirectoryStepTest extends TestCase
         parent::tearDown();
     }
 
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
-        $step = new CreateBackupDirectoryStep();
+        $step = new CreateBackupDirectoryStep;
 
         $this->assertSame(
             'Backup-Verzeichnis erstellen',
@@ -36,12 +37,12 @@ final class CreateBackupDirectoryStepTest extends TestCase
         );
     }
 
-    public function testCreatesBackupDirectory(): void
+    public function test_creates_backup_directory(): void
     {
         $directory = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . 'backup_test_'
-            . uniqid();
+            .DIRECTORY_SEPARATOR
+            .'backup_test_'
+            .uniqid();
 
         $this->temporaryDirectories[] = $directory;
 
@@ -49,14 +50,14 @@ final class CreateBackupDirectoryStepTest extends TestCase
             destination: $directory
         );
 
-        $step = new CreateBackupDirectoryStep();
+        $step = new CreateBackupDirectoryStep;
 
         $step->execute($context);
 
         $this->assertDirectoryExists($directory);
     }
 
-    public function testThrowsExceptionWhenDirectoryCannotBeCreated(): void
+    public function test_throws_exception_when_directory_cannot_be_created(): void
     {
         $file = tempnam(
             sys_get_temp_dir(),
@@ -70,7 +71,7 @@ final class CreateBackupDirectoryStepTest extends TestCase
                 destination: $file
             );
 
-            $step = new CreateBackupDirectoryStep();
+            $step = new CreateBackupDirectoryStep;
 
             $this->expectException(RuntimeException::class);
 

@@ -2,7 +2,6 @@
 
 namespace Deagel1337\Backup\Kit\Process\Runner;
 
-
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 use RuntimeException;
@@ -11,13 +10,11 @@ final class ProcOpenProcessRunner implements ProcessRunner
 {
     /**
      * Runs a command with php processes
-     * @param list<string> $command
-     * @param array<string, mixed> $environment
-     * @param string | null $workingDirectory
-     * @param string | null $outputFile
-     * @param string | null $inputFile
+     *
+     * @param  list<string>  $command
+     * @param  array<string, mixed>  $environment
+     *
      * @throws RuntimeException
-     * @return ProcessResult
      */
     public function run(
         array $command,
@@ -25,8 +22,7 @@ final class ProcOpenProcessRunner implements ProcessRunner
         ?string $workingDirectory = null,
         ?string $outputFile = null,
         ?string $inputFile = null
-    ): ProcessResult 
-    {
+    ): ProcessResult {
         $stdout = $outputFile !== null
             ? ['file', $outputFile, 'w']
             : ['pipe', 'w'];
@@ -47,14 +43,14 @@ final class ProcOpenProcessRunner implements ProcessRunner
             $environment
         );
 
-        if (!is_resource($process)) {
+        if (! is_resource($process)) {
             throw new RuntimeException(
                 'Der Prozess konnte nicht gestartet werden.'
             );
         }
 
         try {
-            if($inputFile == null) {
+            if ($inputFile == null) {
                 fclose($pipes[0]);
             }
 
@@ -78,10 +74,10 @@ final class ProcOpenProcessRunner implements ProcessRunner
                 );
             }
 
-            if($outputFile == null) {
+            if ($outputFile == null) {
                 fclose($pipes[1]);
             }
-            
+
             fclose($pipes[2]);
 
             $exitCode = proc_close($process);

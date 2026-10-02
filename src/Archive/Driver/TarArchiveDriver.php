@@ -8,7 +8,6 @@ use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
 use Override;
-use PHPStan\BetterReflection\Reflection\Adapter\Exception\NotImplemented;
 use RuntimeException;
 
 final class TarArchiveDriver implements ArchiveDriver
@@ -16,9 +15,8 @@ final class TarArchiveDriver implements ArchiveDriver
     use CommandTrait;
 
     public function __construct(
-        private readonly ProcessRunner $process = new ProcOpenProcessRunner(),
-    )
-    {}
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner,
+    ) {}
 
     protected function processRunner(): ProcessRunner
     {
@@ -27,7 +25,7 @@ final class TarArchiveDriver implements ArchiveDriver
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
-        $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . basename($archiveName);
+        $path = sys_get_temp_dir().DIRECTORY_SEPARATOR.basename($archiveName);
 
         $command = array_merge(['tar', '-czf', $path], $paths);
 
@@ -35,7 +33,7 @@ final class TarArchiveDriver implements ArchiveDriver
 
         if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das Tar-Archiv konnte nicht entpackt werden: ' . trim($result->errorOutput)
+                'Das Tar-Archiv konnte nicht entpackt werden: '.trim($result->errorOutput)
             );
         }
 
@@ -48,7 +46,7 @@ final class TarArchiveDriver implements ArchiveDriver
             throw new RuntimeException('Kein Tar-Archiv.');
         }
 
-        if (!$archive->exists()) {
+        if (! $archive->exists()) {
             throw new RuntimeException('Die Archiv-Datei existiert nicht.');
         }
     }
@@ -61,9 +59,9 @@ final class TarArchiveDriver implements ArchiveDriver
 
         $result = $this->process->run($command);
 
-         if ($result->exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das Tar-Archiv konnte nicht entpackt werden: ' . trim($result->errorOutput)
+                'Das Tar-Archiv konnte nicht entpackt werden: '.trim($result->errorOutput)
             );
         }
     }
@@ -76,7 +74,7 @@ final class TarArchiveDriver implements ArchiveDriver
 
         $result = $this->process->run($command);
 
-        if($result->exitCode !== 0) {
+        if ($result->exitCode !== 0) {
             throw new RuntimeException(
                 'Das Tar-Archiv konnte nicht gezeigt werden.'
             );
@@ -99,7 +97,7 @@ final class TarArchiveDriver implements ArchiveDriver
 
     public function validateRequirements(): void
     {
-        if (!$this->isCommandAvailable('tar')) {
+        if (! $this->isCommandAvailable('tar')) {
             throw new RuntimeException('Das Programm tar ist nicht verfügbar.');
         }
     }

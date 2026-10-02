@@ -9,7 +9,8 @@ use RuntimeException;
 
 final class ExtractBackupStep implements RestoreStep
 {
-    public function __construct(private readonly ArchiveDriver $archive, private readonly string $destination = "") {}
+    public function __construct(private readonly ArchiveDriver $archive, private readonly string $destination = '') {}
+
     public function name(): string
     {
         return 'Extrahiert die Backupdateien.';
@@ -17,10 +18,10 @@ final class ExtractBackupStep implements RestoreStep
 
     public function execute(RestoreContext $context): void
     {
-        if(!$context->archive) {
-            throw new RuntimeException("No Archive found");
+        if (! $context->archive) {
+            throw new RuntimeException('No Archive found');
         }
-        
+
         $this->archive->extractArchive($context->archive, $this->destination);
     }
 }

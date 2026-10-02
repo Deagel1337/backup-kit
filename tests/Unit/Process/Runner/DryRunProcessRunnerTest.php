@@ -8,10 +8,9 @@ use Deagel1337\Backup\Kit\Process\Runner\DryRunProcessRunner;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
 use PHPUnit\Framework\TestCase;
 
-
 final class DryRunProcessRunnerTest extends TestCase
 {
-    public function testItReportsCommand(): void
+    public function test_it_reports_command(): void
     {
         $reporter = $this->createMock(ProcessReporter::class);
 
@@ -33,7 +32,7 @@ final class DryRunProcessRunnerTest extends TestCase
         $runner->run($command);
     }
 
-    public function testItReturnsEmptyProcessResult(): void
+    public function test_it_returns_empty_process_result(): void
     {
         $reporter = $this->createMock(ProcessReporter::class);
 
@@ -49,14 +48,14 @@ final class DryRunProcessRunnerTest extends TestCase
         self::assertSame('', $result->errorOutput);
     }
 
-    public function testItDoesNotCreateOutputFile(): void
+    public function test_it_does_not_create_output_file(): void
     {
         $reporter = $this->createMock(ProcessReporter::class);
 
         $runner = new DryRunProcessRunner($reporter);
 
         $outputFile = sys_get_temp_dir()
-            . '/dry-run-' . bin2hex(random_bytes(8)) . '.sql';
+            .'/dry-run-'.bin2hex(random_bytes(8)).'.sql';
 
         $runner->run(
             command: [

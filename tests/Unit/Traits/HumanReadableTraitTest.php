@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Traits;
 
-use Deagel1337\Backup\Kit\Traits\HumanReadableTrait;
 use PHPUnit\Framework\TestCase;
 
 final class HumanReadableTraitTest extends TestCase
@@ -14,10 +13,10 @@ final class HumanReadableTraitTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testClass = new HumanReadableTestClass();
+        $this->testClass = new HumanReadableTestClass;
     }
 
-    public function testFormatsBytes(): void
+    public function test_formats_bytes(): void
     {
         $this->assertSame(
             '500 B',
@@ -25,7 +24,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testFormatsKilobytes(): void
+    public function test_formats_kilobytes(): void
     {
         $this->assertSame(
             '1 KB',
@@ -33,7 +32,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testFormatsMegabytes(): void
+    public function test_formats_megabytes(): void
     {
         $this->assertSame(
             '1 MB',
@@ -41,7 +40,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testFormatsGigabytes(): void
+    public function test_formats_gigabytes(): void
     {
         $this->assertSame(
             '1 GB',
@@ -49,7 +48,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testFormatsTerabytes(): void
+    public function test_formats_terabytes(): void
     {
         $this->assertSame(
             '1 TB',
@@ -57,7 +56,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testZeroBytes(): void
+    public function test_zero_bytes(): void
     {
         $this->assertSame(
             '0 B',
@@ -65,7 +64,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testNegativeBytesAreTreatedAsZero(): void
+    public function test_negative_bytes_are_treated_as_zero(): void
     {
         $this->assertSame(
             '0 B',
@@ -73,7 +72,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testUsesGivenPrecision(): void
+    public function test_uses_given_precision(): void
     {
         $this->assertSame(
             '1.21 KB',
@@ -91,7 +90,7 @@ final class HumanReadableTraitTest extends TestCase
         );
     }
 
-    public function testLargeValuesAreLimitedToTerabytes(): void
+    public function test_large_values_are_limited_to_terabytes(): void
     {
         $this->assertSame(
             '1024 TB',

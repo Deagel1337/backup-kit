@@ -10,10 +10,9 @@ use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
 final class RestoreDatabaseStepTest extends TestCase
 {
-    public function testRestoresContextDump(): void
+    public function test_restores_context_dump(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -37,7 +36,7 @@ final class RestoreDatabaseStepTest extends TestCase
         (new RestoreDatabaseStep($driver))->execute($context);
     }
 
-    public function testRestoreExceptionIsPropagated(): void
+    public function test_restore_exception_is_propagated(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -61,7 +60,7 @@ final class RestoreDatabaseStepTest extends TestCase
         (new RestoreDatabaseStep($driver))->execute($context);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $step = new RestoreDatabaseStep(
             $this->createMock(DatabaseBackupDriver::class)

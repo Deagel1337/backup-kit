@@ -327,4 +327,83 @@ final class BorgArchiveDriverTest extends TestCase
 
         iterator_to_array($driver->listArchives());
     }
+
+    public function test_prunes_archives_using_borg_retention_options(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'prune',
+                    '--keep-last',
+                    '3',
+                    '--keep-daily',
+                    '7',
+                    '--keep-weekly',
+                    '4',
+                    '--keep-monthly',
+                    '12',
+                    '--keep-yearly',
+                    '2',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '/var/lib/borg',
+                ],
+                ['BORG_PASSPHRASE' => 'secret']
+            )
+            ->willReturn(new ProcessResult(
+                exitCode: 0,
+                output: '',
+                errorOutput: ''
+            ));
+
+        (new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            sshPort: 2222,
+            process: $process
+        ))->prune(keepLast: 3, keepDaily: 7, keepWeekly: 4, keepMonthly: 12, keepYearly: 2);
+    }
+
+    public function test_prune_throws_when_borg_fails(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->willReturn(new ProcessResult(
+                exitCode: 1,
+                output: '',
+                errorOutput: 'Repository is unavailable'
+            ));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Repository is unavailable');
+
+        (new BorgArchiveDriver('/var/lib/borg', process: $process))->prune(keepLast: 3);
+    }
+
+    public function test_prune_rejects_negative_retention_count(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new BorgArchiveDriver('/var/lib/borg', process: $process))->prune(keepDaily: -1);
+    }
+
+    public function test_prune_requires_at_least_one_retention_rule(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new BorgArchiveDriver('/var/lib/borg', process: $process))->prune();
+    }
 }

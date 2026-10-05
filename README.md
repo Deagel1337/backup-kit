@@ -106,6 +106,31 @@ echo "Archiv erstellt: {$created->path}\n";
 
 Das Borg-Repository muss bereits eingerichtet sein. Bei Remote-Repositories benötigt Borg außerdem einen funktionierenden SSH-Zugang.
 
+### Alte Archive aufräumen
+
+`ArchiveService::prune()` behält Archive nach den angegebenen Retention-Regeln und entfernt ältere. Mindestens eine Regel muss angegeben werden:
+
+```php
+$service = new ArchiveService($driver);
+$service->prune(
+    keepLast: 7,
+    keepDaily: 7,
+    keepWeekly: 4,
+    keepMonthly: 12,
+    keepYearly: 3,
+);
+```
+
+- `keepLast` behält die letzten N Archive.
+- `keepDaily`, `keepWeekly`, `keepMonthly` und `keepYearly` behalten jeweils das neueste Archiv aus jedem der N jüngsten Kalenderzeiträume dieser Art (einschließlich des aktuellen Zeitraums).
+- Regeln werden kombiniert: Ein Archiv bleibt erhalten, wenn es einer der angegebenen Regeln entspricht. `0` behält für die jeweilige Regel keine Archive; negative Werte sind ungültig.
+
+Für Borg werden die Regeln an `borg prune` weitergereicht. Der Tar-Treiber setzt sie anhand der Änderungszeitpunkte der Dateien um und vergleicht Kalenderzeiträume in der lokalen Zeitzone. Seine Archive liegen standardmäßig in `sys_get_temp_dir() . '/backup-kit-tar'`; für einen dauerhaften oder projektspezifischen Speicherort kann das Verzeichnis beim Erstellen des Treibers angegeben werden:
+
+```php
+$driver = new TarArchiveDriver(archiveDirectory: __DIR__ . '/backups');
+```
+
 ## Beispielskripte
 
 Im Verzeichnis [`bin/`](./bin/) liegen Skripte und Einstiegspunkte für Beispiele. Einige davon enthalten fest im Quelltext konfigurierte Verbindungsdaten und Pfade. Vor einer Verwendung in einer eigenen Umgebung müssen diese Werte geprüft und angepasst werden. Zugangsdaten sollten nicht in die Versionsverwaltung eingecheckt werden.

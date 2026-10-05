@@ -181,6 +181,65 @@ final class BorgArchiveDriver implements ArchiveDriver
     }
 
     /**
+     * Behält Archive gemäß den übergebenen Aufbewahrungsregeln und entfernt alle anderen.
+     * Dafür werden die nativen Retention-Optionen von `borg prune` verwendet.
+     *
+     * Die Regeln werden kombiniert: Ein Archiv bleibt erhalten, wenn mindestens eine Regel es auswählt.
+     * Mindestens eine Regel muss angegeben werden. Der Wert 0 behält für die jeweilige Regel nichts.
+     *
+     * @param  int|null  $keepLast  Behält die N neuesten Archive.
+     * @param  int|null  $keepDaily  Behält das neueste Archiv der N jüngsten Tage.
+     * @param  int|null  $keepWeekly  Behält das neueste Archiv der N jüngsten Wochen.
+     * @param  int|null  $keepMonthly  Behält das neueste Archiv der N jüngsten Monate.
+     * @param  int|null  $keepYearly  Behält das neueste Archiv der N jüngsten Jahre.
+     *
+     * @throws \InvalidArgumentException Wenn keine Regel angegeben wurde oder ein Wert negativ ist.
+     * @throws RuntimeException Wenn Archive nicht aufgelistet oder entfernt werden können.
+     */
+    #[Override]
+    public function prune(
+        ?int $keepLast = null,
+        ?int $keepDaily = null,
+        ?int $keepWeekly = null,
+        ?int $keepMonthly = null,
+        ?int $keepYearly = null,
+    ): void {
+        $retentionRules = [
+            '--keep-last' => $keepLast,
+            '--keep-daily' => $keepDaily,
+            '--keep-weekly' => $keepWeekly,
+            '--keep-monthly' => $keepMonthly,
+            '--keep-yearly' => $keepYearly,
+        ];
+
+        if (! array_filter($retentionRules, static fn (?int $count): bool => $count !== null)) {
+            throw new \InvalidArgumentException('Es muss mindestens eine Aufbewahrungsregel angegeben werden.');
+        }
+
+        $options = [];
+        foreach ($retentionRules as $option => $count) {
+            if ($count === null) {
+                continue;
+            }
+            if ($count < 0) {
+                throw new \InvalidArgumentException('Die Anzahl der zu behaltenden Archive darf nicht negativ sein.');
+            }
+
+            $options[] = $option;
+            $options[] = (string) $count;
+        }
+
+        $command = array_merge(['borg', 'prune'], $options, $this->rshOption(), [$this->repository]);
+        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
+
+        if (! $result->successful()) {
+            throw new RuntimeException(
+                'Das Aufräumen der Borg-Archive ist fehlgeschlagen: '.trim($result->errorOutput)
+            );
+        }
+    }
+
+    /**
      * Creates an Archive
      *
      * @param  array<string>  $paths

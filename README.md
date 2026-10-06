@@ -20,6 +20,7 @@ Eine Übersicht der Schichten, Abläufe und Erweiterungspunkte steht in der [Arc
   - PostgreSQL: `psql` und `pg_dump`
   - SQLite: `sqlite3`
   - Borg: `borg` sowie bei Remote-Repositories `ssh`
+    - TAR-Archive: `tar`
 
 ## Installation
 
@@ -72,6 +73,58 @@ echo "Dump erstellt: {$dump->path}\n";
 ```
 
 `PostgresBackupDriver` und `SqliteBackupDriver` implementieren dasselbe `DatabaseBackupDriver`-Interface. Die jeweils benötigten Kommandozeilenprogramme müssen auf dem System verfügbar sein.
+
+### Datenbank und Dateien gemeinsam sichern
+
+Aufbauend auf dem `$connection`-Objekt aus dem vorherigen Beispiel kann `BackupApplication` den Datenbank-Dump zusammen mit weiteren Pfaden archivieren. Sie prüft die Quellen vorab, verifiziert die erwarteten Dateinamen im Archiv und entfernt den temporären Dump standardmäßig. Retention ist optional:
+
+```php
+use Deagel1337\Backup\Kit\Application\Backup\BackupApplication;
+use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\RetentionPolicy;
+use Deagel1337\Backup\Kit\Services\ArchiveService;
+
+$databaseDriver = new MariaDbBackupDriver($connection);
+$archiveService = new ArchiveService(new BorgArchiveDriver(
+    repository: getenv('BORG_REPOSITORY') ?: '',
+    passphrase: getenv('BORG_PASSPHRASE') ?: '',
+));
+
+$result = (new BackupApplication($databaseDriver, $archiveService))->run(
+    dumpPath: __DIR__ . '/backup.sql',
+    archiveName: 'backup-' . date('Y-m-d-H-i-s'),
+    files: [__DIR__ . '/data'],
+    retention: new RetentionPolicy(keepDaily: 7, keepWeekly: 4),
+);
+
+echo "Backup erstellt: {$result->archive->path}\n";
+```
+
+`removeDump` ist standardmäßig `true`; setze es auf `false`, wenn der Dump erhalten bleiben soll. Der Dump wird bei aktivierter Bereinigung auch nach einem fehlgeschlagenen Ablauf entfernt.
+
+### MariaDB-Dump wiederherstellen
+
+Mit dem `$connection`-Objekt aus dem MariaDB-Beispiel stellt `RestoreMariaDbApplication` Datenbank-Dumps wieder her. Der Rollback-Dump vor dem Restore ist optional, wird bei einem fehlgeschlagenen Datenbank-Restore verwendet und anschließend entfernt:
+
+```php
+use Deagel1337\Backup\Kit\Application\Restore\RestoreMariaDbApplication;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Restore\CreateDatabaseBackupStep;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
+
+$databaseDriver = new MariaDbBackupDriver($connection);
+$dump = new DatabaseDump(__DIR__ . '/backup.sql', 'mariadb', 'sql');
+$databaseDriver->validateRequirements();
+$databaseDriver->validateDump($dump);
+
+$restore = RestoreMariaDbApplication::create($databaseDriver, [
+    new CreateDatabaseBackupStep($databaseDriver, __DIR__ . '/before-restore.sql'),
+    new RestoreDatabaseStep($databaseDriver),
+]);
+$restore->run($dump);
+```
+
+Die Factory ist MariaDB-spezifisch und verwendet einen Konsolen-Reporter. Sie stellt keine Dateien aus einem Archiv wieder her; Datei-Restore-Steps müssen separat konfiguriert werden.
 
 ### Borg-Archiv erstellen
 
@@ -130,6 +183,31 @@ Für Borg werden die Regeln an `borg prune` weitergereicht. Der Tar-Treiber setz
 ```php
 $driver = new TarArchiveDriver(archiveDirectory: __DIR__ . '/backups');
 ```
+
+Der Tar-Treiber kann Archive ebenfalls erstellen, auflisten und extrahieren:
+
+```php
+use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
+use Deagel1337\Backup\Kit\Archive\Driver\TarArchiveDriver;
+use Deagel1337\Backup\Kit\Services\ArchiveService;
+
+$archives = new ArchiveApplication(new ArchiveService(
+    new TarArchiveDriver(archiveDirectory: __DIR__ . '/backups')
+));
+$archive = $archives->run([__DIR__ . '/data'], 'local-backup.tar.gz');
+$entries = iterator_to_array($archives->list($archive));
+$restoreDirectory = __DIR__ . '/restored';
+if (! is_dir($restoreDirectory)
+    && ! mkdir($restoreDirectory, 0700, true)
+    && ! is_dir($restoreDirectory)) {
+    throw new RuntimeException('Restore-Verzeichnis konnte nicht erstellt werden.');
+}
+$archives->extract($archive, $restoreDirectory);
+```
+
+## Hinweise zu Verifikation und Restore
+
+Die Prüfung eines erzeugten Backups vergleicht erwartete Einträge anhand ihrer Basenames. Sie erkennt fehlende Dateinamen, ist aber keine Prüfung von Dateiinhalten oder Checksummen. Bei der Archiv-Extraktion in ein bereits vorhandenes Ziel können nach einem Fehler Teildateien zurückbleiben. Ein neues Staging-Verzeichnis wird bei einem fehlgeschlagenen Extract entfernt; dessen Inhalt muss die aufrufende Anwendung nach erfolgreicher Prüfung selbst veröffentlichen.
 
 ## Beispielskripte
 

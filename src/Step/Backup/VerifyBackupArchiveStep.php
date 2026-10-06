@@ -8,6 +8,10 @@ use Deagel1337\Backup\Kit\Services\ArchiveService;
 use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
 use RuntimeException;
 
+/**
+ * Prüft, ob jede erwartete Quelle anhand ihres Dateinamens im Archiv aufgeführt ist.
+ * Der Vergleich erfolgt nur über Basenames und ist keine bytegenaue Integritätsprüfung.
+ */
 final class VerifyBackupArchiveStep implements BackupStep
 {
     public function __construct(private readonly ArchiveService $archives) {}
@@ -17,6 +21,9 @@ final class VerifyBackupArchiveStep implements BackupStep
         return 'Backup-Archiv überprüfen';
     }
 
+    /**
+     * @throws RuntimeException Wenn kein Archiv vorliegt oder eine Quelle im Archiv fehlt.
+     */
     public function execute(BackupContext $context): void
     {
         if ($context->archive === null) {

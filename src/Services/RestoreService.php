@@ -13,9 +13,9 @@ use Throwable;
 final class RestoreService implements RestoreServiceInterface
 {
     /**
-     * Summary of restore
+     * Orchestriert die Restore-Schritte und verwaltet den Rollback-Dump.
      *
-     * @param  array<RestoreStep>  $steps
+     * @param  array<RestoreStep>  $steps  In Ausführungsreihenfolge konfigurierte Schritte.
      */
     public function __construct(
         private readonly array $steps,
@@ -23,6 +23,9 @@ final class RestoreService implements RestoreServiceInterface
         private readonly RestoreRollbackHandler $rollback,
     ) {}
 
+    /**
+     * @see RestoreServiceInterface::restore()
+     */
     public function restore(RestoreContext $context): void
     {
         $failure = null;

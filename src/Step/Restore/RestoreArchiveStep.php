@@ -12,6 +12,10 @@ use RuntimeException;
 
 final class RestoreArchiveStep implements RestoreStep
 {
+    /**
+     * @param  string|null  $destination  Optionale Zielüberschreibung. stagingDestination im Context hat Vorrang;
+     *                                    andernfalls wird dieses Ziel und danach RestoreContext::destination verwendet.
+     */
     public function __construct(
         private readonly ArchiveDriver $driver,
         private readonly ?string $destination = null,
@@ -22,6 +26,12 @@ final class RestoreArchiveStep implements RestoreStep
         return 'Archiv wiederherstellen';
     }
 
+    /**
+     * Erstellt ein fehlendes Zielverzeichnis mit Modus 0700 und extrahiert das Archiv dorthin.
+     * Ein vom Step angelegtes Verzeichnis wird bei einem Extraktionsfehler entfernt; ein vorhandenes Ziel bleibt bestehen.
+     *
+     * @throws RuntimeException Wenn Archiv oder Ziel fehlen oder das Ziel nicht erstellt werden kann.
+     */
     public function execute(RestoreContext $context): void
     {
         if (! $context->archive) {

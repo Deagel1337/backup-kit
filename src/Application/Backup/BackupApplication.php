@@ -43,7 +43,7 @@ final class BackupApplication
      * @param  RetentionPolicy|null  $retention  Wenn gesetzt, werden danach alte Archive entfernt.
      * @param  bool  $removeDump  Entfernt den Dump nach dem Archivieren.
      *
-     * @throws RuntimeException Wenn ein Schritt fehlschlägt oder kein Archiv entsteht.
+     * @throws Throwable Wenn ein Step oder Treiber fehlschlägt oder kein Archiv entsteht.
      */
     public function run(
         string $dumpPath,

@@ -10,6 +10,10 @@ use RuntimeException;
 
 final class RestoreDatabaseStep implements RestoreStep
 {
+    /**
+     * @param  (Closure(RestoreContext): void)|null  $healthCheck  Wird nach erfolgreichem DB-Restore ausgeführt.
+     *                                                             Eine Exception signalisiert einen fehlgeschlagenen Restore und kann den Rollback auslösen.
+     */
     public function __construct(
         private readonly DatabaseBackupDriver $driver,
         private readonly ?Closure $healthCheck = null,

@@ -10,11 +10,9 @@ use Deagel1337\Backup\Kit\Step\Restore\ValidateArchiveStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
-
 final class ValidateArchiveStepTest extends TestCase
 {
-    public function testValidatesContextArchive(): void
+    public function test_validates_context_archive(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -38,7 +36,7 @@ final class ValidateArchiveStepTest extends TestCase
         (new ValidateArchiveStep($driver))->execute($context);
     }
 
-    public function testValidationExceptionIsPropagated(): void
+    public function test_validation_exception_is_propagated(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -62,7 +60,7 @@ final class ValidateArchiveStepTest extends TestCase
         (new ValidateArchiveStep($driver))->execute($context);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $step = new ValidateArchiveStep(
             $this->createMock(ArchiveDriver::class)

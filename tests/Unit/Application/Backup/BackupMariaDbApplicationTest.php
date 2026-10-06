@@ -13,7 +13,7 @@ use RuntimeException;
 
 final class BackupMariaDbApplicationTest extends TestCase
 {
-    public function testRunsBackupAndReturnsDump(): void
+    public function test_runs_backup_and_returns_dump(): void
     {
         $dump = new DatabaseDump(
             path: '/tmp/backup.sql',
@@ -43,7 +43,7 @@ final class BackupMariaDbApplicationTest extends TestCase
         self::assertSame($dump, $result);
     }
 
-    public function testThrowsExceptionWhenBackupDoesNotCreateDump(): void
+    public function test_throws_exception_when_backup_does_not_create_dump(): void
     {
         $service = $this->createMock(BackupServiceInterface::class);
 
@@ -52,8 +52,7 @@ final class BackupMariaDbApplicationTest extends TestCase
             ->method('backup')
             ->with(
                 $this->callback(
-                    static fn (BackupContext $context): bool =>
-                        $context->destination === '/tmp/backup.sql'
+                    static fn (BackupContext $context): bool => $context->destination === '/tmp/backup.sql'
                 )
             );
 

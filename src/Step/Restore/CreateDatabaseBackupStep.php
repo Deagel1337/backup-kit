@@ -11,7 +11,7 @@ final class CreateDatabaseBackupStep implements RestoreStep
 {
     public function __construct(
         private readonly DatabaseBackupDriver $driver,
-        private readonly string $backupName = "",
+        private readonly string $backupName = '',
     ) {}
 
     public function name(): string
@@ -22,11 +22,12 @@ final class CreateDatabaseBackupStep implements RestoreStep
     public function execute(RestoreContext $context): void
     {
         $dump = $this->driver->createDump($this->backupName);
-        
-        if(!$dump->exists()) {
+
+        if (! $dump->exists()) {
             throw new RuntimeException('Konnte kein Datenbank Dump erstellen.');
         }
 
+        $this->driver->validateDump($dump);
         $context->rollbackDump = $dump;
     }
 }

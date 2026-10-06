@@ -2,29 +2,36 @@
 
 namespace Deagel1337\Backup\Kit\Step\Restore;
 
+use Closure;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
-use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use RuntimeException; 
+use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use RuntimeException;
 
 final class RestoreDatabaseStep implements RestoreStep
 {
+    /**
+     * @param  (Closure(RestoreContext): void)|null  $healthCheck  Wird nach erfolgreichem DB-Restore ausgeführt.
+     *                                                             Eine Exception signalisiert einen fehlgeschlagenen Restore und kann den Rollback auslösen.
+     */
     public function __construct(
         private readonly DatabaseBackupDriver $driver,
-    )
-    {}
+        private readonly ?Closure $healthCheck = null,
+    ) {}
 
     public function name(): string
     {
-        return "Datenbank wiederherstellen";
+        return 'Datenbank wiederherstellen';
     }
 
     public function execute(RestoreContext $context): void
     {
-        if(!$context->dump) {
-            throw new RuntimeException("No dump given");
+        if (! $context->dump) {
+            throw new RuntimeException('No dump given');
         }
-        
+
+        $context->databaseRestoreStarted = true;
         $this->driver->restoreDump($context->dump);
+        ($this->healthCheck)?->__invoke($context);
     }
 }

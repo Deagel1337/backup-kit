@@ -9,11 +9,9 @@ use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
-
 final class BackupDatabaseStepTest extends TestCase
 {
-    public function testCreatesAndValidatesDump(): void
+    public function test_creates_and_validates_dump(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -39,7 +37,7 @@ final class BackupDatabaseStepTest extends TestCase
         $this->assertSame($dump, $context->dump);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -51,7 +49,7 @@ final class BackupDatabaseStepTest extends TestCase
         );
     }
 
-    public function testCreateDumpExceptionIsPropagated(): void
+    public function test_create_dump_exception_is_propagated(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 

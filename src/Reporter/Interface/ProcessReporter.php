@@ -6,8 +6,8 @@ interface ProcessReporter
 {
     /**
      * Summary of command
-     * @param array<string> $command
-     * @return void
+     *
+     * @param  array<string>  $command
      */
     public function command(array $command): void;
 }

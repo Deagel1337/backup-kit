@@ -6,7 +6,7 @@ use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 $connection = new DatabaseConnection(
     driver: 'mariadb',
@@ -20,11 +20,11 @@ $connection = new DatabaseConnection(
 $driver = new MariaDbBackupDriver($connection);
 
 $restorePath = $argv[1] ?? 'backup.sql';
-$restoreDump = new DatabaseDump($restorePath, $connection->driver, "sql");
+$restoreDump = new DatabaseDump($restorePath, $connection->driver, 'sql');
 $application = RestoreMariaDbApplication::create(
     driver: $driver,
     steps: [
-    new RestoreDatabaseStep($driver),
-]);
+        new RestoreDatabaseStep($driver),
+    ]);
 
 $application->run($restoreDump);

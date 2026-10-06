@@ -4,7 +4,6 @@ namespace Deagel1337\Backup\Kit\Step\Restore\Rollback;
 
 use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
-use Deagel1337\Backup\Kit\Step\Restore\Rollback\RestoreRollbackHandler;
 
 final class MariaDbRestoreRollbackHandler implements RestoreRollbackHandler
 {
@@ -12,7 +11,7 @@ final class MariaDbRestoreRollbackHandler implements RestoreRollbackHandler
         private readonly DatabaseBackupDriver $driver,
     ) {}
 
-    public function rollback(RestoreContext $context): void 
+    public function rollback(RestoreContext $context): void
     {
         if ($context->rollbackDump === null) {
             return;

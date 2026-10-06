@@ -10,10 +10,9 @@ use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-
 final class RestoreDatabaseStepTest extends TestCase
 {
-    public function testRestoresContextDump(): void
+    public function test_restores_context_dump(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -35,9 +34,38 @@ final class RestoreDatabaseStepTest extends TestCase
             ->with($dump);
 
         (new RestoreDatabaseStep($driver))->execute($context);
+
+        $this->assertTrue($context->databaseRestoreStarted);
     }
 
-    public function testRestoreExceptionIsPropagated(): void
+    public function test_runs_health_check_after_restoring_database(): void
+    {
+        $driver = $this->createMock(DatabaseBackupDriver::class);
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump.sql', 'sqlite', 'sqlite'),
+            '/tmp/restore'
+        );
+        $calls = [];
+        $driver
+            ->expects($this->once())
+            ->method('restoreDump')
+            ->willReturnCallback(static function () use (&$calls): void {
+                $calls[] = 'restore';
+            });
+
+        (new RestoreDatabaseStep(
+            $driver,
+            static function (RestoreContext $receivedContext) use (&$calls, $context): void {
+                self::assertSame($context, $receivedContext);
+                $calls[] = 'health-check';
+            }
+        ))->execute($context);
+
+        $this->assertSame(['restore', 'health-check'], $calls);
+    }
+
+    public function test_restore_exception_is_propagated(): void
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
 
@@ -61,7 +89,7 @@ final class RestoreDatabaseStepTest extends TestCase
         (new RestoreDatabaseStep($driver))->execute($context);
     }
 
-    public function testHasExpectedName(): void
+    public function test_has_expected_name(): void
     {
         $step = new RestoreDatabaseStep(
             $this->createMock(DatabaseBackupDriver::class)

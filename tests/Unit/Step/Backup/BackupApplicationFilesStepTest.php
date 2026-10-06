@@ -13,6 +13,7 @@ final class BackupApplicationFilesStepTest extends TestCase
 {
     /**
      * Paths of temporary files
+     *
      * @var array<string>
      */
     private array $temporaryFiles = [];
@@ -28,7 +29,7 @@ final class BackupApplicationFilesStepTest extends TestCase
         parent::tearDown();
     }
 
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
 
@@ -44,7 +45,7 @@ final class BackupApplicationFilesStepTest extends TestCase
         );
     }
 
-    public function testCreatesArchiveWithCorrectPathsAndName(): void
+    public function test_creates_archive_with_correct_paths_and_name(): void
     {
         $archive = $this->createExistingArchive();
 
@@ -65,12 +66,12 @@ final class BackupApplicationFilesStepTest extends TestCase
             ['/app', '/config']
         );
 
-        $context = new BackupContext();
+        $context = new BackupContext;
 
         $step->execute($context);
     }
 
-    public function testStoresCreatedArchiveInContext(): void
+    public function test_stores_created_archive_in_context(): void
     {
         $archive = $this->createExistingArchive();
 
@@ -87,7 +88,7 @@ final class BackupApplicationFilesStepTest extends TestCase
             ['/app']
         );
 
-        $context = new BackupContext();
+        $context = new BackupContext;
 
         $step->execute($context);
 
@@ -97,7 +98,7 @@ final class BackupApplicationFilesStepTest extends TestCase
         );
     }
 
-    public function testThrowsExceptionWhenArchiveDoesNotExist(): void
+    public function test_throws_exception_when_archive_does_not_exist(): void
     {
         $archive = new ArchiveInfo(
             '/this/file/does/not/exist/backup.zip',
@@ -118,7 +119,7 @@ final class BackupApplicationFilesStepTest extends TestCase
             ['/app']
         );
 
-        $context = new BackupContext();
+        $context = new BackupContext;
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(

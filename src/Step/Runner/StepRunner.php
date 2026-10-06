@@ -3,8 +3,8 @@
 namespace Deagel1337\Backup\Kit\Step\Runner;
 
 use Deagel1337\Backup\Kit\Context\Context;
-use Deagel1337\Backup\Kit\Step\Interface\ProgressStep;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
+use Deagel1337\Backup\Kit\Step\Interface\ProgressStep;
 use TContext;
 use Throwable;
 
@@ -17,17 +17,16 @@ final class StepRunner
     /**
      * @template TStep of ProgressStep
      * @template TContext of Context
-     * @param array<TStep> $steps
-     * @param TContext $context
-     * @param callable(TStep, TContext): void $execute
-     * @return void
+     *
+     * @param  array<TStep>  $steps
+     * @param  TContext  $context
+     * @param  callable(TStep, TContext): void  $execute
      */
     public function run(
         array $steps,
         Context $context,
         callable $execute
-    ): void
-    {
+    ): void {
         $total = count($steps);
 
         $this->progress->started($total);

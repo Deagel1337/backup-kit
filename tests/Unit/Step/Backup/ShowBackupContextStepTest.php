@@ -14,10 +14,10 @@ final class ShowBackupContextStepTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->step = new ShowBackupContextStep();
+        $this->step = new ShowBackupContextStep;
     }
 
-    public function testName(): void
+    public function test_name(): void
     {
         $this->assertSame(
             'Backup-Kontext anzeigen',
@@ -25,22 +25,22 @@ final class ShowBackupContextStepTest extends TestCase
         );
     }
 
-    public function testOutputsEmptyContext(): void
+    public function test_outputs_empty_context(): void
     {
         $context = new BackupContext('/backup');
 
         $this->expectOutputString(
             "=== Backup Context ===\n"
-            . "Destination: /backup\n"
-            . "Dump: keiner\n"
-            . "Archive: keines\n"
-            . "=======================\n"
+            ."Destination: /backup\n"
+            ."Dump: keiner\n"
+            ."Archive: keines\n"
+            ."=======================\n"
         );
 
         $this->step->execute($context);
     }
 
-    public function testOutputsContextWithDump(): void
+    public function test_outputs_context_with_dump(): void
     {
         $dump = new DatabaseDump(
             '/tmp/backup.sql',
@@ -55,19 +55,19 @@ final class ShowBackupContextStepTest extends TestCase
 
         $this->expectOutputString(
             "=== Backup Context ===\n"
-            . "Destination: /backup\n"
-            . "Dump:\n"
-            . "  Path: /tmp/backup.sql\n"
-            . "  Driver: mysql\n"
-            . "  Format: sql\n"
-            . "Archive: keines\n"
-            . "=======================\n"
+            ."Destination: /backup\n"
+            ."Dump:\n"
+            ."  Path: /tmp/backup.sql\n"
+            ."  Driver: mysql\n"
+            ."  Format: sql\n"
+            ."Archive: keines\n"
+            ."=======================\n"
         );
 
         $this->step->execute($context);
     }
 
-    public function testOutputsContextWithArchive(): void
+    public function test_outputs_context_with_archive(): void
     {
         $archive = new ArchiveInfo(
             '/backup/archive.zip',
@@ -82,19 +82,19 @@ final class ShowBackupContextStepTest extends TestCase
 
         $this->expectOutputString(
             "=== Backup Context ===\n"
-            . "Destination: /backup\n"
-            . "Dump: keiner\n"
-            . "Archive:\n"
-            . "  Path: /backup/archive.zip\n"
-            . "  Driver: zip\n"
-            . "  Format: zip\n"
-            . "=======================\n"
+            ."Destination: /backup\n"
+            ."Dump: keiner\n"
+            ."Archive:\n"
+            ."  Path: /backup/archive.zip\n"
+            ."  Driver: zip\n"
+            ."  Format: zip\n"
+            ."=======================\n"
         );
 
         $this->step->execute($context);
     }
 
-    public function testOutputsCompleteContext(): void
+    public function test_outputs_complete_context(): void
     {
         $dump = new DatabaseDump(
             '/tmp/backup.sql',
@@ -116,16 +116,16 @@ final class ShowBackupContextStepTest extends TestCase
 
         $this->expectOutputString(
             "=== Backup Context ===\n"
-            . "Destination: /backup\n"
-            . "Dump:\n"
-            . "  Path: /tmp/backup.sql\n"
-            . "  Driver: mysql\n"
-            . "  Format: sql\n"
-            . "Archive:\n"
-            . "  Path: /backup/archive.zip\n"
-            . "  Driver: zip\n"
-            . "  Format: zip\n"
-            . "=======================\n"
+            ."Destination: /backup\n"
+            ."Dump:\n"
+            ."  Path: /tmp/backup.sql\n"
+            ."  Driver: mysql\n"
+            ."  Format: sql\n"
+            ."Archive:\n"
+            ."  Path: /backup/archive.zip\n"
+            ."  Driver: zip\n"
+            ."  Format: zip\n"
+            ."=======================\n"
         );
 
         $this->step->execute($context);

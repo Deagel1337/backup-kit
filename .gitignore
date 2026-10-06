@@ -2,6 +2,10 @@ vendor/
 .env
 .phpunit.cache
 .phpdoc
-.idea
 .vscode
-docs
+tmp/
+/docs/api
+.idea
+before-restore.sql
+docs/
+.vscode

@@ -8,7 +8,6 @@ trait CommandTrait
 {
     abstract protected function processRunner(): ProcessRunner;
 
-
     public function isCommandAvailable(string $command): bool
     {
         $result = $this->processRunner()->run([

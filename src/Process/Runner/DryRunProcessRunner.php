@@ -5,6 +5,7 @@ namespace Deagel1337\Backup\Kit\Process\Runner;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProcessReporter;
+
 final class DryRunProcessRunner implements ProcessRunner
 {
     public function __construct(
@@ -12,12 +13,8 @@ final class DryRunProcessRunner implements ProcessRunner
     ) {}
 
     /**
-     * @param array<string> $command
-     * @param array<string> $environment
-     * @param string | null $workingDirectory
-     * @param string | null $outputFile
-     * @param string | null $inputFile
-     * @return ProcessResult
+     * @param  array<string>  $command
+     * @param  array<string>  $environment
      */
     public function run(
         array $command,
@@ -25,8 +22,7 @@ final class DryRunProcessRunner implements ProcessRunner
         ?string $workingDirectory = null,
         ?string $outputFile = null,
         ?string $inputFile = null
-    ): ProcessResult
-    {
+    ): ProcessResult {
         $this->reporter->command($command);
 
         return new ProcessResult(

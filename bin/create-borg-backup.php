@@ -5,12 +5,12 @@ use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
 use Dotenv\Dotenv;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../src');
+$dotenv = Dotenv::createImmutable(__DIR__.'/../src');
 $dotenv->load();
 
-$archiveName = $argv[1] ?? "Borg Backup";
+$archiveName = $argv[1] ?? 'Borg Backup';
 
 $driver = new BorgArchiveDriver(
     repository: $_ENV['BORG_REPOSITORY'] ?? '',

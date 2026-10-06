@@ -16,10 +16,10 @@ final class ProcOpenProcessRunnerTest extends TestCase
     {
         parent::setUp();
 
-        $this->runner = new ProcOpenProcessRunner();
+        $this->runner = new ProcOpenProcessRunner;
     }
 
-    public function testRunsProcessSuccessfully(): void
+    public function test_runs_process_successfully(): void
     {
         $result = $this->runner->run([
             PHP_BINARY,
@@ -32,7 +32,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         self::assertSame('', $result->errorOutput);
     }
 
-    public function testCapturesStderr(): void
+    public function test_captures_stderr(): void
     {
         $result = $this->runner->run([
             PHP_BINARY,
@@ -45,7 +45,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         self::assertSame('something went wrong', $result->errorOutput);
     }
 
-    public function testReturnsNonZeroExitCode(): void
+    public function test_returns_non_zero_exit_code(): void
     {
         $result = $this->runner->run([
             PHP_BINARY,
@@ -56,7 +56,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         self::assertSame(42, $result->exitCode);
     }
 
-    public function testPassesEnvironmentVariables(): void
+    public function test_passes_environment_variables(): void
     {
         $result = $this->runner->run(
             command: [
@@ -73,7 +73,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         self::assertSame('hello-from-test', $result->output);
     }
 
-    public function testUsesWorkingDirectory(): void
+    public function test_uses_working_directory(): void
     {
         $workingDirectory = sys_get_temp_dir();
 
@@ -93,7 +93,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         );
     }
 
-    public function testWritesStdoutToOutputFile(): void
+    public function test_writes_stdout_to_output_file(): void
     {
         $outputFile = tempnam(
             sys_get_temp_dir(),
@@ -123,7 +123,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         }
     }
 
-    public function testReadsStdinFromInputFile(): void
+    public function test_reads_stdin_from_input_file(): void
     {
         $inputFile = tempnam(
             sys_get_temp_dir(),
@@ -155,7 +155,7 @@ final class ProcOpenProcessRunnerTest extends TestCase
         }
     }
 
-    public function testThrowsExceptionWhenProcessCannotBeStarted(): void
+    public function test_throws_exception_when_process_cannot_be_started(): void
     {
         $this->expectException(RuntimeException::class);
 

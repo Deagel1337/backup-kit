@@ -45,7 +45,7 @@ final class SqliteBackupDriverTest extends TestCase
         parent::tearDown();
     }
 
-    public function testAcceptsReadableNonEmptySqliteDump(): void
+    public function test_accepts_readable_non_empty_sqlite_dump(): void
     {
         $dump = new DatabaseDump(
             $this->dumpPath,
@@ -59,7 +59,7 @@ final class SqliteBackupDriverTest extends TestCase
         $this->assertSame('sqlite', $dump->format);
     }
 
-    public function testRejectsWrongDriver(): void
+    public function test_rejects_wrong_driver(): void
     {
         $this->expectException(InvalidDumpDriverException::class);
         $this->expectExceptionMessage(
@@ -75,7 +75,7 @@ final class SqliteBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsWrongFormat(): void
+    public function test_rejects_wrong_format(): void
     {
         $this->expectException(InvalidDumpFormatException::class);
         $this->expectExceptionMessage(
@@ -91,7 +91,7 @@ final class SqliteBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsMissingDump(): void
+    public function test_rejects_missing_dump(): void
     {
         $this->expectException(DumpNotFoundException::class);
         $this->expectExceptionMessage(
@@ -107,7 +107,7 @@ final class SqliteBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testRejectsEmptyDump(): void
+    public function test_rejects_empty_dump(): void
     {
         file_put_contents($this->dumpPath, '');
 
@@ -125,7 +125,7 @@ final class SqliteBackupDriverTest extends TestCase
         $this->driver()->validateDump($dump);
     }
 
-    public function testCreateDumpUsesSqliteBackupCommand(): void
+    public function test_create_dump_uses_sqlite_backup_command(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -135,8 +135,8 @@ final class SqliteBackupDriverTest extends TestCase
             ->with(
                 $this->callback(
                     /**
-                    * @param array<int, string> $command
-                    */
+                     * @param  array<int, string>  $command
+                     */
                     function (array $command): bool {
                         /** @var string $backupCommand */
                         $backupCommand = $command[2];
@@ -183,7 +183,7 @@ final class SqliteBackupDriverTest extends TestCase
         }
     }
 
-    public function testCreateDumpThrowsWhenSqliteFails(): void
+    public function test_create_dump_throws_when_sqlite_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
@@ -206,15 +206,15 @@ final class SqliteBackupDriverTest extends TestCase
         $this->driver($process)->createDump();
     }
 
-    public function testCreateDumpUsesProvidedBackupName(): void
+    public function test_create_dump_uses_provided_backup_name(): void
     {
         $process = $this->createMock(ProcessRunner::class);
 
         $backupName = 'test-backup.sqlite';
 
         $expectedPath = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . $backupName;
+            .DIRECTORY_SEPARATOR
+            .$backupName;
 
         $process
             ->expects($this->once())
@@ -223,7 +223,7 @@ final class SqliteBackupDriverTest extends TestCase
                 [
                     'sqlite3',
                     '/tmp/database.sqlite',
-                    ".backup '" . $expectedPath . "'",
+                    ".backup '".$expectedPath."'",
                 ],
                 [],
                 null,
@@ -260,7 +260,7 @@ final class SqliteBackupDriverTest extends TestCase
         }
     }
 
-    public function testRestoreDumpCopiesDatabaseFile(): void
+    public function test_restore_dump_copies_database_file(): void
     {
         $targetPath = tempnam(
             sys_get_temp_dir(),

@@ -10,9 +10,9 @@ use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpException;
 use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
@@ -24,13 +24,12 @@ final class RestoreDatabaseCommand
 {
     public function __construct(
         private readonly DatabaseBackupDriver $driver,
-    ) { }
+    ) {}
 
     public function __invoke(
         #[Argument('Path to database dump')] string $path,
         OutputInterface $output
-    ): int
-    {
+    ): int {
         $connection = new DatabaseConnection(
             driver: 'mariadb',
             host: 'localhost',
@@ -40,24 +39,24 @@ final class RestoreDatabaseCommand
             password: 'devpass'
         );
 
-        $dumpToRestore = new DatabaseDump($path, $connection->driver, "sql");
-        
+        $dumpToRestore = new DatabaseDump($path, $connection->driver, 'sql');
+
         try {
             $dumpToRestore->validate();
-    
+
             $steps = [
                 new RestoreDatabaseStep($this->driver),
             ];
-    
+
             $app = RestoreMariaDbApplication::create(
                 driver: $this->driver,
                 steps: $steps
             );
-    
+
             $app->run($dumpToRestore);
 
-            $output->writeln("Database Restore completed");
-        } catch(InvalidDumpException $e) {
+            $output->writeln('Database Restore completed');
+        } catch (InvalidDumpException $e) {
 
             $output->write($e->getMessage());
 

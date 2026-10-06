@@ -7,9 +7,10 @@ use PHPUnit\Framework\TestCase;
 
 final class PathTraitTest extends TestCase
 {
-    public function testTemporaryPathUsesSystemTemporaryDirectory(): void
+    public function test_temporary_path_uses_system_temporary_directory(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
             use PathTrait;
 
             public function getTemporaryPath(string $name): string
@@ -21,14 +22,15 @@ final class PathTraitTest extends TestCase
         $result = $testClass->getTemporaryPath('backup.zip');
 
         $this->assertSame(
-            sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'backup.zip',
+            sys_get_temp_dir().DIRECTORY_SEPARATOR.'backup.zip',
             $result
         );
     }
 
-    public function testTemporaryPathUsesOnlyBasename(): void
+    public function test_temporary_path_uses_only_basename(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
             use PathTrait;
 
             public function getTemporaryPath(string $name): string
@@ -42,14 +44,15 @@ final class PathTraitTest extends TestCase
         );
 
         $this->assertSame(
-            sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'backup.zip',
+            sys_get_temp_dir().DIRECTORY_SEPARATOR.'backup.zip',
             $result
         );
     }
 
-    public function testDoesPathExistReturnsTrueForExistingFile(): void
+    public function test_does_path_exist_returns_true_for_existing_file(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
             use PathTrait;
 
             public function pathExists(string $path): bool
@@ -71,9 +74,10 @@ final class PathTraitTest extends TestCase
         }
     }
 
-    public function testDoesPathExistReturnsFalseForNonExistingPath(): void
+    public function test_does_path_exist_returns_false_for_non_existing_path(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
             use PathTrait;
 
             public function pathExists(string $path): bool
@@ -83,8 +87,8 @@ final class PathTraitTest extends TestCase
         };
 
         $path = sys_get_temp_dir()
-            . DIRECTORY_SEPARATOR
-            . 'this_file_should_not_exist_' . uniqid();
+            .DIRECTORY_SEPARATOR
+            .'this_file_should_not_exist_'.uniqid();
 
         $this->assertFalse(
             $testClass->pathExists($path)

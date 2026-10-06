@@ -12,7 +12,7 @@ use RuntimeException;
 
 final class BackupServiceTest extends TestCase
 {
-    public function testRunsAllStepsInOrder(): void
+    public function test_runs_all_steps_in_order(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
@@ -63,7 +63,7 @@ final class BackupServiceTest extends TestCase
                     int $total,
                     string $name
                 ) use (&$order): void {
-                    $order[] = 'started:' . $number . ':' . $name;
+                    $order[] = 'started:'.$number.':'.$name;
                 }
             );
 
@@ -76,7 +76,7 @@ final class BackupServiceTest extends TestCase
                     int $total,
                     string $name
                 ) use (&$order): void {
-                    $order[] = 'finished:' . $number . ':' . $name;
+                    $order[] = 'finished:'.$number.':'.$name;
                 }
             );
 
@@ -104,7 +104,7 @@ final class BackupServiceTest extends TestCase
         );
     }
 
-    public function testStartsProgressWithCorrectNumberOfSteps(): void
+    public function test_starts_progress_with_correct_number_of_steps(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
@@ -145,7 +145,7 @@ final class BackupServiceTest extends TestCase
         );
     }
 
-    public function testReportsStepNumberTotalAndName(): void
+    public function test_reports_step_number_total_and_name(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
@@ -198,7 +198,7 @@ final class BackupServiceTest extends TestCase
         $service->backup($context);
     }
 
-    public function testStopsWhenStepFails(): void
+    public function test_stops_when_step_fails(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
@@ -261,7 +261,7 @@ final class BackupServiceTest extends TestCase
         );
     }
 
-    public function testCanRunWithoutSteps(): void
+    public function test_can_run_without_steps(): void
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);

@@ -8,8 +8,7 @@ final readonly class ProcessResult
         public int $exitCode,
         public string $output,
         public string $errorOutput
-    )
-    {}
+    ) {}
 
     public function successful(): bool
     {

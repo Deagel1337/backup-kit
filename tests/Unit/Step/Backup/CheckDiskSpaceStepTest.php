@@ -8,9 +8,9 @@ use PHPUnit\Framework\TestCase;
 
 final class CheckDiskSpaceStepTest extends TestCase
 {
-    public function testReturnsCorrectName(): void
+    public function test_returns_correct_name(): void
     {
-        $step = new CheckDiskSpaceStep();
+        $step = new CheckDiskSpaceStep;
 
         $this->assertSame(
             'Backup-Verzeichnis erstellen',
@@ -18,39 +18,39 @@ final class CheckDiskSpaceStepTest extends TestCase
         );
     }
 
-    public function testOutputsFreeSpace(): void
+    public function test_outputs_free_space(): void
     {
         $step = new CheckDiskSpaceStep('/');
-        $context = new BackupContext();
+        $context = new BackupContext;
 
-        $freeSpace = diskfreespace('/');
+        $freeSpace = disk_free_space('/');
 
         $this->assertNotFalse($freeSpace);
 
         $this->expectOutputString(
             'Free space: '
-            . $this->formatBytes($freeSpace)
-            . ' bytes'
+            .$this->formatBytes($freeSpace)
+            .' bytes'
         );
 
         $step->execute($context);
     }
 
-    public function testUsesConfiguredPath(): void
+    public function test_uses_configured_path(): void
     {
         $path = sys_get_temp_dir();
 
         $step = new CheckDiskSpaceStep($path);
-        $context = new BackupContext();
+        $context = new BackupContext;
 
-        $freeSpace = diskfreespace($path);
+        $freeSpace = disk_free_space($path);
 
         $this->assertNotFalse($freeSpace);
 
         $this->expectOutputString(
             'Free space: '
-            . $this->formatBytes($freeSpace)
-            . ' bytes'
+            .$this->formatBytes($freeSpace)
+            .' bytes'
         );
 
         $step->execute($context);
@@ -70,6 +70,6 @@ final class CheckDiskSpaceStepTest extends TestCase
 
         $bytes /= (1 << (10 * $pow));
 
-        return sprintf("%s",round($bytes, 2) . ' ' . $units[$pow]);
+        return sprintf('%s', round($bytes, 2).' '.$units[$pow]);
     }
 }

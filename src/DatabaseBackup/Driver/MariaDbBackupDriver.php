@@ -2,8 +2,8 @@
 
 namespace Deagel1337\Backup\Kit\DatabaseBackup\Driver;
 
-
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
+use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotFoundException;
 use Deagel1337\Backup\Kit\Exception\DumpDriverException\DumpNotReadableException;
@@ -13,17 +13,16 @@ use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpFormatExcepti
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
-use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use RuntimeException;
 
 final class MariaDbBackupDriver implements DatabaseBackupDriver
 {
     use CommandTrait;
-    
+
     public function __construct(
         private readonly DatabaseConnection $connection,
-        private readonly ProcessRunner $process = new ProcOpenProcessRunner()    
-    ) { }
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner
+    ) {}
 
     protected function processRunner(): ProcessRunner
     {
@@ -32,19 +31,19 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
     public function createDump(?string $destination = null): DatabaseDump
     {
-       if ($destination === null) {
-            $destination = "/tmp/";
+        if ($destination === null) {
+            $destination = '/tmp/';
         }
 
         $directory = dirname($destination);
 
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             throw new RuntimeException(
                 "Das Backup-Verzeichnis existiert nicht: {$directory}"
             );
         }
 
-        if (!is_writable($directory)) {
+        if (! is_writable($directory)) {
             throw new RuntimeException(
                 "Das Backup-Verzeichnis ist nicht beschreibbar: {$directory}"
             );
@@ -54,9 +53,9 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
         $command = [
             'mariadb-dump',
-            '--host=' . $this->connection->host,
-            '--port=' . $this->connection->port,
-            '--user=' . $this->connection->username,
+            '--host='.$this->connection->host,
+            '--port='.$this->connection->port,
+            '--user='.$this->connection->username,
             $this->connection->database,
         ];
 
@@ -72,7 +71,7 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
             throw new RuntimeException(
                 'Das MariaDB-Dump konnte nicht erstellt werden: '
-                . trim($result->errorOutput)
+                .trim($result->errorOutput)
             );
         }
 
@@ -86,23 +85,23 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
     public function validateDump(DatabaseDump $dump): void
     {
         if ($dump->driver !== $this->connection->driver) {
-            throw new InvalidDumpDriverException("Der Dump gehört nicht zum MariaDB-Treiber.");
+            throw new InvalidDumpDriverException('Der Dump gehört nicht zum MariaDB-Treiber.');
         }
 
         if (strtolower($dump->format) !== 'sql') {
-            throw new InvalidDumpFormatException();
+            throw new InvalidDumpFormatException;
         }
 
-        if (!$dump->exists()) {
-            throw new DumpNotFoundException();
+        if (! $dump->exists()) {
+            throw new DumpNotFoundException;
         }
 
-        if (!$dump->isReadable()) {
-            throw new DumpNotReadableException();
+        if (! $dump->isReadable()) {
+            throw new DumpNotReadableException;
         }
 
         if ($dump->size() === 0) {
-            throw new EmptyDumpException();
+            throw new EmptyDumpException;
         }
     }
 
@@ -110,9 +109,9 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
     {
         $command = [
             'mariadb',
-            '--host=' . $this->connection->host,
-            '--port=' . $this->connection->port,
-            '--user=' . $this->connection->username,
+            '--host='.$this->connection->host,
+            '--port='.$this->connection->port,
+            '--user='.$this->connection->username,
             $this->connection->database,
         ];
 
@@ -120,7 +119,7 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
         if ($result->exitCode !== 0) {
             throw new RuntimeException(
-                'Das MariaDB-Dump konnte nicht wiederhergestellt werden: ' . trim($result->errorOutput)
+                'Das MariaDB-Dump konnte nicht wiederhergestellt werden: '.trim($result->errorOutput)
             );
         }
     }
@@ -130,7 +129,7 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
         $missingCommands = [];
 
         foreach (['mariadb', 'mariadb-dump'] as $command) {
-            if (!$this->isCommandAvailable($command)) {
+            if (! $this->isCommandAvailable($command)) {
                 $missingCommands[] = $command;
             }
         }
@@ -138,7 +137,7 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
         if ($missingCommands !== []) {
             throw new RuntimeException(
                 'Folgende MariaDB-Programme sind nicht verfügbar: '
-                . implode(', ', $missingCommands)
+                .implode(', ', $missingCommands)
             );
         }
     }

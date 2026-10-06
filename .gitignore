@@ -7,3 +7,5 @@ tmp/
 /docs/api
 .idea
 before-restore.sql
+docs/
+.vscode

@@ -1,3 +1,7 @@
 vendor/
 .env
 .phpunit.cache
+.phpdoc
+.idea
+.vscode
+docs

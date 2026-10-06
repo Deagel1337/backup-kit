@@ -12,6 +12,8 @@ final class RestoreContext extends Context
         public ?DatabaseDump $dump,
         public string $destination,
         public ?DatabaseDump $rollbackDump = null,
+        public ?string $stagingDestination = null,
+        public bool $databaseRestoreStarted = false,
     ) {
         parent::__construct(
             destination: $this->destination,

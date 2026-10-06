@@ -27,6 +27,7 @@ final class CreateDatabaseBackupStep implements RestoreStep
             throw new RuntimeException('Konnte kein Datenbank Dump erstellen.');
         }
 
+        $this->driver->validateDump($dump);
         $context->rollbackDump = $dump;
     }
 }

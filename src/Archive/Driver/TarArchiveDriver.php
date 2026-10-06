@@ -3,6 +3,8 @@
 namespace Deagel1337\Backup\Kit\Archive\Driver;
 
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
@@ -147,7 +149,33 @@ final class TarArchiveDriver implements ArchiveDriver
     #[Override]
     public function listArchive(ArchiveInfo $archive): iterable
     {
-        throw new \Exception('Not implemented');
+        $this->validateArchive($archive);
+
+        $result = $this->process->run(['tar', '-tvzf', $archive->path]);
+        if ($result->exitCode !== 0) {
+            throw new RuntimeException(
+                'Der Inhalt des Tar-Archivs konnte nicht gelesen werden: '.trim($result->errorOutput)
+            );
+        }
+
+        foreach (explode("\n", trim($result->output)) as $line) {
+            if ($line === '') {
+                continue;
+            }
+
+            if (! preg_match('/^([\\-dlcbps])\\S*\\s+\\S+\\s+(\\d+)\\s+\\S+\\s+\\S+\\s(.+)$/', $line, $matches)) {
+                throw new RuntimeException('Ein Eintrag des Tar-Archivs konnte nicht gelesen werden: '.$line);
+            }
+
+            $type = match ($matches[1]) {
+                '-' => ArchiveEntryType::File,
+                'd' => ArchiveEntryType::Directory,
+                'l' => ArchiveEntryType::Symlink,
+                default => ArchiveEntryType::Undefined,
+            };
+
+            yield new ArchiveEntry($matches[3], (int) $matches[2], $type);
+        }
     }
 
     /**

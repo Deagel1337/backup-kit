@@ -3,6 +3,8 @@
 namespace Tests\Unit\Step\Restore;
 
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
@@ -75,6 +77,11 @@ final class ValidateRestoreContextStepTest extends TestCase
                     $this->assertSame(3, $step++);
                 }
             );
+        $archiveDriver
+            ->expects($this->once())
+            ->method('listArchive')
+            ->with($archive)
+            ->willReturn([new ArchiveEntry('dump.sql', 4, ArchiveEntryType::File)]);
 
         (new ValidateRestoreContextStep(
             $databaseDriver,
@@ -242,6 +249,35 @@ final class ValidateRestoreContextStepTest extends TestCase
             $databaseDriver,
             $archiveDriver
         ))->execute($context);
+    }
+
+    public function test_rejects_archive_entries_that_escape_destination(): void
+    {
+        $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
+        $archiveDriver = $this->createMock(ArchiveDriver::class);
+        $archive = new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz');
+        $archiveDriver
+            ->method('listArchive')
+            ->willReturn([new ArchiveEntry('../outside.txt', 4, ArchiveEntryType::File)]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Das Archiv enthält einen unsicheren Pfad');
+
+        (new ValidateRestoreContextStep($databaseDriver, $archiveDriver))->execute(
+            new RestoreContext($archive, null, '/tmp/restore')
+        );
+    }
+
+    public function test_skips_archive_requirements_for_database_only_restore(): void
+    {
+        $databaseDriver = $this->createMock(DatabaseBackupDriver::class);
+        $databaseDriver->expects($this->once())->method('validateRequirements');
+        $archiveDriver = $this->createMock(ArchiveDriver::class);
+        $archiveDriver->expects($this->never())->method('validateRequirements');
+
+        (new ValidateRestoreContextStep($databaseDriver, $archiveDriver))->execute(
+            new RestoreContext(null, null, '')
+        );
     }
 
     public function test_has_expected_name(): void

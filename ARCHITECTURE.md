@@ -52,10 +52,11 @@ Die wesentlichen Erweiterungsverträge sind `DatabaseBackupDriver`, `ArchiveDriv
 
 Der vorgesehene Ablauf für einen Datenbank-Dump ist:
 
-1. Eine Anwendung erstellt einen `BackupContext` mit dem Zielpfad.
-2. `BackupService` übergibt die konfigurierte Liste von `BackupStep`-Objekten an `StepRunner`.
-3. `BackupDatabaseStep` ruft `createDump()` des ausgewählten `DatabaseBackupDriver` auf, validiert das Ergebnis und legt den Dump im Kontext ab.
-4. Die Anwendung gibt den erzeugten `DatabaseDump` an den Aufrufer zurück.
+1. Eine Anwendung erstellt einen `BackupContext` mit Zielpfad und Quelldateien.
+2. `ValidateBackupContextStep` prüft Datenbankanforderungen, Quelldateien und das Zielverzeichnis.
+3. `BackupDatabaseStep` erzeugt und validiert den Dump.
+4. `ArchiveBackupStep` archiviert Dump und Quelldateien; `VerifyBackupArchiveStep` prüft, ob alle erwarteten Einträge im Archiv vorhanden sind.
+5. Temporäre Dumps werden bei angeforderter Bereinigung auch nach einem fehlgeschlagenen Ablauf entfernt. Retention läuft erst nach erfolgreicher Archivprüfung.
 
 Der Step-Aufbau erlaubt zusätzliche Operationen wie Speicherplatzprüfung oder Kontextausgabe. Die Schritte werden vom Aufrufer zusammengestellt; es gibt keinen universellen, automatisch konfigurierten Backup-Ablauf.
 
@@ -71,7 +72,9 @@ Die Treiber implementieren `DatabaseBackupDriver`. Sie validieren die Kompatibil
 
 `RestoreMariaDbApplication` erstellt einen `RestoreContext` und übergibt die konfigurierten Restore-Steps an `RestoreService`. `RestoreDatabaseStep` verlangt einen Dump und delegiert die Wiederherstellung an `restoreDump()` des Datenbanktreibers.
 
-Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein Sicherungsdump erstellt und im Kontext abgelegt werden. Wenn ein Restore-Schritt fehlschlägt, versucht `RestoreService` über einen `RestoreRollbackHandler`, diesen Dump wiederherzustellen. Die Standardfabrik von `RestoreMariaDbApplication` verwendet dafür `MariaDbRestoreRollbackHandler`. Das Rollback setzt somit einen zuvor angelegten Rollback-Dump voraus; es ist kein Ersatz für ein unabhängig getestetes Disaster-Recovery-Verfahren.
+`ValidateRestoreContextStep` prüft verfügbare Treiber, Archiv und Dump sowie Zielpfade. Archiv-Einträge mit Pfad-Traversal oder leere Archive werden abgewiesen. `RestoreArchiveStep` kann in ein optionales `stagingDestination` extrahieren; die Anwendung, die den Restore konfiguriert, ist für die anschließende Veröffentlichung des Staging-Inhalts zuständig.
+
+Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein validierter Sicherungsdump erstellt und im Kontext abgelegt werden. `RestoreService` versucht das Rollback nur, wenn `RestoreDatabaseStep` tatsächlich begonnen hat. Der Snapshot wird danach aus dem lokalen Dateisystem entfernt. Die Standardfabrik von `RestoreMariaDbApplication` verwendet `MariaDbRestoreRollbackHandler`. Das Rollback ist kein Ersatz für ein unabhängig getestetes Disaster-Recovery-Verfahren. `RestoreDatabaseStep` unterstützt außerdem einen optionalen Health-Check-Callback nach erfolgreicher Wiederherstellung; ein Fehler darin löst ebenfalls das Rollback aus.
 
 ## Archivierung
 
@@ -80,7 +83,7 @@ Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein Sicherungsdump 
 Implementierte Treiber:
 
 - `BorgArchiveDriver` erstellt und listet Borg-Archive und extrahiert sie wieder. Repository, Passphrase sowie optionale SSH-Parameter werden dem Treiber übergeben.
-- `TarArchiveDriver` erstellt gzip-komprimierte TAR-Archive und kann sie extrahieren.
+- `TarArchiveDriver` erstellt gzip-komprimierte TAR-Archive, listet deren Inhalte und kann sie extrahieren.
 
 `BackupApplicationFilesStep` verbindet Dateiarchivierung mit einem Backup-Ablauf, indem der Step den Archivtreiber verwendet und das Ergebnis im `BackupContext` ablegt. Restore-Steps verbinden entsprechend Archivprüfung und -extraktion mit dem `RestoreContext`.
 
@@ -129,10 +132,9 @@ Die PHPUnit-Tests sind in zwei Bereiche gegliedert:
 
 Die folgenden Punkte beschreiben den aktuellen Code und sind wichtig, wenn neue Abläufe darauf aufbauen:
 
-- `StepRunner::run()` erwartet einen `Context`, aber `BackupContext` erweitert die Basisklasse `Context` derzeit nicht. Dadurch kann der vorgesehene Datenbank-Backup-Pfad beim Aufruf des typisierten Runners mit einem `TypeError` abbrechen.
-- `TarArchiveDriver` implementiert `listArchives()`, aber nicht `listArchive()` (Inhalt eines Archivs).
 - `RestoreMariaDbApplication` ist auf MariaDB ausgerichtet und verwendet einen MariaDB-spezifischen Rollback-Handler, obwohl die Factory einen allgemeinen `DatabaseBackupDriver` entgegennimmt. Für andere Datenbanktreiber sollte der Restore-/Rollback-Pfad nicht ohne Anpassung als unterstützt angenommen werden.
 - Es gibt noch keine allgemeine Restore-Application; `RestoreMariaDbApplication` bleibt MariaDB-spezifisch.
+- Das optionale Restore-Staging isoliert die Extraktion, veröffentlicht den fertigen Inhalt aber nicht automatisch am produktiven Ziel.
 - Einige Backup- und Restore-Steps greifen direkt auf Treiber zu, statt jede Operation über den entsprechenden Service zu führen. Validierungen eines Services gelten deshalb nicht automatisch für jeden Step-Aufruf.
 
 Diese Einschränkungen sind keine Zusicherung über künftige Versionen. Für produktive Restore-Szenarien sollten die konkreten Abläufe einschließlich Fehlerfall und Wiederherstellung in der Zielumgebung getestet werden.

@@ -4,10 +4,12 @@ namespace Tests\Unit\Services;
 
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
+use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\RestoreService;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Restore\Rollback\RestoreRollbackHandler;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -22,6 +24,7 @@ final class RestoreServiceTest extends TestCase
      * @param  array<RestoreStep>  $steps
      * @return array{
      *   progress: MockObject,
+     *   rollback: MockObject,
      *   service: RestoreService
      * }
      */
@@ -33,6 +36,7 @@ final class RestoreServiceTest extends TestCase
 
         return [
             'progress' => $progress,
+            'rollback' => $rollback,
             'service' => new RestoreService(
                 steps: $steps,
                 runner: $runner,
@@ -47,6 +51,7 @@ final class RestoreServiceTest extends TestCase
 
         $setup = $this->createRestoreService([$step1, $step2]);
         $progress = $setup['progress'];
+        $setup['rollback']->expects($this->never())->method('rollback');
         $service = $setup['service'];
 
         $context = new RestoreContext(
@@ -139,6 +144,37 @@ final class RestoreServiceTest extends TestCase
             ],
             $order
         );
+    }
+
+    public function test_rolls_back_and_removes_snapshot_after_database_restore_failure(): void
+    {
+        $snapshotPath = tempnam(sys_get_temp_dir(), 'restore_rollback_');
+        $this->assertNotFalse($snapshotPath);
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/backup.tar.gz', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump.sql', 'mariadb', 'sql'),
+            '/tmp/restore',
+            rollbackDump: new DatabaseDump($snapshotPath, 'mariadb', 'sql'),
+        );
+        $database = $this->createMock(DatabaseBackupDriver::class);
+        $database
+            ->expects($this->once())
+            ->method('restoreDump')
+            ->willThrowException(new RuntimeException('database restore failed'));
+        $setup = $this->createRestoreService([new RestoreDatabaseStep($database)]);
+        $setup['rollback']
+            ->expects($this->once())
+            ->method('rollback')
+            ->with($context);
+
+        try {
+            $setup['service']->restore($context);
+            $this->fail('Expected restore failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('database restore failed', $exception->getMessage());
+        }
+
+        $this->assertFileDoesNotExist($snapshotPath);
     }
 
     public function test_starts_progress_with_correct_number_of_steps(): void

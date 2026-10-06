@@ -63,7 +63,7 @@ final class ExtractBackupStepTest extends TestCase
         $step->execute($context);
     }
 
-    public function test_uses_empty_destination_by_default(): void
+    public function test_uses_context_destination_by_default(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
 
@@ -90,7 +90,7 @@ final class ExtractBackupStepTest extends TestCase
             ->method('extractArchive')
             ->with(
                 $archive,
-                ''
+                '/tmp/restore'
             );
 
         $step = new ExtractBackupStep($archiveDriver);

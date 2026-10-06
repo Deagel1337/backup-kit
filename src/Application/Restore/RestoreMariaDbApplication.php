@@ -2,7 +2,6 @@
 
 namespace Deagel1337\Backup\Kit\Application\Restore;
 
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
@@ -22,7 +21,7 @@ final class RestoreMariaDbApplication
     public function run(DatabaseDump $dump): void
     {
         $context = new RestoreContext(
-            archive: new ArchiveInfo('', '', ''),
+            archive: null,
             dump: $dump,
             destination: '',
         );

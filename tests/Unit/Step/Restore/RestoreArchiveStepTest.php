@@ -60,6 +60,31 @@ final class RestoreArchiveStepTest extends TestCase
         (new RestoreArchiveStep($driver))->execute($context);
     }
 
+    public function test_removes_partial_staging_directory_when_extraction_fails(): void
+    {
+        $driver = $this->createMock(ArchiveDriver::class);
+        $driver
+            ->expects($this->once())
+            ->method('extractArchive')
+            ->willThrowException(new RuntimeException('extract failed'));
+        $stagingDirectory = sys_get_temp_dir().'/restore_stage_'.bin2hex(random_bytes(6));
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            null,
+            '/tmp/restore',
+            stagingDestination: $stagingDirectory,
+        );
+
+        try {
+            (new RestoreArchiveStep($driver))->execute($context);
+            $this->fail('Expected extraction failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('extract failed', $exception->getMessage());
+        }
+
+        $this->assertDirectoryDoesNotExist($stagingDirectory);
+    }
+
     public function test_has_expected_name(): void
     {
         $this->assertSame(

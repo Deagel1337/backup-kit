@@ -14,8 +14,11 @@ use Deagel1337\Backup\Kit\Step\Backup\ArchiveBackupStep;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use Deagel1337\Backup\Kit\Step\Backup\CleanupBackupStep;
 use Deagel1337\Backup\Kit\Step\Backup\PruneArchivesStep;
+use Deagel1337\Backup\Kit\Step\Backup\ValidateBackupContextStep;
+use Deagel1337\Backup\Kit\Step\Backup\VerifyBackupArchiveStep;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use RuntimeException;
+use Throwable;
 
 /**
  * Vollständiger Backup-Ablauf: Datenbank sichern, zusammen mit Dateien archivieren,
@@ -52,8 +55,10 @@ final class BackupApplication
         $startedAt = new DateTimeImmutable;
 
         $steps = [
+            new ValidateBackupContextStep($this->database),
             new BackupDatabaseStep($this->database),
             new ArchiveBackupStep($this->archives, $archiveName),
+            new VerifyBackupArchiveStep($this->archives),
         ];
 
         if ($removeDump) {
@@ -66,7 +71,15 @@ final class BackupApplication
 
         $context = new BackupContext(destination: $dumpPath, files: $files);
 
-        (new BackupService($steps, new StepRunner($this->reporter)))->backup($context);
+        try {
+            (new BackupService($steps, new StepRunner($this->reporter)))->backup($context);
+        } catch (Throwable $exception) {
+            if ($removeDump && $context->dump !== null && is_file($context->dump->path)) {
+                @unlink($context->dump->path);
+            }
+
+            throw $exception;
+        }
 
         if ($context->archive === null) {
             throw new RuntimeException('Der Backup-Prozess hat kein Archiv erzeugt.');

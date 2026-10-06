@@ -4,12 +4,15 @@ namespace Tests\Unit\Application\Backup;
 
 use Deagel1337\Backup\Kit\Application\Backup\BackupApplication;
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Archive\Model\RetentionPolicy;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -17,16 +20,24 @@ final class BackupApplicationTest extends TestCase
 {
     private string $dumpPath;
 
+    private string $sourcePath;
+
     protected function setUp(): void
     {
         $this->dumpPath = tempnam(sys_get_temp_dir(), 'backup_app_').'.sql';
         file_put_contents($this->dumpPath, 'dump');
+        $this->sourcePath = tempnam(sys_get_temp_dir(), 'backup_source_');
+        file_put_contents($this->sourcePath, 'source');
     }
 
     protected function tearDown(): void
     {
         if (is_file($this->dumpPath)) {
             unlink($this->dumpPath);
+        }
+
+        if (is_file($this->sourcePath)) {
+            unlink($this->sourcePath);
         }
 
         parent::tearDown();
@@ -39,12 +50,17 @@ final class BackupApplicationTest extends TestCase
         $archiveDriver
             ->expects($this->once())
             ->method('createArchive')
-            ->with([$this->dumpPath, '/app'], 'backup')
+            ->with([$this->dumpPath, $this->sourcePath], 'backup')
             ->willReturn($archive);
+        $archiveDriver
+            ->expects($this->once())
+            ->method('listArchive')
+            ->with($archive)
+            ->willReturn($this->archiveEntries());
         $archiveDriver->expects($this->never())->method('prune');
 
         $result = (new BackupApplication($this->databaseDriver(), new ArchiveService($archiveDriver)))
-            ->run($this->dumpPath, 'backup', ['/app']);
+            ->run($this->dumpPath, 'backup', [$this->sourcePath]);
 
         $this->assertSame($archive, $result->archive);
         $this->assertSame($this->dumpPath, $result->dump?->path);
@@ -79,8 +95,8 @@ final class BackupApplicationTest extends TestCase
     public function test_reports_progress_to_given_reporter(): void
     {
         $reporter = $this->createMock(ProgressReporter::class);
-        $reporter->expects($this->once())->method('started')->with(3);
-        $reporter->expects($this->exactly(3))->method('stepFinished');
+        $reporter->expects($this->once())->method('started')->with(5);
+        $reporter->expects($this->exactly(5))->method('stepFinished');
         $reporter->expects($this->once())->method('finished');
 
         (new BackupApplication($this->databaseDriver(), new ArchiveService($this->archiveDriver()), $reporter))
@@ -106,6 +122,29 @@ final class BackupApplicationTest extends TestCase
             ->run($this->dumpPath, 'backup');
     }
 
+    public function test_removes_temporary_dump_when_archiving_fails(): void
+    {
+        $database = $this->createMock(DatabaseBackupDriver::class);
+        $database
+            ->method('createDump')
+            ->willReturn(new DatabaseDump($this->dumpPath, 'mariadb', 'sql'));
+
+        $archiveDriver = $this->createMock(ArchiveDriver::class);
+        $archiveDriver
+            ->method('createArchive')
+            ->willThrowException(new RuntimeException('archive failed'));
+
+        try {
+            (new BackupApplication($database, new ArchiveService($archiveDriver)))
+                ->run($this->dumpPath, 'backup');
+            $this->fail('Expected archive failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('archive failed', $exception->getMessage());
+        }
+
+        $this->assertFileDoesNotExist($this->dumpPath);
+    }
+
     private function databaseDriver(): DatabaseBackupDriver
     {
         $driver = $this->createMock(DatabaseBackupDriver::class);
@@ -118,11 +157,23 @@ final class BackupApplicationTest extends TestCase
         return $driver;
     }
 
-    private function archiveDriver(): ArchiveDriver
+    private function archiveDriver(): ArchiveDriver&MockObject
     {
         $driver = $this->createMock(ArchiveDriver::class);
         $driver->method('createArchive')->willReturn(new ArchiveInfo('repo::backup', 'borg', 'borg'));
+        $driver->method('listArchive')->willReturn($this->archiveEntries());
 
         return $driver;
+    }
+
+    /**
+     * @return array<ArchiveEntry>
+     */
+    private function archiveEntries(): array
+    {
+        return [
+            new ArchiveEntry(basename($this->dumpPath), 4, ArchiveEntryType::File),
+            new ArchiveEntry(basename($this->sourcePath), 6, ArchiveEntryType::File),
+        ];
     }
 }

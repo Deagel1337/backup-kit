@@ -3,6 +3,7 @@
 namespace Tests\Unit\Archive\Driver;
 
 use Deagel1337\Backup\Kit\Archive\Driver\TarArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
@@ -58,6 +59,29 @@ final class TarArchiveDriverTest extends TestCase
         $this->expectExceptionMessage('Die Archiv-Datei existiert nicht.');
 
         (new TarArchiveDriver)->validateArchive(new ArchiveInfo('/tmp/missing-tar-archive', 'tar', 'tar.gz'));
+    }
+
+    public function test_lists_tar_archive_entries(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(['tar', '-tvzf', $this->archivePath])
+            ->willReturn(new ProcessResult(
+                0,
+                "-rw-r--r-- user/group 4 2026-10-06 09:50 dump.sql\ndrwxr-xr-x user/group 0 2026-10-06 09:50 app/\n",
+                ''
+            ));
+
+        $entries = iterator_to_array((new TarArchiveDriver($process))->listArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz')
+        ));
+
+        $this->assertSame('dump.sql', $entries[0]->path);
+        $this->assertSame(4, $entries[0]->size);
+        $this->assertSame(ArchiveEntryType::File, $entries[0]->type);
+        $this->assertSame(ArchiveEntryType::Directory, $entries[1]->type);
     }
 
     public function test_creates_tar_archive_in_dedicated_directory(): void

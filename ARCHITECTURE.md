@@ -75,7 +75,7 @@ Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein Sicherungsdump 
 
 ## Archivierung
 
-`ArchiveApplication` bildet die Anwendungsfassade für Erstellen, Auflisten und Extrahieren. Sie delegiert an `ArchiveService`, der den `ArchiveDriver` verwendet und bei den entsprechenden Operationen Archivvalidierungen ausführt.
+`ArchiveApplication` bildet die Anwendungsfassade für Erstellen, Auflisten, Extrahieren und Aufräumen (`prune(RetentionPolicy)`). Sie delegiert an `ArchiveService`, der den `ArchiveDriver` verwendet und bei den entsprechenden Operationen Archivvalidierungen ausführt.
 
 Implementierte Treiber:
 
@@ -83,6 +83,20 @@ Implementierte Treiber:
 - `TarArchiveDriver` erstellt gzip-komprimierte TAR-Archive und kann sie extrahieren.
 
 `BackupApplicationFilesStep` verbindet Dateiarchivierung mit einem Backup-Ablauf, indem der Step den Archivtreiber verwendet und das Ergebnis im `BackupContext` ablegt. Restore-Steps verbinden entsprechend Archivprüfung und -extraktion mit dem `RestoreContext`.
+
+
+### Framework-neutraler Backup-Workflow
+
+`BackupApplication` kombiniert Datenbankdump, Archivierung (`ArchiveBackupStep`), optionales Löschen des Dumps und optionales Aufräumen alter Archive (`PruneArchivesStep`) zu einem Aufruf. Sie gibt nichts aus, sondern liefert ein `BackupResult` (Archiv, Dump, Dauer, Status). Der `ProgressReporter` ist injizierbar; Standard ist `NullProgressReporter`. Damit eignet sich die Klasse für Symfony-Commands, Laravel-Jobs/Scheduler, Cron-Skripte und Queue-Worker. Aufbewahrungsregeln werden über `RetentionPolicy` definiert, auch aus Konfigurationsarrays (`RetentionPolicy::fromArray(['daily' => 7, 'monthly' => 6])`).
+
+```php
+$result = (new BackupApplication($databaseDriver, $archiveService, $reporter))->run(
+    dumpPath: '/tmp/db.sql',
+    archiveName: 'backup-'.date('Y-m-d'),
+    files: ['/var/www/storage/app'],
+    retention: RetentionPolicy::fromArray(['daily' => 7, 'weekly' => 4]),
+);
+```
 
 ## Externe Prozesse
 
@@ -116,9 +130,9 @@ Die PHPUnit-Tests sind in zwei Bereiche gegliedert:
 Die folgenden Punkte beschreiben den aktuellen Code und sind wichtig, wenn neue Abläufe darauf aufbauen:
 
 - `StepRunner::run()` erwartet einen `Context`, aber `BackupContext` erweitert die Basisklasse `Context` derzeit nicht. Dadurch kann der vorgesehene Datenbank-Backup-Pfad beim Aufruf des typisierten Runners mit einem `TypeError` abbrechen.
-- `TarArchiveDriver` implementiert die Archivlisten-Methoden des `ArchiveDriver`-Vertrags derzeit nicht vollständig. Der Treiber kann daher nicht alle Operationen nutzen, die `ArchiveService` über dieses Interface anbietet.
+- `TarArchiveDriver` implementiert `listArchives()`, aber nicht `listArchive()` (Inhalt eines Archivs).
 - `RestoreMariaDbApplication` ist auf MariaDB ausgerichtet und verwendet einen MariaDB-spezifischen Rollback-Handler, obwohl die Factory einen allgemeinen `DatabaseBackupDriver` entgegennimmt. Für andere Datenbanktreiber sollte der Restore-/Rollback-Pfad nicht ohne Anpassung als unterstützt angenommen werden.
-- `BackupApplication` ist im aktuellen Stand kein implementierter allgemeiner Anwendungseinstiegspunkt.
+- Es gibt noch keine allgemeine Restore-Application; `RestoreMariaDbApplication` bleibt MariaDB-spezifisch.
 - Einige Backup- und Restore-Steps greifen direkt auf Treiber zu, statt jede Operation über den entsprechenden Service zu führen. Validierungen eines Services gelten deshalb nicht automatisch für jeden Step-Aufruf.
 
 Diese Einschränkungen sind keine Zusicherung über künftige Versionen. Für produktive Restore-Szenarien sollten die konkreten Abläufe einschließlich Fehlerfall und Wiederherstellung in der Zielumgebung getestet werden.

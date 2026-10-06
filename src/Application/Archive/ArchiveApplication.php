@@ -4,6 +4,7 @@ namespace Deagel1337\Backup\Kit\Application\Archive;
 
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
+use Deagel1337\Backup\Kit\Archive\Model\RetentionPolicy;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
 
 final class ArchiveApplication
@@ -50,5 +51,17 @@ final class ArchiveApplication
         }
 
         $this->service->extractArchive($archiveInfo, $destination);
+    }
+
+    /**
+     * Entfernt Archive, die von den Aufbewahrungsregeln nicht mehr abgedeckt werden.
+     * Ob und wie die Regeln umgesetzt werden, hängt vom Treiber ab (Borg nutzt `borg prune`).
+     *
+     * @throws \InvalidArgumentException Bei ungültigen Regeln.
+     * @throws \RuntimeException Wenn Archive nicht entfernt werden können.
+     */
+    public function prune(RetentionPolicy $policy): void
+    {
+        $this->service->prune(...$policy->toArray());
     }
 }

@@ -110,6 +110,7 @@ final class BorgExtractCommand extends Command
                 'Backup: '.$archive->path,
                 'Destination: '.$destination,
             ]);
+            
             $io->success('Extraktion erfolgreich');
 
             return Command::SUCCESS;

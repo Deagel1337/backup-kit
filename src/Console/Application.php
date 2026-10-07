@@ -38,5 +38,9 @@ final class Application extends SymfonyApplication
         $this->addCommand(
             new BorgListCommand($archive)
         );
+
+        $this->addCommand(
+            new BorgListArchiveContentCommand($archive)
+        );
     }
 }

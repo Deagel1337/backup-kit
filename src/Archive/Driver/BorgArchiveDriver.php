@@ -2,7 +2,7 @@
 
 namespace Deagel1337\Backup\Kit\Archive\Driver;
 
-use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Interfaces\RepositoryAwareArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
@@ -13,7 +13,7 @@ use Deagel1337\Backup\Kit\Traits\PathTrait;
 use Override;
 use RuntimeException;
 
-final class BorgArchiveDriver implements ArchiveDriver
+final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
 {
     use CommandTrait;
     use PathTrait;
@@ -147,17 +147,30 @@ final class BorgArchiveDriver implements ArchiveDriver
     #[Override]
     public function listArchives(): iterable
     {
+        return $this->listArchivesFromRepository($this->repository);
+    }
+
+    /**
+     * @return iterable<ArchiveInfo>
+     */
+    #[Override]
+    public function listArchivesFromRepository(string $repository): iterable
+    {
+        if (trim($repository) === '') {
+            throw new RuntimeException('Es wurde kein Borg-Repository angegeben.');
+        }
+
         $command = array_merge(
             ['borg', 'list', '--format', '{archive}{NL}'],
             $this->rshOption(),
-            [$this->repository],
+            [$repository],
         );
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 
         if (! $result->successful()) {
             throw new RuntimeException(
-                sprintf('<error>Auflistung fehlgeschlagen: %s</error>', $this->repository)
+                sprintf('<error>Auflistung fehlgeschlagen: %s</error>', $repository)
             );
         }
 
@@ -173,7 +186,7 @@ final class BorgArchiveDriver implements ArchiveDriver
             }
 
             yield new ArchiveInfo(
-                path: $this->repository.'::'.$parts[0],
+                path: $repository.'::'.$parts[0],
                 driver: 'borg',
                 format: 'borg'
             );
@@ -288,12 +301,23 @@ final class BorgArchiveDriver implements ArchiveDriver
     /**
      * Extracts the content to a given destination.
      *
+     * @param  array<string>  $paths  Only extract these archive paths (all if empty).
+     * @param  int  $stripComponents  Number of leading path components to remove.
+     *
      * @throws RuntimeException
      */
     #[Override]
-    public function extractArchive(ArchiveInfo $archive, string $destination = '.'): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination = '.',
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
         $this->validateArchive($archive);
+
+        if ($stripComponents < 0) {
+            throw new RuntimeException('strip-components darf nicht negativ sein.');
+        }
 
         if (! is_dir($destination)) {
             if (! mkdir($destination, 0775, true) && ! is_dir($destination)) {
@@ -304,13 +328,16 @@ final class BorgArchiveDriver implements ArchiveDriver
             }
         }
 
+        $options = $stripComponents > 0
+            ? ['--strip-components', (string) $stripComponents]
+            : [];
+
         $command = array_merge(
-            [
-                'borg',
-                'extract',
-                $archive->path,
-            ],
-            $this->rshOption()
+            ['borg', 'extract'],
+            $options,
+            $this->rshOption(),
+            [$archive->path],
+            array_map(static fn (string $path): string => ltrim($path, '/'), $paths),
         );
 
         $result = $this->process->run(

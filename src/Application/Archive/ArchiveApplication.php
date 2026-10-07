@@ -32,25 +32,37 @@ final class ArchiveApplication
     }
 
     /**
-     * Lists all archives in a directory or a different structure. It really depends on the driver implementation
+     * Lists all archives in the configured repository, or in the given repository when supported by the driver.
      *
      * @return iterable<ArchiveInfo>
      */
-    public function listAllArchives(): iterable
+    public function listAllArchives(?string $repository = null): iterable
     {
-        return $this->service->listArchives();
+        return $this->service->listArchives($repository);
     }
 
     /**
      * Extract an archive
+     *
+     * @param  array<string>  $paths
      */
-    public function extract(ArchiveInfo $archiveInfo, string $destination): void
-    {
+    public function extract(
+        ArchiveInfo $archiveInfo,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
         if (strcmp($destination, '') === 0) {
             $destination = '.';
         }
 
-        $this->service->extractArchive($archiveInfo, $destination);
+        if ($paths === [] && $stripComponents === 0) {
+            $this->service->extractArchive($archiveInfo, $destination);
+
+            return;
+        }
+
+        $this->service->extractArchive($archiveInfo, $destination, $paths, $stripComponents);
     }
 
     /**

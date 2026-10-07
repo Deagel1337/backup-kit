@@ -215,6 +215,14 @@ Im Verzeichnis [`bin/`](./bin/) liegen Skripte und Einstiegspunkte für Beispiel
 
 Die Klassen in `src/Console/` enthalten Symfony-Console-Befehle; sie sind jedoch nicht als vorkonfiguriertes, eigenständiges CLI-Programm gebündelt. Für den produktiven Einsatz muss eine Anwendung die Befehle mit den gewünschten Verbindungen und Treibern registrieren.
 
+Der Borg-Extraktionsbefehl heißt `borg:extract`. Das Zielverzeichnis ist optional und standardmäßig das aktuelle Verzeichnis. Mit `--repository` kann das konfigurierte Borg-Repository für die Archiv-Auswahl überschrieben werden:
+
+```bash
+bin/rbr borg:extract ./restored --repository=/path/to/repository
+```
+
+Ohne `--repository` wird das Repository des konfigurierten Archivtreibers verwendet. Passphrase und SSH-Zugangsdaten stammen weiterhin aus der Treiberkonfiguration.
+
 ## Tests
 
 Unit- und Integrationstests sind mit PHPUnit eingerichtet:

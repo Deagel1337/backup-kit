@@ -16,8 +16,16 @@ interface ArchiveDriver
 
     /**
      * Extracts the content of the archive at the destination.
+     *
+     * @param  array<string>  $paths  Only extract these archive paths (all if empty).
+     * @param  int  $stripComponents  Number of leading path components to remove.
      */
-    public function extractArchive(ArchiveInfo $archive, string $destination): void;
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void;
 
     /**
      * Validates the validity of the archive. It depends on the driver implementation.s

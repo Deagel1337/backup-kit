@@ -5,34 +5,61 @@ declare(strict_types=1);
 
 use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
 use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Console\Application;
 use Deagel1337\Backup\Kit\DatabaseBackup\Driver\MariaDbBackupDriver;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\Services\ArchiveService;
 use Dotenv\Dotenv;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../src');
+foreach (['BORG_REPOSITORY', 'BORG_PASSPHRASE', 'BORG_SSH_PORT', 'BORG_SSH_KEY'] as $name) {
+    $processValue = getenv($name);
+
+    if (($processValue === false || $processValue === '')
+        && ($_ENV[$name] ?? '') === ''
+        && ($_SERVER[$name] ?? '') === '') {
+        putenv($name);
+        unset($_ENV[$name], $_SERVER[$name]);
+    }
+}
+
+$dotenv = Dotenv::createImmutable(__DIR__.'/../src');
 $dotenv->load();
 
 $repository = $_ENV['BORG_REPOSITORY'] ?? '';
+$extractCommandIndex = array_search('borg:extract', $argv, true);
+
+if ($extractCommandIndex !== false) {
+    for ($index = $extractCommandIndex + 1; $index < count($argv); $index++) {
+        if (str_starts_with($argv[$index], '--repository=')) {
+            $repository = substr($argv[$index], strlen('--repository='));
+            break;
+        }
+
+        if ($argv[$index] === '--repository') {
+            $optionValue = $argv[$index + 1] ?? null;
+
+            if ($optionValue === null || str_starts_with($optionValue, '--')) {
+                fwrite(STDERR, 'Option --repository benötigt einen Wert.'.PHP_EOL);
+                exit(2);
+            }
+
+            $repository = $optionValue;
+            break;
+        }
+    }
+}
 
 $driver = new BorgArchiveDriver(
     repository: $repository,
     passphrase: $_ENV['BORG_PASSPHRASE'] ?? '',
+    sshKeyPath: ($_ENV['BORG_SSH_KEY'] ?? '') !== '' ? $_ENV['BORG_SSH_KEY'] : null,
     sshPort: (int) ($_ENV['BORG_SSH_PORT'] ?? 22),
 );
 
 $archiveApplication = new ArchiveApplication(
     new ArchiveService($driver),
-);
-
-$repositoryInfo = new ArchiveInfo(
-    path: $repository,
-    driver: 'borg',
-    format: 'borg',
 );
 
 $connection = new DatabaseConnection(

@@ -217,4 +217,24 @@ final class TarArchiveDriverTest extends TestCase
 
         (new TarArchiveDriver(archiveDirectory: $this->archiveDirectory))->prune();
     }
+
+    public function test_extract_archive_passes_paths_and_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with([
+                'tar', '-xzf', $this->archivePath, '-C', '/tmp/out',
+                '--strip-components=2', 'a/b',
+            ])
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            ['/a/b'],
+            2
+        );
+    }
 }

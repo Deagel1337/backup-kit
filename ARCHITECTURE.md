@@ -82,7 +82,7 @@ Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein validierter Sic
 
 Implementierte Treiber:
 
-- `BorgArchiveDriver` erstellt und listet Borg-Archive und extrahiert sie wieder. Repository, Passphrase sowie optionale SSH-Parameter werden dem Treiber übergeben.
+- `BorgArchiveDriver` erstellt und listet Borg-Archive und extrahiert sie wieder. Repository, Passphrase sowie optionale SSH-Parameter werden dem Treiber übergeben. Die Archivliste kann für repository-fähige Treiber über `ArchiveApplication::listAllArchives($repository)` gezielt aus einem alternativen Repository gelesen werden.
 - `TarArchiveDriver` erstellt gzip-komprimierte TAR-Archive, listet deren Inhalte und kann sie extrahieren.
 
 `BackupApplicationFilesStep` verbindet Dateiarchivierung mit einem Backup-Ablauf, indem der Step den Archivtreiber verwendet und das Ergebnis im `BackupContext` ablegt. Restore-Steps verbinden entsprechend Archivprüfung und -extraktion mit dem `RestoreContext`.

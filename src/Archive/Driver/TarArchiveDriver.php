@@ -67,11 +67,23 @@ final class TarArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function extractArchive(ArchiveInfo $archive, string $destination): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
         $this->validateArchive($archive);
 
         $command = ['tar', '-xzf', $archive->path, '-C', $destination];
+
+        if ($stripComponents > 0) {
+            $command[] = '--strip-components='.$stripComponents;
+        }
+
+        foreach ($paths as $path) {
+            $command[] = ltrim($path, '/');
+        }
 
         $result = $this->process->run($command);
 

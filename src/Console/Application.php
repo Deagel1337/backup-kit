@@ -20,7 +20,7 @@ final class Application extends SymfonyApplication
         );
 
         $this->addCommand(
-            new BorgRestoreCommand($archive)
+            new BorgExtractCommand($archive)
         );
 
         $this->addCommand(

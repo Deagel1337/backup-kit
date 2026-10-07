@@ -175,6 +175,62 @@ final class BorgArchiveDriverTest extends TestCase
         );
     }
 
+    public function test_extract_archive_passes_paths_and_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'extract',
+                    '--strip-components',
+                    '7',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '/var/lib/borg::backup',
+                    'var/lib/docker/volumes/wp/_data/wp-content',
+                ],
+                ['BORG_PASSPHRASE' => 'secret'],
+                sys_get_temp_dir()
+            )
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            ['/var/lib/docker/volumes/wp/_data/wp-content'],
+            7
+        );
+    }
+
+    public function test_extract_archive_rejects_negative_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $driver = new BorgArchiveDriver(repository: '/var/lib/borg', process: $process);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('strip-components darf nicht negativ sein.');
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            [],
+            -1
+        );
+    }
+
     public function test_uses_ssh_port(): void
     {
         $process = $this->createMock(ProcessRunner::class);
@@ -326,6 +382,43 @@ final class BorgArchiveDriverTest extends TestCase
         );
 
         iterator_to_array($driver->listArchives());
+    }
+
+    public function test_lists_archives_from_repository_override(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'list',
+                    '--format',
+                    '{archive}{NL}',
+                    '/other/repository',
+                ],
+                ['BORG_PASSPHRASE' => 'secret']
+            )
+            ->willReturn(new ProcessResult(
+                exitCode: 0,
+                output: "backup-2026\n",
+                errorOutput: ''
+            ));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            process: $process,
+        );
+
+        $archives = iterator_to_array($driver->listArchivesFromRepository('/other/repository'));
+
+        $this->assertEquals(
+            [new ArchiveInfo('/other/repository::backup-2026', 'borg', 'borg')],
+            $archives
+        );
     }
 
     public function test_prunes_archives_using_borg_retention_options(): void

@@ -12,7 +12,18 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-#[AsCommand(name: 'borg:archive, --name --paths')]
+#[AsCommand(
+    name: 'borg:archive',
+    description: 'Create a Borg archive from files or directories',
+    usages: ['wordpress-2026-10-07 /var/lib/docker/volumes/wp/_data/wp-content /etc/nginx'],
+    help: <<<'HELP'
+The <info>%command.name%</info> command creates a new archive in the configured Borg repository (BORG_REPOSITORY).
+
+  <info>%command.full_name% <name> <paths>...</info>
+
+Pass the archive name first, followed by one or more files or directories.
+HELP
+)]
 final class BackupBorgCommand
 {
     public function __construct(
@@ -25,8 +36,8 @@ final class BackupBorgCommand
      * @throws RuntimeException
      */
     public function __invoke(
-        #[Argument('Name of the archive')] string $name,
-        #[Argument('Paths to files or direcotries that needed to be archived')] array $paths,
+        #[Argument('Name of the new archive')] string $name,
+        #[Argument('One or more files or directories to archive')] array $paths,
         OutputInterface $output
     ): int {
         try {

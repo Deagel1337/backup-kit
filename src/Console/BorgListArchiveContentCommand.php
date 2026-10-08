@@ -14,14 +14,25 @@ use Symfony\Component\Console\Output\OutputInterface;
 use RuntimeException;
 use Throwable;
 
-#[AsCommand(name: 'borg:list-content')]
+#[AsCommand(
+    name: 'borg:list-content',
+    description: 'List the files contained in a Borg archive',
+    usages: ['/path/to/repo::wordpress-2026-10-07'],
+    help: <<<'HELP'
+The <info>%command.name%</info> command lists the content of one archive.
+
+  <info>%command.full_name% <archiveName></info>
+
+Use the full archive path as shown by <info>borg:list</info> (repository::archive).
+HELP
+)]
 final class BorgListArchiveContentCommand
 {
     public function __construct(
         private readonly ArchiveApplication $archive,
     ) {}
 
-    public function __invoke(OutputInterface $output, #[Argument] string $archiveName): int
+    public function __invoke(OutputInterface $output, #[Argument('Full archive path (repository::archive), see borg:list')] string $archiveName): int
     {
         try {
             /** @var string $repository */

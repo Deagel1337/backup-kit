@@ -16,9 +16,14 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'db:restore, --dump',
+    name: 'db:restore',
     description: 'This command allows you to restore a mariadb database',
-    usages: ['--dump path/to/dump.sql ']
+    usages: ['path/to/dump.sql'],
+    help: <<<'HELP'
+The <info>%command.name%</info> command restores a MariaDB database from an SQL dump.
+
+  <info>%command.full_name% <path></info>
+HELP
 )]
 final class RestoreDatabaseCommand
 {
@@ -27,7 +32,7 @@ final class RestoreDatabaseCommand
     ) {}
 
     public function __invoke(
-        #[Argument('Path to database dump')] string $path,
+        #[Argument('Path to the SQL dump file to restore')] string $path,
         OutputInterface $output
     ): int {
         $connection = new DatabaseConnection(

@@ -28,30 +28,44 @@ final class BorgExtractCommand extends Command
 
     protected function configure(): void
     {
+        $this->setHelp(<<<'HELP'
+The <info>%command.name%</info> command lets you pick an archive and extracts it into the destination.
+
+Borg stores paths without a leading slash, so a Docker volume is archived as
+<comment>var/lib/docker/volumes/<name>/_data/...</comment>. Combine <info>--path</info> and
+<info>--strip-components</info> to restore only a sub-directory directly into a new volume:
+
+  <info>%command.full_name% /var/lib/docker/volumes/wp_new/_data \
+    --path var/lib/docker/volumes/OLD/_data/wp-content --strip-components 7</info>
+
+With <comment>--strip-components 6</comment> the <comment>wp-content</comment> directory itself is kept.
+HELP);
+        $this->addUsage('--repository ssh://user@host:23/./wordpress /tmp/restore');
+        $this->addUsage('-p var/www/html/wp-content --strip-components 4 /tmp/restore');
         $this->addArgument(
             'destination',
             InputArgument::OPTIONAL,
-            'Directory where the archive should be extracted.',
+            'Directory where the archive should be extracted (created if missing)',
             '.'
         );
         $this->addOption(
             'path',
             'p',
             InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-            'Only extract this path from the archive (repeatable).'
+            'Only extract this path (as stored in the archive, without leading slash); repeatable'
         );
         $this->addOption(
             'strip-components',
             null,
             InputOption::VALUE_REQUIRED,
-            'Remove this number of leading path components.',
+            'Number of leading path components to remove from extracted paths',
             '0'
         );
         $this->addOption(
             'repository',
             null,
             InputOption::VALUE_REQUIRED,
-            'Borg repository to list archives from.'
+            'Borg repository to list archives from (default: BORG_REPOSITORY)'
         );
     }
 

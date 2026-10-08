@@ -12,7 +12,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 use RuntimeException;
 use Throwable;
 
-#[AsCommand(name: 'borg:list')]
+#[AsCommand(
+    name: 'borg:list',
+    description: 'List all archives in the configured Borg repository',
+    help: <<<'HELP'
+The <info>%command.name%</info> command lists all archives of the repository defined in BORG_REPOSITORY.
+
+  <info>%command.full_name%</info>
+HELP
+)]
 final class BorgListCommand
 {
     public function __construct(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Deagel1337\Backup\Kit\Console;
 
 use Deagel1337\Backup\Kit\Application\Archive\ArchiveApplication;
-use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -39,12 +39,12 @@ final class BorgListCommand
 
             $proccOutput = $this->archive->listAllArchives();
 
-            /** @var ArchiveEntry $proccO */
-            foreach ($proccOutput as $proccO) {
+            /** @var ArchiveInfo $archive */
+            foreach ($proccOutput as $archive) {
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $proccO->path
+                        $archive->path
                     )
                 );
             }

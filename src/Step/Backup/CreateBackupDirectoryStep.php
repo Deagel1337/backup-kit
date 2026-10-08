@@ -15,7 +15,7 @@ final class CreateBackupDirectoryStep implements BackupStep
 
     public function execute(BackupContext $context): void
     {
-        if (! mkdir($context->destination, 0777, true)) {
+        if (file_exists($context->destination) || ! @mkdir($context->destination, 0777, true)) {
             throw new RuntimeException(('Konnte das Backup-Verzeichnis nicht erstellen'));
         }
     }

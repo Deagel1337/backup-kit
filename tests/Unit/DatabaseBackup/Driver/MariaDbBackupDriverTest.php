@@ -156,7 +156,7 @@ final class MariaDbBackupDriverTest extends TestCase
                 ],
                 ['MYSQL_PWD' => 'password'],
                 null,
-                $this->isType('string'),
+                $this->isString(),
                 null
             )
             ->willReturn(

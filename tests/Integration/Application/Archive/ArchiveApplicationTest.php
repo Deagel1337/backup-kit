@@ -71,16 +71,18 @@ final class ArchiveApplicationTest extends TestCase
     {
         if (count($this->testFilesPaths) > 0) {
             foreach ($this->testFilesPaths as $file) {
-                unlink($file);
+                if (is_file($file)) {
+                    unlink($file);
+                }
             }
         }
     }
 
     protected function tearDown(): void
     {
+        $this->deleteTestFiles();
         $this->removeDirectory($this->repository);
         $this->removeDirectory($this->sourceDirectory);
-        $this->deleteTestFiles();
 
         parent::tearDown();
     }

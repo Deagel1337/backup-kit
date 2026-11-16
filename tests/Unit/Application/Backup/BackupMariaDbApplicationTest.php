@@ -7,7 +7,9 @@ namespace Tests\Unit\Application;
 use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
 use Deagel1337\Backup\Kit\Context\BackupContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;
+use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -64,5 +66,27 @@ final class BackupMariaDbApplicationTest extends TestCase
         );
 
         $application->run('/tmp/backup.sql');
+    }
+
+    public function test_create_uses_the_injected_progress_reporter(): void
+    {
+        $dump = new DatabaseDump('/tmp/backup.sql', 'mariadb', 'sql');
+        $step = $this->createMock(BackupStep::class);
+        $step->expects($this->once())->method('name')->willReturn('Datenbank sichern');
+        $step->expects($this->once())
+            ->method('execute')
+            ->willReturnCallback(static function (BackupContext $context) use ($dump): void {
+                $context->dump = $dump;
+            });
+
+        $reporter = $this->createMock(ProgressReporter::class);
+        $reporter->expects($this->once())->method('started')->with(1);
+        $reporter->expects($this->once())->method('stepStarted')->with(1, 1, 'Datenbank sichern');
+        $reporter->expects($this->once())->method('stepFinished')->with(1, 1, 'Datenbank sichern');
+        $reporter->expects($this->once())->method('finished');
+
+        $application = BackupMariaDbApplication::create([$step], $reporter);
+
+        self::assertSame($dump, $application->run($dump->path));
     }
 }

@@ -5,6 +5,7 @@ namespace Deagel1337\Backup\Kit\Application\Backup;
 use Deagel1337\Backup\Kit\Context\BackupContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Reporter\ConsoleProgressReporter;
+use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\BackupService;
 use Deagel1337\Backup\Kit\Services\Interface\BackupServiceInterface;
 use Deagel1337\Backup\Kit\Step\Interface\BackupStep;
@@ -39,10 +40,10 @@ final class BackupMariaDbApplication
      *
      * @param  array<BackupStep>  $steps
      */
-    public static function create(array $steps): self
-    {
-        $reporter = new ConsoleProgressReporter;
-
+    public static function create(
+        array $steps,
+        ProgressReporter $reporter = new ConsoleProgressReporter,
+    ): self {
         $runner = new StepRunner($reporter);
 
         $service = new BackupService(

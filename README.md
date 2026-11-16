@@ -62,7 +62,7 @@ $connection = new DatabaseConnection(
     password: getenv('DB_PASSWORD') ?: '',
 );
 
-$driver = new MariaDbBackupDriver($connection);
+$driver = new MariaDbBackupDriver($connection, singleTransaction: true);
 $application = BackupMariaDbApplication::create([
     new CheckDiskSpaceStep(),
     new BackupDatabaseStep($driver),
@@ -72,7 +72,34 @@ $dump = $application->run(__DIR__ . '/backup.sql');
 echo "Dump erstellt: {$dump->path}\n";
 ```
 
+Mit `singleTransaction: true` verwendet `mariadb-dump` die Option `--single-transaction`. Für transaktionale Tabellen (z. B. InnoDB) wird so ein konsistenter Snapshot erstellt, ohne die Tabellen während des Dumps zu sperren. Die Option ist standardmäßig deaktiviert, um das bisherige Verhalten beizubehalten; nicht-transaktionale Tabellen erhalten dadurch keine Snapshot-Garantie.
+
 `PostgresBackupDriver` und `SqliteBackupDriver` implementieren dasselbe `DatabaseBackupDriver`-Interface. Die jeweils benötigten Kommandozeilenprogramme müssen auf dem System verfügbar sein.
+
+### Laravel: Fortschritt loggen und als Events melden
+
+Die Laravel-Reporter sind optional; der Kern der Library benötigt Laravel nicht. In einer Laravel-Anwendung kannst du Log- und Fortschritts-Events kombinieren und den Reporter an die MariaDB-Factory übergeben:
+
+```php
+use Deagel1337\Backup\Kit\Application\Backup\BackupMariaDbApplication;
+use Deagel1337\Backup\Kit\Reporter\CompositeProgressReporter;
+use Deagel1337\Backup\Kit\Reporter\Laravel\EventProgressReporter;
+use Deagel1337\Backup\Kit\Reporter\Laravel\LogProgressReporter;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\Log;
+
+$reporter = new CompositeProgressReporter([
+    new LogProgressReporter(Log::channel('backup')),
+    new EventProgressReporter(app(Dispatcher::class)),
+]);
+
+$application = BackupMariaDbApplication::create($steps, $reporter);
+$dump = $application->run(storage_path('app/backups/database.sql'));
+```
+
+Laravel stellt `illuminate/contracts` und `psr/log` in der Regel bereits bereit. Außerhalb einer Laravel-Installation müssen diese optionalen Schnittstellen installiert sein, um die Laravel-Reporter zu verwenden (`composer require illuminate/contracts psr/log`). Derselbe Reporter kann als drittes Argument an `RestoreMariaDbApplication::create($driver, $steps, $reporter)` übergeben werden. Ohne eigenen Reporter behalten die MariaDB-Backup- und Restore-Factories ihre Konsolenausgabe; `BackupApplication` verwendet standardmäßig weiterhin `NullProgressReporter`.
+
+`LogProgressReporter` schreibt strukturierte Step-Meldungen über den übergebenen PSR-Logger. `EventProgressReporter` dispatcht `ProgressRunStarted`, `ProgressStepStarted`, `ProgressStepFinished`, `ProgressStepFailed` und `ProgressRunFinished`; eigene Laravel-Listener können diese Events abonnieren. Fehler-Meldungen enthalten den Exception-Typ, aber nicht den Exception-Text, damit potenziell sensible Verbindungsdetails nicht zusätzlich in Logs oder Events gelangen. Der ursprüngliche Fehler wird weiterhin vom Ablauf weitergeworfen.
 
 ### Datenbank und Dateien gemeinsam sichern
 
@@ -225,13 +252,27 @@ Ohne `--repository` wird das Repository des konfigurierten Archivtreibers verwen
 
 ## Tests
 
-Unit- und Integrationstests sind mit PHPUnit eingerichtet:
+Der Standard-Testbefehl führt zuerst die PHPUnit-Unit-Tests aus und startet für die Integrationstests anschließend selbstständig eine temporäre MariaDB:
 
 ```bash
-vendor/bin/phpunit
+composer test
 ```
 
-Die Integrationstests für MariaDB benötigen eine erreichbare Testdatenbank. [`docker-compose.yml`](./docker-compose.yml) enthält dafür einen MariaDB-Testdienst, der Port `3307` des Hosts auf Port `3306` im Container weiterleitet.
+Nur die Unit-Tests lassen sich ohne Docker ausführen:
+
+```bash
+vendor/bin/phpunit --testsuite Unit
+```
+
+Die Integrationstests können bei Bedarf separat ausgeführt werden:
+
+```bash
+composer test:integration
+```
+
+Der Befehl startet über Docker Compose einen frischen MariaDB-Testcontainer, wartet auf dessen Bereitschaft, führt die Integrationstests aus und entfernt Container und zugehöriges Volume auch nach einem fehlgeschlagenen Testlauf. Der Host-Port wird dynamisch vergeben, damit kein fester Port belegt sein muss. Voraussetzung sind Docker mit Compose-Unterstützung und die PHP-Extension `pdo_mysql`.
+
+Einzelne Integrationstests lassen sich weiterhin direkt mit PHPUnit ausführen, benötigen dann aber eine erreichbare MariaDB unter `127.0.0.1:3307`. Host, Port und Zugangsdaten können für externe Testdatenbanken über `BACKUP_KIT_TEST_DB_HOST`, `BACKUP_KIT_TEST_DB_PORT`, `BACKUP_KIT_TEST_DB_USERNAME` und `BACKUP_KIT_TEST_DB_PASSWORD` gesetzt werden.
 
 ## Lizenz
 

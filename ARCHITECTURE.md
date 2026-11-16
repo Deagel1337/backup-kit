@@ -113,7 +113,8 @@ Datenbanktreiber geben Passwörter für ihre Clientprogramme über Prozess-Umgeb
 - Ein fehlgeschlagener Prozess wird anhand seines Exit-Codes erkannt; die Treiber melden den Fehler mit der Prozessausgabe.
 - `StepRunner` informiert den Reporter über den Fortschritt und gibt eine aufgetretene Exception weiter.
 - `RestoreService` versucht ein Rollback nur, wenn `RestoreDatabaseStep` begonnen hat. Der Rollback-Dump wird nach dem Versuch entfernt; schlägt das Rollback fehl, wird der Fehler mit dem ursprünglichen Restore-Fehler als Ursache weitergegeben.
-- Reporter können über die entsprechenden Interfaces ersetzt werden. Prozess- und Step-Fortschritt werden getrennt behandelt.
+- Reporter können über die entsprechenden Interfaces ersetzt werden. Prozess- und Step-Fortschritt werden getrennt behandelt. `CompositeProgressReporter` kann mehrere Fortschritts-Reporter kombinieren.
+- Die optionalen Laravel-Reporter schreiben Step-Fortschritt über PSR-3 in einen injizierten Logger oder dispatchen typisierte Laravel-Events. `illuminate/contracts` bleibt eine optionale Abhängigkeit; Fehler-Logs und -Events enthalten den Exception-Typ, nicht den möglicherweise sensiblen Exception-Text.
 
 ## Konsolen- und Skripteinstiegspunkte
 

@@ -21,7 +21,8 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
 
     public function __construct(
         private readonly DatabaseConnection $connection,
-        private readonly ProcessRunner $process = new ProcOpenProcessRunner
+        private readonly ProcessRunner $process = new ProcOpenProcessRunner,
+        private readonly bool $singleTransaction = false,
     ) {}
 
     protected function processRunner(): ProcessRunner
@@ -56,8 +57,13 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
             '--host='.$this->connection->host,
             '--port='.$this->connection->port,
             '--user='.$this->connection->username,
-            $this->connection->database,
         ];
+
+        if ($this->singleTransaction) {
+            $command[] = '--single-transaction';
+        }
+
+        $command[] = $this->connection->database;
 
         $result = $this->process->run(
             $command,

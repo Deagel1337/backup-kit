@@ -314,6 +314,45 @@ final class MariaDbBackupDriverTest extends TestCase
         }
     }
 
+    public function test_create_dump_uses_single_transaction_when_enabled(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $directory = sys_get_temp_dir().'/backup-test-'.uniqid();
+        mkdir($directory, 0777, true);
+        $destination = $directory.'/backup.sql';
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'mariadb-dump',
+                    '--host=localhost',
+                    '--port=3306',
+                    '--user=user',
+                    '--single-transaction',
+                    'db',
+                ],
+                ['MYSQL_PWD' => 'password'],
+                null,
+                $destination,
+                null
+            )
+            ->willReturn(new ProcessResult(0, '', ''));
+
+        try {
+            $this->driver($process, singleTransaction: true)->createDump($destination);
+        } finally {
+            if (file_exists($destination)) {
+                unlink($destination);
+            }
+
+            if (is_dir($directory)) {
+                rmdir($directory);
+            }
+        }
+    }
+
     public function test_create_dump_throws_when_maria_db_dump_fails(): void
     {
         $process = $this->createMock(ProcessRunner::class);
@@ -431,7 +470,8 @@ final class MariaDbBackupDriverTest extends TestCase
      */
 
     private function driver(
-        ?ProcessRunner $process = null
+        ?ProcessRunner $process = null,
+        bool $singleTransaction = false,
     ): MariaDbBackupDriver {
         return new MariaDbBackupDriver(
             new DatabaseConnection(
@@ -442,7 +482,8 @@ final class MariaDbBackupDriverTest extends TestCase
                 username: 'user',
                 password: 'password'
             ),
-            $process ?? $this->createMock(ProcessRunner::class)
+            $process ?? $this->createMock(ProcessRunner::class),
+            $singleTransaction,
         );
     }
 }

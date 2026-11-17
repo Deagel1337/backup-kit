@@ -13,11 +13,11 @@ final class RestoreMariaDbApplicationTest extends TestCase
     public function test_create_uses_the_injected_progress_reporter(): void
     {
         $reporter = $this->createMock(ProgressReporter::class);
-        $reporter->expects($this->once())->method('started')->with(0);
-        $reporter->expects($this->never())->method('stepStarted');
-        $reporter->expects($this->never())->method('stepFinished');
+        $reporter->expects($this->exactly(2))->method('started');
+        $reporter->expects($this->once())->method('stepStarted')->with(1, 1, 'Rollback-Dump aufräumen');
+        $reporter->expects($this->once())->method('stepFinished')->with(1, 1, 'Rollback-Dump aufräumen');
         $reporter->expects($this->never())->method('stepFailed');
-        $reporter->expects($this->once())->method('finished');
+        $reporter->expects($this->exactly(2))->method('finished');
 
         $application = RestoreMariaDbApplication::create(
             $this->createStub(DatabaseBackupDriver::class),

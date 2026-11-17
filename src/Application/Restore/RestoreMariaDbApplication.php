@@ -10,6 +10,7 @@ use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\Interface\RestoreServiceInterface;
 use Deagel1337\Backup\Kit\Services\RestoreService;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use Deagel1337\Backup\Kit\Step\Restore\CleanRollbackDump;
 use Deagel1337\Backup\Kit\Step\Restore\Rollback\MariaDbRestoreRollbackHandler;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 
@@ -47,7 +48,8 @@ final class RestoreMariaDbApplication
         $service = new RestoreService(
             steps: $steps,
             runner: $runner,
-            rollback: $rollbackHandler
+            rollback: $rollbackHandler,
+            cleanupSteps: [new CleanRollbackDump],
         );
 
         return new self(

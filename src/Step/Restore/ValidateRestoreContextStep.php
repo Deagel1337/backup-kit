@@ -13,7 +13,8 @@ final class ValidateRestoreContextStep implements RestoreStep
 {
     public function __construct(
         private readonly DatabaseBackupDriver $databaseBackupDriver,
-        private readonly ArchiveDriver $archiveDriver
+        private readonly ArchiveDriver $archiveDriver,
+        private readonly ?string $destination = null,
     ) {}
 
     public function name(): string
@@ -34,8 +35,17 @@ final class ValidateRestoreContextStep implements RestoreStep
         if ($context->archive) {
             $this->archiveDriver->validateArchive($context->archive);
 
+            if ($this->destination !== null) {
+                $context->destination = $this->destination;
+            }
+
             if ($context->destination === '') {
                 throw new RuntimeException('Kein Zielverzeichnis für die Wiederherstellung angegeben.');
+            }
+
+            $destinationName = basename(rtrim($context->destination, DIRECTORY_SEPARATOR));
+            if ($destinationName === '' || $destinationName === '.' || $destinationName === '..') {
+                throw new RuntimeException('Ungültiges Zielverzeichnis für die Wiederherstellung.');
             }
 
             $destinations = [$context->destination];
@@ -49,14 +59,25 @@ final class ValidateRestoreContextStep implements RestoreStep
                     throw new RuntimeException('Das Zielverzeichnis für die Wiederherstellung ist nicht beschreibbar.');
                 }
 
-                if (file_exists($destination) && (! is_dir($destination) || is_link($destination))) {
+                if (is_link(rtrim($destination, DIRECTORY_SEPARATOR)) || (file_exists($destination) && ! is_dir($destination))) {
                     throw new RuntimeException('Das Ziel für die Wiederherstellung ist kein sicheres Verzeichnis.');
                 }
             }
 
-            if ($context->stagingDestination !== null
-                && (file_exists($context->stagingDestination) || is_link($context->stagingDestination))) {
-                throw new RuntimeException('Das Staging-Verzeichnis für die Wiederherstellung ist bereits vorhanden.');
+            if ($context->stagingDestination !== null) {
+                $stagingName = basename(rtrim($context->stagingDestination, DIRECTORY_SEPARATOR));
+                if ($stagingName === '' || $stagingName === '.' || $stagingName === '..') {
+                    throw new RuntimeException('Ungültiges Staging-Verzeichnis.');
+                }
+                if (realpath(dirname($context->destination)) !== realpath(dirname($context->stagingDestination))) {
+                    throw new RuntimeException('Das Staging-Verzeichnis muss neben dem Restore-Ziel liegen.');
+                }
+                if ($stagingName === $destinationName) {
+                    throw new RuntimeException('Staging-Verzeichnis und Restore-Ziel dürfen nicht identisch sein.');
+                }
+                if (file_exists($context->stagingDestination) || is_link($context->stagingDestination)) {
+                    throw new RuntimeException('Das Staging-Verzeichnis für die Wiederherstellung ist bereits vorhanden.');
+                }
             }
 
             $hasEntries = false;

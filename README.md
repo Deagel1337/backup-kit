@@ -234,7 +234,30 @@ $archives->extract($archive, $restoreDirectory);
 
 ## Hinweise zu Verifikation und Restore
 
-Die Prüfung eines erzeugten Backups vergleicht erwartete Einträge anhand ihrer Basenames. Sie erkennt fehlende Dateinamen, ist aber keine Prüfung von Dateiinhalten oder Checksummen. Bei der Archiv-Extraktion in ein bereits vorhandenes Ziel können nach einem Fehler Teildateien zurückbleiben. Ein neues Staging-Verzeichnis wird bei einem fehlgeschlagenen Extract entfernt; dessen Inhalt muss die aufrufende Anwendung nach erfolgreicher Prüfung selbst veröffentlichen.
+Die Prüfung eines erzeugten Backups vergleicht erwartete Einträge anhand ihrer Basenames. Sie erkennt fehlende Dateinamen, ist aber keine Prüfung von Dateiinhalten oder Checksummen.
+
+Beim `RestoreService` bestimmt die Anwendung die Reihenfolge der Restore-Steps selbst. Ein möglicher direkter Archiv-Restore ist:
+
+```php
+use Deagel1337\Backup\Kit\Services\RestoreService;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreArchiveStep;
+use Deagel1337\Backup\Kit\Step\Restore\ValidateRestoreContextStep;
+
+$restore = new RestoreService(
+    steps: [
+        new ValidateRestoreContextStep($databaseDriver, $archiveDriver),
+        new RestoreArchiveStep($archiveDriver),
+    ],
+    runner: $runner,
+);
+$restore->restore($context);
+```
+
+`$context` ist ein `RestoreContext` mit Archiv und Ziel; `$runner` ist ein `StepRunner` mit einem Reporter. Ohne Staging wird direkt ins Ziel extrahiert: Der Archivtreiber bestimmt das Überschreibungsverhalten; nicht im Archiv enthaltene Dateien bleiben bestehen. Bei einem Fehler können teilweise überschriebene oder extrahierte Dateien zurückbleiben. Die Validierung ist ein expliziter Step und muss für das tatsächlich verwendete Ziel vor der Extraktion erfolgen.
+
+Für optionales Staging können stattdessen `CreateStagingFolder`, `RestoreArchiveStep` und `CommitStagingStep` in dieser Reihenfolge eingesetzt werden. Der Commit ersetzt das vorhandene Ziel vollständig, sichert es zunächst durch Umbenennung und versucht es bei einem fehlgeschlagenen Commit wiederherzustellen. Der Austausch ist nicht atomar. Weitere fehleranfällige Schritte sollten vor dem Commit liegen.
+
+Cleanup-Steps werden separat über `cleanupSteps: [new CleanStagingFolder, new CleanRollbackDump]` konfiguriert. Sie laufen in dieser Reihenfolge sowohl nach Erfolg als auch nach Fehlern; ein fehlgeschlagener Cleanup-Step verhindert die folgenden nicht. Ohne Konfiguration findet keine automatische Bereinigung durch den Service statt. Der Reporter meldet die Cleanup-Phase separat. Ein optionaler `rollback`-Handler wird nach einem Fehler vor dem Cleanup aufgerufen, sofern der Datenbank-Restore begonnen hat und das Archiv noch nicht übernommen oder direkt extrahiert wurde. Ohne Handler gibt es keinen automatischen Rollback. Die MariaDB-Factory konfiguriert Rollback und Dump-Cleanup selbst.
 
 ## Beispielskripte
 

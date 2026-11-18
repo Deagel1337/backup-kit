@@ -13,6 +13,7 @@ use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpFormatExcepti
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
+use Override;
 use RuntimeException;
 
 final class SqliteBackupDriver implements DatabaseBackupDriver
@@ -24,11 +25,18 @@ final class SqliteBackupDriver implements DatabaseBackupDriver
         private readonly ProcessRunner $process = new ProcOpenProcessRunner,
     ) {}
 
+    #[Override]
     protected function processRunner(): ProcessRunner
     {
         return $this->process;
     }
-
+    
+    #[Override]
+    protected function allowedCommands(): array
+    {
+        return ['sqlite3'];
+    }
+    
     public function createDump(?string $backupName = null): DatabaseDump
     {
         $path = $backupName === null

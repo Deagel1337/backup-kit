@@ -13,6 +13,7 @@ use Deagel1337\Backup\Kit\Exception\DumpDriverException\InvalidDumpFormatExcepti
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Runner\ProcOpenProcessRunner;
 use Deagel1337\Backup\Kit\Traits\CommandTrait;
+use Override;
 use RuntimeException;
 
 final class MariaDbBackupDriver implements DatabaseBackupDriver
@@ -25,9 +26,16 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
         private readonly bool $singleTransaction = false,
     ) {}
 
+    #[Override]
     protected function processRunner(): ProcessRunner
     {
         return $this->process;
+    }
+
+    #[Override]
+    protected function allowedCommands(): array
+    {
+        return ['mariadb', 'mariadb-dumb', 'ssh'];
     }
 
     public function createDump(?string $destination = null): DatabaseDump

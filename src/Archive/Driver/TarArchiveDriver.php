@@ -27,9 +27,16 @@ final class TarArchiveDriver implements ArchiveDriver
             ?? sys_get_temp_dir().DIRECTORY_SEPARATOR.'backup-kit-tar';
     }
 
+    #[Override]
     protected function processRunner(): ProcessRunner
     {
         return $this->process;
+    }
+
+    #[Override]
+    protected function allowedCommands(): array
+    {
+        return ['ssh', 'tar'];
     }
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo

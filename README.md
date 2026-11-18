@@ -295,7 +295,15 @@ composer test:integration
 
 Der Befehl startet über Docker Compose einen frischen MariaDB-Testcontainer, wartet auf dessen Bereitschaft, führt die Integrationstests aus und entfernt Container und zugehöriges Volume auch nach einem fehlgeschlagenen Testlauf. Der Host-Port wird dynamisch vergeben, damit kein fester Port belegt sein muss. Voraussetzung sind Docker mit Compose-Unterstützung und die PHP-Extension `pdo_mysql`.
 
-Einzelne Integrationstests lassen sich weiterhin direkt mit PHPUnit ausführen, benötigen dann aber eine erreichbare MariaDB unter `127.0.0.1:3307`. Host, Port und Zugangsdaten können für externe Testdatenbanken über `BACKUP_KIT_TEST_DB_HOST`, `BACKUP_KIT_TEST_DB_PORT`, `BACKUP_KIT_TEST_DB_USERNAME` und `BACKUP_KIT_TEST_DB_PASSWORD` gesetzt werden.
+Einzelne Integrationstests lassen sich mit folgendem Wrapper direkt ausführen:
+
+```bash
+scripts/run-phpunit.sh vendor/bin/phpunit --testsuite Integration
+```
+
+Der Wrapper startet MariaDB, ermittelt den veröffentlichten Host-Port und setzt `BACKUP_KIT_TEST_DB_HOST`, `BACKUP_KIT_TEST_DB_PORT`, `BACKUP_KIT_TEST_DB_USERNAME` und `BACKUP_KIT_TEST_DB_PASSWORD` für den PHPUnit-Prozess. Dadurch bleibt der Port auch beim Neustart des Containers dynamisch.
+
+Für die VS-Code-Erweiterung „PHPUnit“ ist im Projekt ein Test-Wrapper als `phpunit.command` konfiguriert. Das Testing Panel startet damit ebenfalls den Testcontainer und setzt die Verbindungsvariablen. Nach Änderungen an `.vscode/settings.json` kann ein `Developer: Reload Window` erforderlich sein.
 
 ## Lizenz
 

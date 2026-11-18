@@ -43,6 +43,12 @@ final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
         return $this->process;
     }
 
+    #[Override]
+    protected function allowedCommands(): array
+    {
+        return ['ssh', 'borg'];
+    }
+
     /**
      * @return array<string>
      */

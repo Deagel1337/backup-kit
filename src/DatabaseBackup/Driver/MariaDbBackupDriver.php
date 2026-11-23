@@ -35,7 +35,7 @@ final class MariaDbBackupDriver implements DatabaseBackupDriver
     #[Override]
     protected function allowedCommands(): array
     {
-        return ['mariadb', 'mariadb-dumb', 'ssh'];
+        return ['mariadb', 'mariadb-dump', 'ssh'];
     }
 
     public function createDump(?string $destination = null): DatabaseDump

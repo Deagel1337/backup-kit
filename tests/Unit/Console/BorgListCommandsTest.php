@@ -20,7 +20,7 @@ final class BorgListCommandsTest extends TestCase
     public function test_lists_archives_from_configured_repository(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
-        $driver->expects($this->once())->method('validateRequirements');
+        $driver->expects($this->never())->method('validateRequirements');
         $driver->expects($this->once())
             ->method('listArchives')
             ->willReturn([

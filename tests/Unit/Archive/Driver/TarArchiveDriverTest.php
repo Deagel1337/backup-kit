@@ -226,7 +226,7 @@ final class TarArchiveDriverTest extends TestCase
             ->method('run')
             ->with([
                 'tar', '-xzf', $this->archivePath, '-C', '/tmp/out',
-                '--strip-components=2', 'a/b',
+                '--strip-components=2', '--', 'a/b',
             ])
             ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
 
@@ -235,6 +235,25 @@ final class TarArchiveDriverTest extends TestCase
             '/tmp/out',
             ['/a/b'],
             2
+        );
+    }
+
+    public function test_extract_archive_keeps_option_looking_paths_literal(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with([
+                'tar', '-xzf', $this->archivePath, '-C', '/tmp/out',
+                '--', '--checkpoint=1', '--checkpoint-action=exec=touch /tmp/owned',
+            ])
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            ['--checkpoint=1', '--checkpoint-action=exec=touch /tmp/owned']
         );
     }
 }

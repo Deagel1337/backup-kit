@@ -88,6 +88,10 @@ final class TarArchiveDriver implements ArchiveDriver
             $command[] = '--strip-components='.$stripComponents;
         }
 
+        if ($paths !== []) {
+            $command[] = '--';
+        }
+
         foreach ($paths as $path) {
             $command[] = ltrim($path, '/');
         }

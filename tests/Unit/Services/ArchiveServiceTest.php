@@ -21,7 +21,7 @@ final class ArchiveServiceTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
-    public function test_list_archives_delegates_repository_override_without_separate_validation(): void
+    public function test_list_archives_validates_repository_override_before_delegating(): void
     {
         $driver = $this->createMock(RepositoryAwareArchiveDriver::class);
         $archives = [new ArchiveInfo('/other/repository::backup', 'borg', 'borg')];
@@ -30,7 +30,7 @@ final class ArchiveServiceTest extends TestCase
             ->expects($this->never())
             ->method('validateRequirements');
         $driver
-            ->expects($this->never())
+            ->expects($this->once())
             ->method('validateRepositoryRequirements');
         $driver
             ->expects($this->once())

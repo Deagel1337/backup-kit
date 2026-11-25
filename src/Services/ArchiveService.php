@@ -102,8 +102,12 @@ final class ArchiveService
                 throw new \InvalidArgumentException('Der Archivtreiber unterstützt keine Repository-Auswahl.');
             }
 
+            $this->driver->validateRepositoryRequirements($repository);
+
             return $this->driver->listArchivesFromRepository($repository);
         }
+
+        $this->driver->validateRequirements();
 
         return $this->driver->listArchives();
     }

@@ -384,15 +384,5 @@ final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
         if (trim($repository) === '') {
             throw new RuntimeException('Es wurde kein Borg-Repository angegeben.');
         }
-
-        $command = array_merge(['borg', 'list'], $this->rshOption(), [$repository]);
-
-        $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
-
-        if ($result->exitCode !== 0) {
-            throw new RuntimeException(
-                'Das Borg-Repository konnte nicht erreicht werden: '.trim($result->errorOutput)
-            );
-        }
     }
 }

@@ -84,7 +84,7 @@ final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
         $command = [];
         $format = '{path}{TAB}{size}{TAB}{type}{NL}';
 
-        if (str_contains($archive->path, $this->repository)) {
+        if (str_contains($archive->path, '::')) {
             $command = array_merge(
                 ['borg', 'list'],
                 $this->rshOption(),

@@ -473,7 +473,6 @@ final class BorgArchiveDriverTest extends TestCase
     public function test_lists_archives_from_repository_override(): void
     {
         $process = $this->createMock(ProcessRunner::class);
-
         $process
             ->expects($this->once())
             ->method('run')
@@ -504,6 +503,65 @@ final class BorgArchiveDriverTest extends TestCase
         $this->assertEquals(
             [new ArchiveInfo('/other/repository::backup-2026', 'borg', 'borg')],
             $archives
+        );
+    }
+
+    public function test_archive_from_repository_override_round_trips_through_list_archive(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                static $call = 0;
+                $call++;
+
+                if ($call === 1) {
+                    self::assertSame([
+                        'borg',
+                        'list',
+                        '--format',
+                        '{archive}{NL}',
+                        '/other/repository',
+                    ], $command);
+
+                    return new ProcessResult(
+                        exitCode: 0,
+                        output: "backup-2026\n",
+                        errorOutput: ''
+                    );
+                }
+
+                self::assertSame([
+                    'borg',
+                    'list',
+                    '--format',
+                    '{path}{TAB}{size}{TAB}{type}{NL}',
+                    '/other/repository::backup-2026',
+                ], $command);
+
+                return new ProcessResult(
+                    exitCode: 0,
+                    output: "data.sql\t128\t-\n",
+                    errorOutput: ''
+                );
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            process: $process,
+        );
+
+        $archives = iterator_to_array($driver->listArchivesFromRepository('/other/repository'));
+        $this->assertCount(1, $archives);
+
+        $entries = iterator_to_array($driver->listArchive($archives[0]));
+
+        $this->assertEquals(
+            [new ArchiveEntry('data.sql', 128, ArchiveEntryType::File)],
+            $entries
         );
     }
 

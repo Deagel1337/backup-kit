@@ -11,6 +11,39 @@ use RuntimeException;
 
 final class ArchiveServiceTest extends TestCase
 {
+    public function test_constructor_does_not_validate_original_repository(): void
+    {
+        $driver = $this->createMock(ArchiveDriver::class);
+        $driver->expects($this->never())->method('validateRequirements');
+
+        new ArchiveService($driver);
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_list_archives_validates_repository_override(): void
+    {
+        $driver = $this->createMock(RepositoryAwareArchiveDriver::class);
+        $archives = [new ArchiveInfo('/other/repository::backup', 'borg', 'borg')];
+
+        $driver
+            ->expects($this->never())
+            ->method('validateRequirements');
+        $driver
+            ->expects($this->once())
+            ->method('validateRepositoryRequirements')
+            ->with('/other/repository');
+        $driver
+            ->expects($this->once())
+            ->method('listArchivesFromRepository')
+            ->with('/other/repository')
+            ->willReturn($archives);
+
+        $result = (new ArchiveService($driver))->listArchives('/other/repository');
+
+        $this->assertSame($archives, iterator_to_array($result));
+    }
+
     public function test_create_archive_delegates_to_driver(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);

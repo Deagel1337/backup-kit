@@ -371,11 +371,21 @@ final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
     #[Override]
     public function validateRequirements(): void
     {
+        $this->validateRepositoryRequirements($this->repository);
+    }
+
+    #[Override]
+    public function validateRepositoryRequirements(string $repository): void
+    {
         if (! $this->isCommandAvailable('borg')) {
             throw new RuntimeException('Das Programm borg ist nicht verfügbar.');
         }
 
-        $command = array_merge(['borg', 'list'], $this->rshOption(), [$this->repository]);
+        if (trim($repository) === '') {
+            throw new RuntimeException('Es wurde kein Borg-Repository angegeben.');
+        }
+
+        $command = array_merge(['borg', 'list'], $this->rshOption(), [$repository]);
 
         $result = $this->process->run($command, ['BORG_PASSPHRASE' => $this->passphrase]);
 

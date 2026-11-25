@@ -41,7 +41,7 @@ final class VerifyBackupArchiveStepTest extends TestCase
     public function test_rejects_context_without_archive(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);
-        $driver->expects($this->once())->method('validateRequirements');
+        $driver->expects($this->never())->method('validateRequirements');
         $driver->expects($this->never())->method('listArchive');
 
         $this->expectException(RuntimeException::class);

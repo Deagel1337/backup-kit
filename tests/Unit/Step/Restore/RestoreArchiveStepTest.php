@@ -122,9 +122,26 @@ final class RestoreArchiveStepTest extends TestCase
         $destination = $root.'/nested/restore';
         $driver->expects($this->once())->method('extractArchive')->with($archive, $destination);
 
-        (new RestoreArchiveStep($driver, $destination))->execute(new RestoreContext($archive, null, $root.'/other'));
+        (new RestoreArchiveStep($driver, $destination))->execute(new RestoreContext($archive, null, $destination));
 
         $this->assertDirectoryExists($destination);
+    }
+
+    public function test_direct_restore_rejects_destination_override_mismatch(): void
+    {
+        $driver = $this->createMock(ArchiveDriver::class);
+        $driver->expects($this->never())->method('extractArchive');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Das Restore-Ziel muss vor der Validierung im Context festgelegt werden.');
+
+        (new RestoreArchiveStep($driver, '/validated/override'))->execute(
+            new RestoreContext(
+                new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+                null,
+                '/different/validated/destination',
+            )
+        );
     }
 
     public function test_has_expected_name(): void

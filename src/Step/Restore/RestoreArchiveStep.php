@@ -44,7 +44,11 @@ final class RestoreArchiveStep implements RestoreStep
                 throw new RuntimeException('Das Staging-Verzeichnis muss neben dem Restore-Ziel liegen.');
             }
         } else {
-            $destination = $this->destination ?? $context->destination;
+            if ($this->destination !== null && $this->destination !== $context->destination) {
+                throw new RuntimeException('Das Restore-Ziel muss vor der Validierung im Context festgelegt werden.');
+            }
+
+            $destination = $context->destination;
             if ($destination === '' || is_link(rtrim($destination, DIRECTORY_SEPARATOR))) {
                 throw new RuntimeException('Das Restore-Ziel ist ungültig oder ein symbolischer Link.');
             }

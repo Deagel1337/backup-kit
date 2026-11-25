@@ -342,6 +342,7 @@ final class BorgArchiveDriver implements RepositoryAwareArchiveDriver
             ['borg', 'extract'],
             $options,
             $this->rshOption(),
+            ['--'],
             [$archive->path],
             array_map(static fn (string $path): string => ltrim($path, '/'), $paths),
         );

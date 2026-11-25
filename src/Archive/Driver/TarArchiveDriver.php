@@ -80,6 +80,10 @@ final class TarArchiveDriver implements ArchiveDriver
         array $paths = [],
         int $stripComponents = 0,
     ): void {
+        if ($stripComponents < 0) {
+            throw new RuntimeException('strip-components darf nicht negativ sein.');
+        }
+
         $this->validateArchive($archive);
 
         $command = ['tar', '-xzf', $archive->path, '-C', $destination];

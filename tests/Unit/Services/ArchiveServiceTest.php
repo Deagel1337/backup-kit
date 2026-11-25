@@ -113,6 +113,25 @@ final class ArchiveServiceTest extends TestCase
         (new ArchiveService($driver))->extractArchive($archive, '/tmp/restore', ['var/www'], 3);
     }
 
+    public function test_extract_archive_rejects_negative_strip_components(): void
+    {
+        $driver = $this->createMock(ArchiveDriver::class);
+        $driver->expects($this->never())->method('validateArchive');
+        $driver->expects($this->never())->method('extractArchive');
+
+        $archive = new ArchiveInfo('repo::backup', 'borg', 'borg');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('strip-components darf nicht negativ sein.');
+
+        (new ArchiveService($driver))->extractArchive(
+            $archive,
+            '/tmp/restore',
+            [],
+            -1
+        );
+    }
+
     public function test_extract_archive_propagates_driver_exception(): void
     {
         $driver = $this->createMock(ArchiveDriver::class);

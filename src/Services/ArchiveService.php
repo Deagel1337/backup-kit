@@ -47,6 +47,10 @@ final class ArchiveService
         array $paths = [],
         int $stripComponents = 0,
     ): void {
+        if ($stripComponents < 0) {
+            throw new \RuntimeException('strip-components darf nicht negativ sein.');
+        }
+
         $this->driver->validateArchive($archive);
 
         if ($paths === [] && $stripComponents === 0) {

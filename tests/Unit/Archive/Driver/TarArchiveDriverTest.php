@@ -256,4 +256,20 @@ final class TarArchiveDriverTest extends TestCase
             ['--checkpoint=1', '--checkpoint-action=exec=touch /tmp/owned']
         );
     }
+
+    public function test_extract_archive_rejects_negative_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('strip-components darf nicht negativ sein.');
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            [],
+            -1
+        );
+    }
 }

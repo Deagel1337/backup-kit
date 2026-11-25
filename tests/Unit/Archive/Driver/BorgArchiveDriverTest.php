@@ -579,6 +579,66 @@ final class BorgArchiveDriverTest extends TestCase
         ))->listArchivesFromRepository('  '));
     }
 
+    public function test_validate_repository_requirements_checks_selected_repository(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                if ($command === ['borg', '--version']) {
+                    return new ProcessResult(exitCode: 0, output: 'borg 1.4', errorOutput: '');
+                }
+
+                if ($command === [
+                    'borg',
+                    'info',
+                    '--json',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '/other/repository',
+                ]) {
+                    return new ProcessResult(exitCode: 0, output: '{}', errorOutput: '');
+                }
+
+                self::fail('Unexpected command: '.implode(' ', $command));
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->validateRepositoryRequirements('/other/repository');
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_validate_repository_requirements_rejects_unreachable_repository(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                if ($command === ['borg', '--version']) {
+                    return new ProcessResult(exitCode: 0, output: 'borg 1.4', errorOutput: '');
+                }
+
+                return new ProcessResult(exitCode: 2, output: '', errorOutput: 'Repository unavailable');
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            process: $process,
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Das Borg-Repository konnte nicht erreicht werden: Repository unavailable');
+
+        $driver->validateRepositoryRequirements('/other/repository');
+    }
+
     public function test_list_archives_parses_names(): void
     {
         $process = $this->createMock(ProcessRunner::class);

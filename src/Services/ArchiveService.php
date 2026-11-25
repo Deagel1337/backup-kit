@@ -3,6 +3,7 @@
 namespace Deagel1337\Backup\Kit\Services;
 
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Interfaces\RepositoryAwareArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 
@@ -17,9 +18,7 @@ final class ArchiveService
      */
     public function __construct(
         private readonly ArchiveDriver $driver
-    ) {
-        $this->driver->validateRequirements();
-    }
+    ) {}
 
     /**
      * Erstellt ein Archiv eines Types
@@ -29,6 +28,8 @@ final class ArchiveService
      */
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
     {
+        $this->driver->validateRequirements();
+
         return $this->driver->createArchive($paths, $archiveName);
     }
 
@@ -37,12 +38,36 @@ final class ArchiveService
      *
      * @param  ArchiveInfo  $archive  Die Archivinformationen vom Ziel
      * @param  string  $destination  Der Ablageort für die Extrahierung
+     * @param  array<string>  $paths  Nur diese Pfade aus dem Archiv extrahieren (leer = alles)
+     * @param  int  $stripComponents  Anzahl führender Pfadbestandteile, die entfernt werden
      */
-    public function extractArchive(ArchiveInfo $archive, string $destination): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
+        if ($stripComponents < 0) {
+            throw new \RuntimeException('strip-components darf nicht negativ sein.');
+        }
+
         $this->driver->validateArchive($archive);
 
-        $this->driver->extractArchive($archive, $destination);
+        if ($this->driver instanceof RepositoryAwareArchiveDriver
+            && str_contains($archive->path, '::')) {
+            [$repository] = explode('::', $archive->path, 2);
+            $this->driver->validateRepositoryRequirements($repository);
+        } else {
+            $this->driver->validateRequirements();
+        }
+
+        if ($paths === [] && $stripComponents === 0) {
+            $this->driver->extractArchive($archive, $destination);
+
+            return;
+        }
+
+        $this->driver->extractArchive($archive, $destination, $paths, $stripComponents);
     }
 
     /**
@@ -54,16 +79,36 @@ final class ArchiveService
     {
         $this->driver->validateArchive($archive);
 
+        if ($this->driver instanceof RepositoryAwareArchiveDriver
+            && str_contains($archive->path, '::')) {
+            [$repository] = explode('::', $archive->path, 2);
+            $this->driver->validateRepositoryRequirements($repository);
+        } else {
+            $this->driver->validateRequirements();
+        }
+
         return $this->driver->listArchive($archive);
     }
 
     /**
-     * list all Alrchives in the archive directory. It dependes on the driver implementation
+     * Lists archives from the configured repository or a repository override supported by the driver.
      *
      * @return iterable<ArchiveInfo>
      */
-    public function listArchives(): iterable
+    public function listArchives(?string $repository = null): iterable
     {
+        if ($repository !== null) {
+            if (! $this->driver instanceof RepositoryAwareArchiveDriver) {
+                throw new \InvalidArgumentException('Der Archivtreiber unterstützt keine Repository-Auswahl.');
+            }
+
+            $this->driver->validateRepositoryRequirements($repository);
+
+            return $this->driver->listArchivesFromRepository($repository);
+        }
+
+        $this->driver->validateRequirements();
+
         return $this->driver->listArchives();
     }
 
@@ -89,6 +134,8 @@ final class ArchiveService
         ?int $keepMonthly = null,
         ?int $keepYearly = null,
     ): void {
+        $this->driver->validateRequirements();
+
         $this->driver->prune($keepLast, $keepDaily, $keepWeekly, $keepMonthly, $keepYearly);
     }
 }

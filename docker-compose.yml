@@ -1,10 +1,15 @@
 services:
   mariadb-test:
-    image: mariadb:11 
+    image: mariadb:11
     environment:
       MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
     ports:
-      - "3307:3306"
+      - "127.0.0.1::3306"
     volumes:
       - mariadb_test_data:/var/lib/mysql
 

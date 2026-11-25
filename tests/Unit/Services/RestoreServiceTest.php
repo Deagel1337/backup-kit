@@ -9,7 +9,10 @@ use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Services\RestoreService;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use Deagel1337\Backup\Kit\Step\Restore\CleanRollbackDump;
+use Deagel1337\Backup\Kit\Step\Restore\CleanStagingFolder;
 use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDirectoryCleaner;
 use Deagel1337\Backup\Kit\Step\Restore\Rollback\RestoreRollbackHandler;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -28,7 +31,7 @@ final class RestoreServiceTest extends TestCase
      *   service: RestoreService
      * }
      */
-    private function createRestoreService(array $steps): array
+    private function createRestoreService(array $steps, array $cleanupSteps = []): array
     {
         $progress = $this->createMock(ProgressReporter::class);
         $runner = new StepRunner($progress);
@@ -40,7 +43,8 @@ final class RestoreServiceTest extends TestCase
             'service' => new RestoreService(
                 steps: $steps,
                 runner: $runner,
-                rollback: $rollback),
+                rollback: $rollback,
+                cleanupSteps: $cleanupSteps),
         ];
     }
 
@@ -161,7 +165,7 @@ final class RestoreServiceTest extends TestCase
             ->expects($this->once())
             ->method('restoreDump')
             ->willThrowException(new RuntimeException('database restore failed'));
-        $setup = $this->createRestoreService([new RestoreDatabaseStep($database)]);
+        $setup = $this->createRestoreService([new RestoreDatabaseStep($database)], [new CleanRollbackDump]);
         $setup['rollback']
             ->expects($this->once())
             ->method('rollback')
@@ -175,6 +179,46 @@ final class RestoreServiceTest extends TestCase
         }
 
         $this->assertFileDoesNotExist($snapshotPath);
+    }
+
+    public function test_preserves_snapshot_when_rollback_fails(): void
+    {
+        $snapshotPath = tempnam(sys_get_temp_dir(), 'restore_rollback_failed_');
+        $this->assertNotFalse($snapshotPath);
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/backup.tar.gz', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump.sql', 'mariadb', 'sql'),
+            '/tmp/restore',
+            rollbackDump: new DatabaseDump($snapshotPath, 'mariadb', 'sql'),
+            databaseRestoreStarted: true,
+        );
+
+        $restore = $this->createStub(RestoreStep::class);
+        $restore->method('name')->willReturn('Datenbank wiederherstellen');
+        $restore->method('execute')->willThrowException(new RuntimeException('database restore failed'));
+
+        $setup = $this->createRestoreService(
+            [$restore],
+            [new CleanRollbackDump],
+        );
+        $setup['rollback']
+            ->expects($this->once())
+            ->method('rollback')
+            ->with($context)
+            ->willThrowException(new RuntimeException('rollback failed'));
+
+        try {
+            $setup['service']->restore($context);
+            $this->fail('Expected restore failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('das Rollback ebenfalls', $exception->getMessage());
+            $this->assertStringContainsString('rollback failed', $exception->getMessage());
+        }
+
+        $this->assertFileExists($snapshotPath);
+        $this->assertSame($snapshotPath, $context->rollbackDump->path);
+
+        unlink($snapshotPath);
     }
 
     public function test_starts_progress_with_correct_number_of_steps(): void
@@ -376,6 +420,187 @@ final class RestoreServiceTest extends TestCase
                 '/tmp/restore'
             )
         );
+    }
+
+    public function test_cleans_staging_directory_when_a_step_fails(): void
+    {
+        $stagingDirectory = sys_get_temp_dir().'/restore_service_stage_'.bin2hex(random_bytes(6));
+        mkdir($stagingDirectory, 0700);
+        file_put_contents($stagingDirectory.'/partial.txt', 'partial');
+
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/backup.tar.gz', 'tar', 'tar.gz'),
+            null,
+            '/tmp/restore',
+            stagingDestination: $stagingDirectory,
+            stagingCreated: true,
+        );
+        $step = $this->createStub(RestoreStep::class);
+        $step->method('name')->willReturn('Archiv entpacken');
+        $step->method('execute')->willThrowException(new RuntimeException('extract failed'));
+
+        $setup = $this->createRestoreService([$step], [new CleanStagingFolder]);
+        $setup['progress']->expects($this->exactly(2))->method('started')->with(1);
+        $setup['progress']->expects($this->exactly(2))->method('stepStarted');
+        $setup['progress']->expects($this->once())->method('stepFailed');
+        $setup['rollback']->expects($this->never())->method('rollback');
+
+        try {
+            $setup['service']->restore($context);
+            $this->fail('Expected restore failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('extract failed', $exception->getMessage());
+        }
+
+        $this->assertDirectoryDoesNotExist($stagingDirectory);
+        $this->assertFalse($context->stagingCreated);
+        RestoreDirectoryCleaner::remove($stagingDirectory);
+    }
+
+    public function test_runs_all_cleanup_steps_in_order_after_failure_and_reports_errors(): void
+    {
+        $order = [];
+        $restore = $this->createStub(RestoreStep::class);
+        $restore->method('name')->willReturn('Restore');
+        $restore->method('execute')->willThrowException(new RuntimeException('restore failed'));
+        $first = $this->createStub(RestoreStep::class);
+        $first->method('name')->willReturn('Cleanup 1');
+        $first->method('execute')->willReturnCallback(static function () use (&$order): void {
+            $order[] = 'first';
+            throw new RuntimeException('cleanup failed');
+        });
+        $second = $this->createStub(RestoreStep::class);
+        $second->method('name')->willReturn('Cleanup 2');
+        $second->method('execute')->willReturnCallback(static function () use (&$order): void {
+            $order[] = 'second';
+        });
+        $service = new RestoreService(
+            [$restore],
+            new StepRunner($this->createStub(ProgressReporter::class)),
+            cleanupSteps: [$first, $second],
+        );
+
+        try {
+            $service->restore(new RestoreContext(null, null, ''));
+            $this->fail('Expected restore and cleanup failures.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('restore failed', $exception->getMessage());
+            $this->assertStringContainsString('cleanup failed', $exception->getMessage());
+            $this->assertSame('restore failed', $exception->getPrevious()?->getMessage());
+        }
+
+        $this->assertSame(['first', 'second'], $order);
+    }
+
+    public function test_reports_cleanup_errors_after_success_and_continues_cleanup(): void
+    {
+        $order = [];
+        $first = $this->createStub(RestoreStep::class);
+        $first->method('name')->willReturn('Cleanup 1');
+        $first->method('execute')->willReturnCallback(static function () use (&$order): void {
+            $order[] = 'first';
+            throw new RuntimeException('first cleanup failed');
+        });
+        $second = $this->createStub(RestoreStep::class);
+        $second->method('name')->willReturn('Cleanup 2');
+        $second->method('execute')->willReturnCallback(static function () use (&$order): void {
+            $order[] = 'second';
+            throw new RuntimeException('second cleanup failed');
+        });
+        $service = new RestoreService(
+            [],
+            new StepRunner($this->createStub(ProgressReporter::class)),
+            cleanupSteps: [$first, $second],
+        );
+
+        try {
+            $service->restore(new RestoreContext(null, null, ''));
+            $this->fail('Expected cleanup failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('first cleanup failed', $exception->getMessage());
+            $this->assertStringContainsString('second cleanup failed', $exception->getMessage());
+        }
+
+        $this->assertSame(['first', 'second'], $order);
+    }
+
+    public function test_cleans_rollback_dump_after_success_when_configured(): void
+    {
+        $snapshot = tempnam(sys_get_temp_dir(), 'restore_rollback_');
+        $this->assertNotFalse($snapshot);
+        $context = new RestoreContext(null, null, '', rollbackDump: new DatabaseDump($snapshot, 'mariadb', 'sql'));
+        $service = new RestoreService(
+            [],
+            new StepRunner($this->createStub(ProgressReporter::class)),
+            cleanupSteps: [new CleanRollbackDump],
+        );
+
+        try {
+            $service->restore($context);
+            $this->assertFileDoesNotExist($snapshot);
+            $this->assertNull($context->rollbackDump);
+        } finally {
+            if (is_file($snapshot)) {
+                unlink($snapshot);
+            }
+        }
+    }
+
+    public function test_does_not_remove_resources_or_roll_back_without_configuration(): void
+    {
+        $root = sys_get_temp_dir().'/restore_service_resources_'.bin2hex(random_bytes(6));
+        mkdir($root, 0700);
+        $snapshot = $root.'/rollback.sql';
+        file_put_contents($snapshot, 'snapshot');
+        $context = new RestoreContext(
+            null,
+            null,
+            '',
+            rollbackDump: new DatabaseDump($snapshot, 'mariadb', 'sql'),
+            stagingDestination: $root,
+            databaseRestoreStarted: true,
+            stagingCreated: true,
+        );
+        $step = $this->createStub(RestoreStep::class);
+        $step->method('name')->willReturn('Restore');
+        $step->method('execute')->willThrowException(new RuntimeException('restore failed'));
+        $service = new RestoreService([$step], new StepRunner($this->createStub(ProgressReporter::class)));
+
+        try {
+            $service->restore($context);
+            $this->fail('Expected restore failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('restore failed', $exception->getMessage());
+            $this->assertFileExists($snapshot);
+            $this->assertDirectoryExists($root);
+        } finally {
+            RestoreDirectoryCleaner::remove($root);
+        }
+    }
+
+    public function test_does_not_roll_back_database_after_archive_commit(): void
+    {
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/backup.tar.gz', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump.sql', 'postgres', 'sql'),
+            '/tmp/restore',
+            databaseRestoreStarted: true,
+            archiveRestoreCommitted: true,
+        );
+        $step = $this->createStub(RestoreStep::class);
+        $step->method('name')->willReturn('Staging aufräumen');
+        $step->method('execute')->willThrowException(new RuntimeException('cleanup failed'));
+
+        $setup = $this->createRestoreService([$step]);
+        $setup['progress']->expects($this->once())->method('started')->with(1);
+        $setup['progress']->expects($this->once())->method('stepStarted')->with(1, 1, 'Staging aufräumen');
+        $setup['progress']->expects($this->once())->method('stepFailed');
+        $setup['rollback']->expects($this->never())->method('rollback');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('cleanup failed');
+
+        $setup['service']->restore($context);
     }
 
     public function test_can_run_without_steps(): void

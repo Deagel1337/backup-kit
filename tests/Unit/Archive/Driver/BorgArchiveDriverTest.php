@@ -3,6 +3,8 @@
 namespace Tests\Unit\Archive\Driver;
 
 use Deagel1337\Backup\Kit\Archive\Driver\BorgArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
+use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntryType;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Process\Interface\ProcessRunner;
 use Deagel1337\Backup\Kit\Process\Model\ProcessResult;
@@ -85,7 +87,7 @@ final class BorgArchiveDriverTest extends TestCase
 
     public function test_create_archive_throws_when_borg_fails(): void
     {
-        $process = $this->createMock(ProcessRunner::class);
+        $process = $this->createStub(ProcessRunner::class);
 
         $process
             ->method('run')
@@ -146,6 +148,7 @@ final class BorgArchiveDriverTest extends TestCase
                 [
                     'borg',
                     'extract',
+                    '--',
                     '/var/lib/borg::backup',
                 ],
                 ['BORG_PASSPHRASE' => 'secret'],
@@ -172,6 +175,103 @@ final class BorgArchiveDriverTest extends TestCase
                 'borg'
             ),
             '/tmp/extract'
+        );
+    }
+
+    public function test_extract_archive_passes_paths_and_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'extract',
+                    '--strip-components',
+                    '7',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '--',
+                    '/var/lib/borg::backup',
+                    'var/lib/docker/volumes/wp/_data/wp-content',
+                ],
+                ['BORG_PASSPHRASE' => 'secret'],
+                sys_get_temp_dir()
+            )
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            ['/var/lib/docker/volumes/wp/_data/wp-content'],
+            7
+        );
+    }
+
+    public function test_extract_archive_keeps_option_looking_paths_literal(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'extract',
+                    '--strip-components',
+                    '7',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '--',
+                    '/var/lib/borg::backup',
+                    '--strip-components=7',
+                    '--rsh=ssh attacker.example',
+                ],
+                ['BORG_PASSPHRASE' => 'secret'],
+                sys_get_temp_dir()
+            )
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            ['--strip-components=7', '--rsh=ssh attacker.example'],
+            7
+        );
+    }
+
+    public function test_extract_archive_rejects_negative_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $driver = new BorgArchiveDriver(repository: '/var/lib/borg', process: $process);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('strip-components darf nicht negativ sein.');
+
+        $driver->extractArchive(
+            new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg'),
+            sys_get_temp_dir(),
+            [],
+            -1
         );
     }
 
@@ -293,6 +393,48 @@ final class BorgArchiveDriverTest extends TestCase
         iterator_to_array($driver->listArchive($archive));
     }
 
+    public function test_parses_borg_archive_entries(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->willReturn(new ProcessResult(
+                exitCode: 0,
+                output: "data.sql\t128\t-\napp/\t0\td\nlink\t0\tl\nspecial\t0\t?\n",
+                errorOutput: ''
+            ));
+
+        $entries = iterator_to_array((new BorgArchiveDriver(
+            '/var/lib/borg',
+            process: $process
+        ))->listArchive(new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg')));
+
+        $this->assertEquals([
+            new ArchiveEntry('data.sql', 128, ArchiveEntryType::File),
+            new ArchiveEntry('app/', 0, ArchiveEntryType::Directory),
+            new ArchiveEntry('link', 0, ArchiveEntryType::Symlink),
+            new ArchiveEntry('special', 0, ArchiveEntryType::Undefined),
+        ], $entries);
+    }
+
+    public function test_list_archive_throws_when_borg_fails(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->willReturn(new ProcessResult(2, '', 'Archive unavailable'));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Archive unavailable');
+
+        iterator_to_array((new BorgArchiveDriver(
+            '/var/lib/borg',
+            process: $process
+        ))->listArchive(new ArchiveInfo('/var/lib/borg::backup', 'borg', 'borg')));
+    }
+
     public function test_list_all_borg_archives(): void
     {
         $process = $this->createMock(ProcessRunner::class);
@@ -326,6 +468,215 @@ final class BorgArchiveDriverTest extends TestCase
         );
 
         iterator_to_array($driver->listArchives());
+    }
+
+    public function test_lists_archives_from_repository_override(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with(
+                [
+                    'borg',
+                    'list',
+                    '--format',
+                    '{archive}{NL}',
+                    '/other/repository',
+                ],
+                ['BORG_PASSPHRASE' => 'secret']
+            )
+            ->willReturn(new ProcessResult(
+                exitCode: 0,
+                output: "backup-2026\n",
+                errorOutput: ''
+            ));
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            process: $process,
+        );
+
+        $archives = iterator_to_array($driver->listArchivesFromRepository('/other/repository'));
+
+        $this->assertEquals(
+            [new ArchiveInfo('/other/repository::backup-2026', 'borg', 'borg')],
+            $archives
+        );
+    }
+
+    public function test_archive_from_repository_override_round_trips_through_list_archive(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                static $call = 0;
+                $call++;
+
+                if ($call === 1) {
+                    self::assertSame([
+                        'borg',
+                        'list',
+                        '--format',
+                        '{archive}{NL}',
+                        '/other/repository',
+                    ], $command);
+
+                    return new ProcessResult(
+                        exitCode: 0,
+                        output: "backup-2026\n",
+                        errorOutput: ''
+                    );
+                }
+
+                self::assertSame([
+                    'borg',
+                    'list',
+                    '--format',
+                    '{path}{TAB}{size}{TAB}{type}{NL}',
+                    '/other/repository::backup-2026',
+                ], $command);
+
+                return new ProcessResult(
+                    exitCode: 0,
+                    output: "data.sql\t128\t-\n",
+                    errorOutput: ''
+                );
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            passphrase: 'secret',
+            process: $process,
+        );
+
+        $archives = iterator_to_array($driver->listArchivesFromRepository('/other/repository'));
+        $this->assertCount(1, $archives);
+
+        $entries = iterator_to_array($driver->listArchive($archives[0]));
+
+        $this->assertEquals(
+            [new ArchiveEntry('data.sql', 128, ArchiveEntryType::File)],
+            $entries
+        );
+    }
+
+    public function test_rejects_empty_repository_override(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Es wurde kein Borg-Repository angegeben.');
+
+        iterator_to_array((new BorgArchiveDriver(
+            '/var/lib/borg',
+            process: $process
+        ))->listArchivesFromRepository('  '));
+    }
+
+    public function test_validate_repository_requirements_checks_selected_repository(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                if ($command === ['borg', '--version']) {
+                    return new ProcessResult(exitCode: 0, output: 'borg 1.4', errorOutput: '');
+                }
+
+                if ($command === [
+                    'borg',
+                    'info',
+                    '--json',
+                    '--rsh',
+                    "ssh -p '2222'",
+                    '/other/repository',
+                ]) {
+                    return new ProcessResult(exitCode: 0, output: '{}', errorOutput: '');
+                }
+
+                self::fail('Unexpected command: '.implode(' ', $command));
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            sshPort: 2222,
+            process: $process,
+        );
+
+        $driver->validateRepositoryRequirements('/other/repository');
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_validate_repository_requirements_rejects_unreachable_repository(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->exactly(2))
+            ->method('run')
+            ->willReturnCallback(static function (array $command): ProcessResult {
+                if ($command === ['borg', '--version']) {
+                    return new ProcessResult(exitCode: 0, output: 'borg 1.4', errorOutput: '');
+                }
+
+                return new ProcessResult(exitCode: 2, output: '', errorOutput: 'Repository unavailable');
+            });
+
+        $driver = new BorgArchiveDriver(
+            repository: '/var/lib/borg',
+            process: $process,
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Das Borg-Repository konnte nicht erreicht werden: Repository unavailable');
+
+        $driver->validateRepositoryRequirements('/other/repository');
+    }
+
+    public function test_list_archives_parses_names(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->willReturn(new ProcessResult(
+                0,
+                "daily-2026-10-07\nweekly-2026-10-01\n",
+                ''
+            ));
+
+        $archives = iterator_to_array((new BorgArchiveDriver(
+            '/var/lib/borg',
+            process: $process
+        ))->listArchives());
+
+        $this->assertEquals([
+            new ArchiveInfo('/var/lib/borg::daily-2026-10-07', 'borg', 'borg'),
+            new ArchiveInfo('/var/lib/borg::weekly-2026-10-01', 'borg', 'borg'),
+        ], $archives);
+    }
+
+    public function test_list_archives_throws_when_borg_fails(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->willReturn(new ProcessResult(1, '', 'Repository unavailable'));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('/var/lib/borg');
+
+        iterator_to_array((new BorgArchiveDriver(
+            '/var/lib/borg',
+            process: $process
+        ))->listArchives());
     }
 
     public function test_prunes_archives_using_borg_retention_options(): void

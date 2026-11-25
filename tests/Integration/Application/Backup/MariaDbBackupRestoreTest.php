@@ -13,6 +13,7 @@ use Deagel1337\Backup\Kit\Step\Restore\RestoreDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Tests\Integration\Support\MariaDbTestDatabase;
+use Tests\Integration\Support\TestDatabaseConnectionFactory;
 
 final class MariaDbBackupRestoreTest extends TestCase
 {
@@ -24,30 +25,9 @@ final class MariaDbBackupRestoreTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->sourceConnection = new DatabaseConnection(
-            driver: 'mariadb',
-            host: '127.0.0.1',
-            port: 3307,
-            database: 'backup_source',
-            username: 'root',
-            password: 'root',
-        );
-
-        $this->targetConnection = new DatabaseConnection(
-            driver: 'mariadb',
-            host: '127.0.0.1',
-            port: 3307,
-            database: 'backup_target',
-            username: 'root',
-            password: 'root',
-        );
-
-        $this->database = new MariaDbTestDatabase(
-            host: '127.0.0.1',
-            port: 3307,
-            username: 'root',
-            password: 'root',
-        );
+        $this->sourceConnection = TestDatabaseConnectionFactory::source();
+        $this->targetConnection = TestDatabaseConnectionFactory::target();
+        $this->database = TestDatabaseConnectionFactory::server();
 
         $this->database->resetDatabase(
             $this->sourceConnection->database

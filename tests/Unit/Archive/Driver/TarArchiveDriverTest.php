@@ -217,4 +217,59 @@ final class TarArchiveDriverTest extends TestCase
 
         (new TarArchiveDriver(archiveDirectory: $this->archiveDirectory))->prune();
     }
+
+    public function test_extract_archive_passes_paths_and_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with([
+                'tar', '-xzf', $this->archivePath, '-C', '/tmp/out',
+                '--strip-components=2', '--', 'a/b',
+            ])
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            ['/a/b'],
+            2
+        );
+    }
+
+    public function test_extract_archive_keeps_option_looking_paths_literal(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process
+            ->expects($this->once())
+            ->method('run')
+            ->with([
+                'tar', '-xzf', $this->archivePath, '-C', '/tmp/out',
+                '--', '--checkpoint=1', '--checkpoint-action=exec=touch /tmp/owned',
+            ])
+            ->willReturn(new ProcessResult(exitCode: 0, output: '', errorOutput: ''));
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            ['--checkpoint=1', '--checkpoint-action=exec=touch /tmp/owned']
+        );
+    }
+
+    public function test_extract_archive_rejects_negative_strip_components(): void
+    {
+        $process = $this->createMock(ProcessRunner::class);
+        $process->expects($this->never())->method('run');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('strip-components darf nicht negativ sein.');
+
+        (new TarArchiveDriver($process))->extractArchive(
+            new ArchiveInfo($this->archivePath, 'tar', 'tar.gz'),
+            '/tmp/out',
+            [],
+            -1
+        );
+    }
 }

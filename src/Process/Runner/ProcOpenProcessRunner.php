@@ -31,7 +31,7 @@ final class ProcOpenProcessRunner implements ProcessRunner
             ? ['file', $inputFile, 'r']
             : ['pipe', 'r'];
 
-        $process = proc_open(
+        $process = @proc_open(
             $command,
             [
                 0 => $stdin,

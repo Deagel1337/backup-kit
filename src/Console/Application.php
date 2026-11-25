@@ -20,7 +20,7 @@ final class Application extends SymfonyApplication
         );
 
         $this->addCommand(
-            new BorgRestoreCommand($archive)
+            new BorgExtractCommand($archive)
         );
 
         $this->addCommand(
@@ -37,6 +37,10 @@ final class Application extends SymfonyApplication
 
         $this->addCommand(
             new BorgListCommand($archive)
+        );
+
+        $this->addCommand(
+            new BorgListArchiveContentCommand($archive)
         );
     }
 }

@@ -280,6 +280,35 @@ final class ValidateRestoreContextStepTest extends TestCase
         );
     }
 
+    public function test_applies_destination_override_before_validating_staging_path(): void
+    {
+        $archiveDriver = $this->createStub(ArchiveDriver::class);
+        $archiveDriver->method('listArchive')
+            ->willReturn([new ArchiveEntry('file.txt', 4, ArchiveEntryType::File)]);
+        $parent = sys_get_temp_dir();
+        $destination = $parent.'/restore-'.bin2hex(random_bytes(6));
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/archive', 'tar', 'tar.gz'),
+            null,
+            '/not-the-final-target',
+            stagingDestination: $destination,
+        );
+
+        try {
+            (new ValidateRestoreContextStep(
+                $this->createStub(DatabaseBackupDriver::class),
+                $archiveDriver,
+                $destination,
+            ))->execute($context);
+            $this->fail('Expected matching staging and destination paths to be rejected.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('dürfen nicht identisch sein', $exception->getMessage());
+        }
+
+        $this->assertSame($destination, $context->destination);
+        $this->assertFileDoesNotExist($destination);
+    }
+
     public function test_has_expected_name(): void
     {
         $step = new ValidateRestoreContextStep(

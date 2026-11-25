@@ -13,8 +13,16 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'db:dump, --destination',
+    name: 'db:dump',
     description: 'Creates a database dump',
+    usages: ['/tmp/dumps/'],
+    help: <<<'HELP'
+The <info>%command.name%</info> command dumps the database to <comment>backup.sql</comment> inside the destination.
+
+  <info>%command.full_name% <destination></info>
+
+The destination is prepended to the file name, so include a trailing slash (e.g. <comment>/tmp/dumps/</comment>).
+HELP
 )]
 final class DumpDatabaseCommand
 {
@@ -23,7 +31,7 @@ final class DumpDatabaseCommand
     ) {}
 
     public function __invoke(
-        #[Argument('Database dump destination')] string $destination,
+        #[Argument('Directory for the dump (with trailing slash); the file is named backup.sql')] string $destination,
         OutputInterface $output
     ): int {
         $steps = [

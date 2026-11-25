@@ -5,96 +5,74 @@ namespace Tests\Unit\Step\Restore;
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
-use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseDump;
+use Deagel1337\Backup\Kit\Step\Restore\CreateStagingFolder;
 use Deagel1337\Backup\Kit\Step\Restore\ExtractBackupStep;
+use Deagel1337\Backup\Kit\Step\Restore\RestoreDirectoryCleaner;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class ExtractBackupStepTest extends TestCase
 {
-    public function test_returns_correct_name(): void
+    /**
+     * @var array<string>
+     */
+    private array $temporaryDirectories = [];
+
+    protected function tearDown(): void
     {
-        $archiveDriver = $this->createMock(ArchiveDriver::class);
+        foreach ($this->temporaryDirectories as $directory) {
+            RestoreDirectoryCleaner::remove($directory);
+        }
 
-        $step = new ExtractBackupStep($archiveDriver);
-
-        $this->assertSame(
-            'Extrahiert die Backupdateien.',
-            $step->name()
-        );
+        parent::tearDown();
     }
 
-    public function test_extracts_backup_to_configured_destination(): void
+    public function test_returns_correct_name(): void
+    {
+        $step = new ExtractBackupStep($this->createStub(ArchiveDriver::class));
+
+        $this->assertSame('Extrahiert die Backupdateien.', $step->name());
+    }
+
+    public function test_rejects_destination_override_after_staging_was_created(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
+        $root = $this->createTemporaryDirectory();
+        $overrideRoot = $this->createTemporaryDirectory();
+        $archive = new ArchiveInfo('/tmp/backup.zip', 'test', 'zip');
+        $context = new RestoreContext($archive, null, $root.'/restore');
 
-        $archive = new ArchiveInfo(
-            '/tmp/backup.zip',
-            'test',
-            'zip'
-        );
+        (new CreateStagingFolder)->execute($context);
 
-        $dump = new DatabaseDump(
-            '/tmp/dump.sql',
-            'test',
-            'sql'
-        );
-
-        $context = new RestoreContext(
-            $archive,
-            $dump,
-            '/tmp/restore'
-        );
-
-        $destination = '/tmp/extracted-backup';
-
-        $archiveDriver
-            ->expects($this->once())
-            ->method('extractArchive')
-            ->with(
-                $archive,
-                $destination
-            );
-
-        $step = new ExtractBackupStep(
-            $archiveDriver,
-            $destination
-        );
-
-        $step->execute($context);
+        $archiveDriver->expects($this->never())->method('extractArchive');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Das Restore-Ziel muss vor der Validierung');
+        (new ExtractBackupStep($archiveDriver, $overrideRoot.'/extracted-backup'))->execute($context);
     }
 
     public function test_uses_context_destination_by_default(): void
     {
         $archiveDriver = $this->createMock(ArchiveDriver::class);
+        $root = $this->createTemporaryDirectory();
+        $archive = new ArchiveInfo('/tmp/backup.zip', 'test', 'zip');
+        $context = new RestoreContext($archive, null, $root.'/restore');
 
-        $archive = new ArchiveInfo(
-            '/tmp/backup.zip',
-            'test',
-            'zip'
-        );
-
-        $dump = new DatabaseDump(
-            '/tmp/dump.sql',
-            'test',
-            'sql'
-        );
-
-        $context = new RestoreContext(
-            $archive,
-            $dump,
-            '/tmp/restore'
-        );
+        (new CreateStagingFolder)->execute($context);
 
         $archiveDriver
             ->expects($this->once())
             ->method('extractArchive')
-            ->with(
-                $archive,
-                '/tmp/restore'
-            );
+            ->with($archive, $context->stagingDestination);
 
-        $step = new ExtractBackupStep($archiveDriver);
+        (new ExtractBackupStep($archiveDriver))->execute($context);
+    }
 
-        $step->execute($context);
+    private function createTemporaryDirectory(): string
+    {
+        $directory = sys_get_temp_dir().'/extract_backup_test_'.bin2hex(random_bytes(6));
+        mkdir($directory, 0700);
+        $this->temporaryDirectories[] = $directory;
+
+        return $directory;
     }
 }

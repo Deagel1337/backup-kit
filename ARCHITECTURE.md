@@ -72,9 +72,11 @@ Die Treiber implementieren `DatabaseBackupDriver`. Sie validieren die Kompatibil
 
 `RestoreMariaDbApplication` erstellt einen `RestoreContext` und übergibt die konfigurierten Restore-Steps an `RestoreService`. `RestoreDatabaseStep` verlangt einen Dump und delegiert die Wiederherstellung an `restoreDump()` des Datenbanktreibers.
 
-`ValidateRestoreContextStep` prüft verfügbare Treiber, Archiv und Dump sowie Zielpfade. Leere Archive und Einträge mit `..`-Pfadkomponenten werden abgewiesen; Symlink-Ziele können mangels Zielinformationen im `ArchiveEntry` nicht geprüft werden. `RestoreArchiveStep` kann in ein optionales `stagingDestination` extrahieren; dieses hat Vorrang vor dem Ziel des Steps und `destination` im Context. Die Anwendung, die den Restore konfiguriert, ist für die anschließende Veröffentlichung des Staging-Inhalts zuständig. Ein neu angelegtes Ziel wird bei Extraktionsfehlern entfernt, ein bereits vorhandenes Ziel bleibt bestehen.
+`ValidateRestoreContextStep` prüft verfügbare Treiber, Archiv und Dump sowie Zielpfade. Leere Archive und Einträge mit `..`-Pfadkomponenten werden abgewiesen; Symlink-Ziele können mangels Zielinformationen im `ArchiveEntry` nicht geprüft werden. Die aufrufende Anwendung konfiguriert die Validierung und muss sie vor der Extraktion für das tatsächlich verwendete Ziel ausführen.
 
-Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein validierter Sicherungsdump erstellt und im Kontext abgelegt werden. `RestoreService` versucht das Rollback nur, wenn `RestoreDatabaseStep` tatsächlich begonnen hat. Der Snapshot wird danach aus dem lokalen Dateisystem entfernt. Die Standardfabrik von `RestoreMariaDbApplication` verwendet `MariaDbRestoreRollbackHandler`. Das Rollback ist kein Ersatz für ein unabhängig getestetes Disaster-Recovery-Verfahren. `RestoreDatabaseStep` unterstützt außerdem einen optionalen Health-Check-Callback nach erfolgreicher Wiederherstellung; ein Fehler darin löst ebenfalls das Rollback aus.
+Staging ist optional: Ohne Staging extrahiert `RestoreArchiveStep` direkt ins Ziel; der Treiber bestimmt das Überschreibungsverhalten und Teildateien können bei Fehlern verbleiben. Alternativ erstellt `CreateStagingFolder` ein neues Staging-Verzeichnis neben dem Ziel und `RestoreArchiveStep` extrahiert dorthin. `CommitStagingStep` ersetzt das Ziel vollständig, indem er ein vorhandenes Ziel zunächst umbenennt und bei einem fehlgeschlagenen Commit wiederherzustellen versucht. Weitere fehleranfällige Restore-Schritte sollten vor dem Commit ausgeführt werden. Der Austausch über zwei Umbenennungen ist nicht atomar.
+
+Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein validierter Sicherungsdump erstellt und im Kontext abgelegt werden. `RestoreService` versucht nur mit konfiguriertem Rollback-Handler und nach Beginn von `RestoreDatabaseStep` ein Rollback, sofern das Archiv noch nicht übernommen wurde. Die separat konfigurierten Cleanup-Steps laufen nach Erfolg und Fehlern in Reihenfolge; auch nach einem Cleanup-Fehler werden weitere Steps ausgeführt. `CleanStagingFolder` und `CleanRollbackDump` sind dafür verfügbare Steps. Die Factory von `RestoreMariaDbApplication` konfiguriert `MariaDbRestoreRollbackHandler` und Dump-Cleanup. Das Rollback ist kein Ersatz für ein unabhängig getestetes Disaster-Recovery-Verfahren. `RestoreDatabaseStep` unterstützt einen optionalen Health-Check-Callback; ein Fehler darin kann den Rollback auslösen.
 
 ## Archivierung
 
@@ -82,7 +84,7 @@ Optional kann vor dem Restore mit `CreateDatabaseBackupStep` ein validierter Sic
 
 Implementierte Treiber:
 
-- `BorgArchiveDriver` erstellt und listet Borg-Archive und extrahiert sie wieder. Repository, Passphrase sowie optionale SSH-Parameter werden dem Treiber übergeben.
+- `BorgArchiveDriver` erstellt und listet Borg-Archive und extrahiert sie wieder. Repository, Passphrase sowie optionale SSH-Parameter werden dem Treiber übergeben. Die Archivliste kann für repository-fähige Treiber über `ArchiveApplication::listAllArchives($repository)` gezielt aus einem alternativen Repository gelesen werden.
 - `TarArchiveDriver` erstellt gzip-komprimierte TAR-Archive, listet deren Inhalte und kann sie extrahieren.
 
 `BackupApplicationFilesStep` verbindet Dateiarchivierung mit einem Backup-Ablauf, indem der Step den Archivtreiber verwendet und das Ergebnis im `BackupContext` ablegt. Restore-Steps verbinden entsprechend Archivprüfung und -extraktion mit dem `RestoreContext`.
@@ -112,8 +114,9 @@ Datenbanktreiber geben Passwörter für ihre Clientprogramme über Prozess-Umgeb
 - Ungültige oder unbrauchbare Dumps führen zu spezialisierten Exceptions aus `Exception/DumpDriverException/`.
 - Ein fehlgeschlagener Prozess wird anhand seines Exit-Codes erkannt; die Treiber melden den Fehler mit der Prozessausgabe.
 - `StepRunner` informiert den Reporter über den Fortschritt und gibt eine aufgetretene Exception weiter.
-- `RestoreService` versucht ein Rollback nur, wenn `RestoreDatabaseStep` begonnen hat. Der Rollback-Dump wird nach dem Versuch entfernt; schlägt das Rollback fehl, wird der Fehler mit dem ursprünglichen Restore-Fehler als Ursache weitergegeben.
-- Reporter können über die entsprechenden Interfaces ersetzt werden. Prozess- und Step-Fortschritt werden getrennt behandelt.
+- `RestoreService` führt einen optionalen Rollback vor den konfigurierten Cleanup-Steps aus. Restore-, Rollback- und Cleanup-Fehler werden gemeldet; der ursprüngliche Restore-Fehler bleibt als Ursache erhalten.
+- Reporter können über die entsprechenden Interfaces ersetzt werden. Prozess- und Step-Fortschritt werden getrennt behandelt. `CompositeProgressReporter` kann mehrere Fortschritts-Reporter kombinieren.
+- Die optionalen Laravel-Reporter schreiben Step-Fortschritt über PSR-3 in einen injizierten Logger oder dispatchen typisierte Laravel-Events. `illuminate/contracts` bleibt eine optionale Abhängigkeit; Fehler-Logs und -Events enthalten den Exception-Typ, nicht den möglicherweise sensiblen Exception-Text.
 
 ## Konsolen- und Skripteinstiegspunkte
 
@@ -126,14 +129,14 @@ Die PHPUnit-Tests sind in zwei Bereiche gegliedert:
 - `tests/Unit/` prüft Treiber, Services, Steps, Applications, Reporter, Prozessrunner und Hilfstraits überwiegend isoliert.
 - `tests/Integration/` prüft Zusammenspiel von Komponenten, Prozessausführung und ausgewählte Datenbank- beziehungsweise Archivabläufe.
 
-`DryRunProcessRunner` und Test-Doubles entkoppeln viele Tests von installierten externen Programmen. Ein erfolgreicher Unit- oder Dry-Run-Test beweist daher nicht, dass die Zielmaschine, ihre Datenbankverbindung oder ihr Borg-Repository korrekt eingerichtet ist. Für die MariaDB-Integrationstests stellt `docker-compose.yml` einen Testdienst bereit.
+`DryRunProcessRunner` und Test-Doubles entkoppeln viele Tests von installierten externen Programmen. Ein erfolgreicher Unit- oder Dry-Run-Test beweist daher nicht, dass die Zielmaschine, ihre Datenbankverbindung oder ihr Borg-Repository korrekt eingerichtet ist. Für die MariaDB-Integrationstests stellt `docker-compose.yml` einen Testdienst bereit. Die Skripte `scripts/run-integration-tests.sh` und `scripts/run-phpunit.sh` ermitteln den dynamisch veröffentlichten Datenbank-Port und übergeben ihn über die Umgebungsvariablen an PHPUnit.
 
 ## Implementierungsstand und bekannte Grenzen
 
 Die folgenden Punkte beschreiben den aktuellen Code und sind wichtig, wenn neue Abläufe darauf aufbauen:
 
 - Es gibt keine allgemeine Restore-Application: `RestoreMariaDbApplication::run()` nimmt nur einen Datenbank-Dump entgegen. Die `create()`-Factory verwendet fest `ConsoleProgressReporter` und `MariaDbRestoreRollbackHandler`, obwohl sie einen allgemeinen `DatabaseBackupDriver` entgegennimmt. Andere Datenbanktreiber benötigen daher eine eigene, passend konfigurierte Restore-Orchestrierung.
-- Restore-Staging extrahiert in ein neues Verzeichnis und veröffentlicht den Inhalt nicht automatisch am produktiven Ziel. Bei direkter Extraktion in ein bereits vorhandenes Ziel kann ein Fehler Teildateien zurücklassen; nur ein vom Step neu angelegtes Ziel wird bei einem Extraktionsfehler entfernt.
+- Der Staging-Commit ersetzt das Ziel über zwei Umbenennungen und ist daher nicht atomar. Bei direkter Extraktion können im vorhandenen Ziel Teildateien zurückbleiben.
 - Die Restore-Validierung weist `..`-Pfadkomponenten ab, prüft aber keine Zieleinträge von Symlinks. `ArchiveEntry` stellt diese Zielpfade derzeit nicht bereit.
 - `VerifyBackupArchiveStep` vergleicht nur Basenames und prüft weder Inhalt noch Checksummen. Unterschiedliche Quellen mit gleichem Dateinamen können deshalb fälschlich als vorhanden gelten.
 - Einige Steps greifen direkt auf Treiber zu, darunter `RestoreDatabaseStep` und `RestoreArchiveStep`. Service-Validierungen laufen daher nicht automatisch bei jedem Step-Aufruf; bei selbst zusammengestellten Abläufen muss die passende Context-Validierung explizit enthalten sein.

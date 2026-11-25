@@ -157,7 +157,7 @@ final class PostgresBackupDriverTest extends TestCase
                 ],
                 ['PGPASSWORD' => 'password'],
                 null,
-                $this->isType('string'),
+                $this->isString(),
                 null
             )
             ->willReturn(

@@ -5,6 +5,7 @@ namespace Deagel1337\Backup\Kit\Step\Runner;
 use Deagel1337\Backup\Kit\Context\Context;
 use Deagel1337\Backup\Kit\Reporter\Interface\ProgressReporter;
 use Deagel1337\Backup\Kit\Step\Interface\ProgressStep;
+use RuntimeException;
 use TContext;
 use Throwable;
 
@@ -25,9 +26,11 @@ final class StepRunner
     public function run(
         array $steps,
         Context $context,
-        callable $execute
+        callable $execute,
+        bool $continueOnFailure = false,
     ): void {
         $total = count($steps);
+        $failures = [];
 
         $this->progress->started($total);
 
@@ -57,8 +60,19 @@ final class StepRunner
                     $e
                 );
 
-                throw $e;
+                if (! $continueOnFailure) {
+                    throw $e;
+                }
+
+                $failures[] = $e;
             }
+        }
+
+        if ($failures !== []) {
+            throw new RuntimeException(
+                implode('; ', array_map(static fn (Throwable $failure): string => $failure->getMessage(), $failures)),
+                previous: $failures[0],
+            );
         }
 
         $this->progress->finished();

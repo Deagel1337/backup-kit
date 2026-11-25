@@ -3,6 +3,7 @@
 namespace Deagel1337\Backup\Kit\Services;
 
 use Deagel1337\Backup\Kit\Archive\Interfaces\ArchiveDriver;
+use Deagel1337\Backup\Kit\Archive\Interfaces\RepositoryAwareArchiveDriver;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveEntry;
 use Deagel1337\Backup\Kit\Archive\Model\ArchiveInfo;
 
@@ -37,12 +38,24 @@ final class ArchiveService
      *
      * @param  ArchiveInfo  $archive  Die Archivinformationen vom Ziel
      * @param  string  $destination  Der Ablageort für die Extrahierung
+     * @param  array<string>  $paths  Nur diese Pfade aus dem Archiv extrahieren (leer = alles)
+     * @param  int  $stripComponents  Anzahl führender Pfadbestandteile, die entfernt werden
      */
-    public function extractArchive(ArchiveInfo $archive, string $destination): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
         $this->driver->validateArchive($archive);
 
-        $this->driver->extractArchive($archive, $destination);
+        if ($paths === [] && $stripComponents === 0) {
+            $this->driver->extractArchive($archive, $destination);
+
+            return;
+        }
+
+        $this->driver->extractArchive($archive, $destination, $paths, $stripComponents);
     }
 
     /**
@@ -58,12 +71,20 @@ final class ArchiveService
     }
 
     /**
-     * list all Alrchives in the archive directory. It dependes on the driver implementation
+     * Lists archives from the configured repository or a repository override supported by the driver.
      *
      * @return iterable<ArchiveInfo>
      */
-    public function listArchives(): iterable
+    public function listArchives(?string $repository = null): iterable
     {
+        if ($repository !== null) {
+            if (! $this->driver instanceof RepositoryAwareArchiveDriver) {
+                throw new \InvalidArgumentException('Der Archivtreiber unterstützt keine Repository-Auswahl.');
+            }
+
+            return $this->driver->listArchivesFromRepository($repository);
+        }
+
         return $this->driver->listArchives();
     }
 

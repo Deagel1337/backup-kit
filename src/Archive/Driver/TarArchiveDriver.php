@@ -27,9 +27,16 @@ final class TarArchiveDriver implements ArchiveDriver
             ?? sys_get_temp_dir().DIRECTORY_SEPARATOR.'backup-kit-tar';
     }
 
+    #[Override]
     protected function processRunner(): ProcessRunner
     {
         return $this->process;
+    }
+
+    #[Override]
+    protected function allowedCommands(): array
+    {
+        return ['ssh', 'tar'];
     }
 
     public function createArchive(array $paths, string $archiveName): ArchiveInfo
@@ -67,11 +74,23 @@ final class TarArchiveDriver implements ArchiveDriver
         }
     }
 
-    public function extractArchive(ArchiveInfo $archive, string $destination): void
-    {
+    public function extractArchive(
+        ArchiveInfo $archive,
+        string $destination,
+        array $paths = [],
+        int $stripComponents = 0,
+    ): void {
         $this->validateArchive($archive);
 
         $command = ['tar', '-xzf', $archive->path, '-C', $destination];
+
+        if ($stripComponents > 0) {
+            $command[] = '--strip-components='.$stripComponents;
+        }
+
+        foreach ($paths as $path) {
+            $command[] = ltrim($path, '/');
+        }
 
         $result = $this->process->run($command);
 

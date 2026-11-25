@@ -13,14 +13,16 @@ use Throwable;
 final class RestoreService implements RestoreServiceInterface
 {
     /**
-     * Orchestriert die Restore-Schritte und verwaltet den Rollback-Dump.
+     * Orchestriert Restore- und optional Cleanup-Schritte.
      *
      * @param  array<RestoreStep>  $steps  In Ausführungsreihenfolge konfigurierte Schritte.
+     * @param  array<RestoreStep>  $cleanupSteps  Auch bei Fehlern in Reihenfolge ausgeführte Cleanup-Schritte.
      */
     public function __construct(
         private readonly array $steps,
         private readonly StepRunner $runner,
-        private readonly RestoreRollbackHandler $rollback,
+        private readonly ?RestoreRollbackHandler $rollback = null,
+        private readonly array $cleanupSteps = [],
     ) {}
 
     /**
@@ -39,7 +41,7 @@ final class RestoreService implements RestoreServiceInterface
         } catch (Throwable $e) {
             $failure = $e;
 
-            if ($context->databaseRestoreStarted) {
+            if ($this->rollback !== null && $context->databaseRestoreStarted && ! $context->archiveRestoreCommitted) {
                 try {
                     $this->rollback->rollback($context);
                 } catch (Throwable $rollbackFailure) {
@@ -47,19 +49,51 @@ final class RestoreService implements RestoreServiceInterface
                         'Die Wiederherstellung ist fehlgeschlagen und das Rollback ebenfalls: '.$rollbackFailure->getMessage(),
                         previous: $e,
                     );
-
-                    throw $failure;
                 }
             }
+        }
 
-            throw $e;
-        } finally {
-            if ($context->rollbackDump !== null
-                && is_file($context->rollbackDump->path)
-                && ! unlink($context->rollbackDump->path)
-                && $failure === null) {
-                throw new RuntimeException('Der Rollback-Dump konnte nicht entfernt werden.');
+        $cleanupFailures = [];
+        if ($this->cleanupSteps !== []) {
+            try {
+                $this->runner->run(
+                    $this->cleanupSteps,
+                    $context,
+                    static fn (RestoreStep $step, RestoreContext $context) => $step->execute($context),
+                    continueOnFailure: true,
+                );
+            } catch (Throwable $cleanupFailure) {
+                $cleanupFailures[] = $cleanupFailure;
             }
+        }
+
+        if ($failure !== null) {
+            if ($cleanupFailures !== []) {
+                $messages = array_map(
+                    static fn (Throwable $cleanupFailure): string => $cleanupFailure->getMessage(),
+                    $cleanupFailures,
+                );
+
+                throw new RuntimeException(
+                    $failure->getMessage().' Zusätzliche Fehler beim Aufräumen: '.implode('; ', $messages),
+                    previous: $failure,
+                );
+            }
+
+            throw $failure;
+        }
+
+        if ($cleanupFailures !== []) {
+            $messages = array_map(
+                static fn (Throwable $cleanupFailure): string => $cleanupFailure->getMessage(),
+                $cleanupFailures,
+            );
+
+            throw new RuntimeException(
+                'Die Wiederherstellung wurde ausgeführt, aber das Aufräumen ist fehlgeschlagen: '
+                .implode('; ', $messages),
+                previous: $cleanupFailures[0],
+            );
         }
     }
 }

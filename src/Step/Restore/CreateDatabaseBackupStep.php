@@ -5,6 +5,7 @@ namespace Deagel1337\Backup\Kit\Step\Restore;
 use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\DatabaseBackup\Interfaces\DatabaseBackupDriver;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
+use Override;
 use RuntimeException;
 
 final class CreateDatabaseBackupStep implements RestoreStep
@@ -14,6 +15,7 @@ final class CreateDatabaseBackupStep implements RestoreStep
         private readonly string $backupName = '',
     ) {}
 
+    #[Override]
     public function name(): string
     {
         return 'Erstellt ein sicherheits Dump der Datenbank, bevor der Restore-Prozess losgeht.';

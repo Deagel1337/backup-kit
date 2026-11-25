@@ -8,6 +8,7 @@ use Deagel1337\Backup\Kit\DatabaseBackup\Model\DatabaseConnection;
 use Deagel1337\Backup\Kit\Step\Backup\BackupDatabaseStep;
 use PHPUnit\Framework\TestCase;
 use Tests\Integration\Support\MariaDbTestDatabase;
+use Tests\Integration\Support\TestDatabaseConnectionFactory;
 
 final class BackupMariaDbTest extends TestCase
 {
@@ -17,21 +18,8 @@ final class BackupMariaDbTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->sourceConnection = new DatabaseConnection(
-            driver: 'mariadb',
-            host: '127.0.0.1',
-            port: 3307,
-            database: 'backup_source',
-            username: 'root',
-            password: 'root',
-        );
-
-        $this->database = new MariaDbTestDatabase(
-            host: '127.0.0.1',
-            port: 3307,
-            username: 'root',
-            password: 'root',
-        );
+        $this->sourceConnection = TestDatabaseConnectionFactory::source();
+        $this->database = TestDatabaseConnectionFactory::server();
 
         $this->database->resetDatabase(
             $this->sourceConnection->database

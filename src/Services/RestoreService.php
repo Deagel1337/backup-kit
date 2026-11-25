@@ -6,6 +6,7 @@ use Deagel1337\Backup\Kit\Context\RestoreContext;
 use Deagel1337\Backup\Kit\Services\Interface\RestoreServiceInterface;
 use Deagel1337\Backup\Kit\Step\Interface\RestoreStep;
 use Deagel1337\Backup\Kit\Step\Restore\Rollback\RestoreRollbackHandler;
+use Deagel1337\Backup\Kit\Step\Restore\CleanRollbackDump;
 use Deagel1337\Backup\Kit\Step\Runner\StepRunner;
 use RuntimeException;
 use Throwable;
@@ -31,6 +32,7 @@ final class RestoreService implements RestoreServiceInterface
     public function restore(RestoreContext $context): void
     {
         $failure = null;
+        $rollbackFailed = false;
 
         try {
             $this->runner->run(
@@ -49,15 +51,23 @@ final class RestoreService implements RestoreServiceInterface
                         'Die Wiederherstellung ist fehlgeschlagen und das Rollback ebenfalls: '.$rollbackFailure->getMessage(),
                         previous: $e,
                     );
+                    $rollbackFailed = true;
                 }
             }
         }
 
         $cleanupFailures = [];
-        if ($this->cleanupSteps !== []) {
+        $cleanupSteps = $rollbackFailed
+            ? array_values(array_filter(
+                $this->cleanupSteps,
+                static fn (RestoreStep $step): bool => ! $step instanceof CleanRollbackDump,
+            ))
+            : $this->cleanupSteps;
+
+        if ($cleanupSteps !== []) {
             try {
                 $this->runner->run(
-                    $this->cleanupSteps,
+                    $cleanupSteps,
                     $context,
                     static fn (RestoreStep $step, RestoreContext $context) => $step->execute($context),
                     continueOnFailure: true,

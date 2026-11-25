@@ -181,6 +181,46 @@ final class RestoreServiceTest extends TestCase
         $this->assertFileDoesNotExist($snapshotPath);
     }
 
+    public function test_preserves_snapshot_when_rollback_fails(): void
+    {
+        $snapshotPath = tempnam(sys_get_temp_dir(), 'restore_rollback_failed_');
+        $this->assertNotFalse($snapshotPath);
+        $context = new RestoreContext(
+            new ArchiveInfo('/tmp/backup.tar.gz', 'tar', 'tar.gz'),
+            new DatabaseDump('/tmp/dump.sql', 'mariadb', 'sql'),
+            '/tmp/restore',
+            rollbackDump: new DatabaseDump($snapshotPath, 'mariadb', 'sql'),
+            databaseRestoreStarted: true,
+        );
+
+        $restore = $this->createStub(RestoreStep::class);
+        $restore->method('name')->willReturn('Datenbank wiederherstellen');
+        $restore->method('execute')->willThrowException(new RuntimeException('database restore failed'));
+
+        $setup = $this->createRestoreService(
+            [$restore],
+            [new CleanRollbackDump],
+        );
+        $setup['rollback']
+            ->expects($this->once())
+            ->method('rollback')
+            ->with($context)
+            ->willThrowException(new RuntimeException('rollback failed'));
+
+        try {
+            $setup['service']->restore($context);
+            $this->fail('Expected restore failure.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('das Rollback ebenfalls', $exception->getMessage());
+            $this->assertStringContainsString('rollback failed', $exception->getMessage());
+        }
+
+        $this->assertFileExists($snapshotPath);
+        $this->assertSame($snapshotPath, $context->rollbackDump->path);
+
+        unlink($snapshotPath);
+    }
+
     public function test_starts_progress_with_correct_number_of_steps(): void
     {
         $step1 = $this->createMock(RestoreStep::class);
